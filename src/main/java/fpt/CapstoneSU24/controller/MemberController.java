@@ -1,20 +1,23 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.repository.IMemberRepository;
+import fpt.CapstoneSU24.model.Member;
+import fpt.CapstoneSU24.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
+@RequestMapping("/api")
 public class MemberController {
     @Autowired
-    private IMemberRepository iMemberRepository;
+    private MemberRepository memberRepository;
     @GetMapping("/test")
     public ResponseEntity test() {
-        return ResponseEntity.ok(iMemberRepository.findAll());
+        List<Member> memberList = memberRepository.findAll();
+        return ResponseEntity.ok(memberList);
     }
-
-
 }
