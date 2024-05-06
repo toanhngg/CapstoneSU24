@@ -5,28 +5,32 @@ import lombok.Data;
 import org.hibernate.annotations.Nationalized;
 
 @Entity
-@Table(name = "member")
+@Table(name = "member") // Đặt tên bảng trong cơ sở dữ liệu
 public class Member {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
     private String fullName;
-    private int age;
+
+    private Integer age;
 
     public Member(){
 
     }
-    public Member(int id, String fullName, int age) {
+
+    public Member(Integer id, String fullName, Integer age) {
         this.id = id;
         this.fullName = fullName;
         this.age = age;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -38,11 +42,13 @@ public class Member {
         this.fullName = fullName;
     }
 
-    public int getAge() {
+    public Integer getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(Integer age) {
         this.age = age;
     }
+
+    // Constructors, getters, and setters
 }
