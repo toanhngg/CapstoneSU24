@@ -8,7 +8,7 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_Role")
-    private int idRole;
+    private int roleId;
     @Column(name = "Role_Name", columnDefinition = "nvarchar(50)")
     private String roleName;
 
@@ -16,17 +16,17 @@ public class Role {
 
     }
 
-    public Role(int idRole, String roleName) {
-        this.idRole = idRole;
+    public Role(int roleId, String roleName) {
+        this.roleId = roleId;
         this.roleName = roleName;
     }
 
-    public int getIdRole() {
-        return idRole;
+    public int getRoleId() {
+        return roleId;
     }
 
-    public void setIdRole(int idRole) {
-        this.idRole = idRole;
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
     }
 
     public String getRoleName() {

@@ -8,7 +8,7 @@ public class Origin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_Origin")
-    private int idOrigin;
+    private int originId;
     @ManyToOne
     @JoinColumn(name = "Id_Product")
     private Product Product;
@@ -33,8 +33,8 @@ public class Origin {
 
     }
 
-    public Origin(int idOrigin, fpt.CapstoneSU24.model.Product product, fpt.CapstoneSU24.model.User user, String updatedAt, String supportingDocuments, String acquisitionMethod, String note, int legitLevel) {
-        this.idOrigin = idOrigin;
+    public Origin(int originId, fpt.CapstoneSU24.model.Product product, fpt.CapstoneSU24.model.User user, String updatedAt, String supportingDocuments, String acquisitionMethod, String note, int legitLevel) {
+        this.originId = originId;
         Product = product;
         User = user;
         this.updatedAt = updatedAt;
@@ -44,12 +44,12 @@ public class Origin {
         this.legitLevel = legitLevel;
     }
 
-    public int getIdOrigin() {
-        return idOrigin;
+    public int getOriginId() {
+        return originId;
     }
 
-    public void setIdOrigin(int idOrigin) {
-        this.idOrigin = idOrigin;
+    public void setOriginId(int originId) {
+        this.originId = originId;
     }
 
     public fpt.CapstoneSU24.model.Product getProduct() {

@@ -8,7 +8,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_User")
-    private int idUser;
+    private int userId;
     @Column(name = "Email")
     private String email;
     @Column(name = "Password")
@@ -37,8 +37,8 @@ public class User {
 
     }
 
-    public User(int idUser, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, int age, String supportingDocuments) {
-        this.idUser = idUser;
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, int age, String supportingDocuments) {
+        this.userId = userId;
         this.email = email;
         this.password = password;
         this.role = role;
@@ -52,12 +52,12 @@ public class User {
         this.supportingDocuments = supportingDocuments;
     }
 
-    public int getIdUser() {
-        return idUser;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setIdUser(int idUser) {
-        this.idUser = idUser;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getEmail() {

@@ -9,5 +9,5 @@ import java.util.List;
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Override
     List<Category> findAll();
-    Category findOneByidCategory(int id);
+    Category findOneByCategoryId(int id);
 }

@@ -10,7 +10,7 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_Product")
-    private int idProduct;
+    private int productId;
     @Column(name = "Product_Name", columnDefinition = "nvarchar(255)")
     private String productName;
     //    người taọ ra sẳn phẩm này, người có role là manu
@@ -41,8 +41,8 @@ public class Product {
 
     }
 
-    public Product(int idProduct, String productName, User manufacturer, Category category, User currentOwner, String unitPrice, String createdAt, String dimensions, String material, String supportingDocuments, String productRecognition) {
-        this.idProduct = idProduct;
+    public Product(int productId, String productName, User manufacturer, Category category, User currentOwner, String unitPrice, String createdAt, String dimensions, String material, String supportingDocuments, String productRecognition) {
+        this.productId = productId;
         this.productName = productName;
         Manufacturer = manufacturer;
         this.category = category;
@@ -55,12 +55,12 @@ public class Product {
         this.productRecognition = productRecognition;
     }
 
-    public int getIdProduct() {
-        return idProduct;
+    public int getProductId() {
+        return productId;
     }
 
-    public void setIdProduct(int idProduct) {
-        this.idProduct = idProduct;
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public String getProductName() {

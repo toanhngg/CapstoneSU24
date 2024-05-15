@@ -9,7 +9,7 @@ public class Category {
     @Id
     @Column(name = "Id_Category")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idCategory;
+    private int categoryId;
     @Column(name = "Name_Category", columnDefinition = "nvarchar(50)")
     private String name;
     @Column(name = "Description", columnDefinition = "nvarchar(255)")
@@ -19,18 +19,18 @@ public class Category {
 
     }
 
-    public Category(int idCategory, String name, String description) {
-        this.idCategory = idCategory;
+    public Category(int categoryId, String name, String description) {
+        this.categoryId = categoryId;
         this.name = name;
         this.description = description;
     }
 
-    public int getIdCategory() {
-        return idCategory;
+    public int getCategoryId() {
+        return categoryId;
     }
 
-    public void setIdCategory(int idCategory) {
-        this.idCategory = idCategory;
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getName() {

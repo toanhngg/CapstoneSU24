@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Integer> {
     @Override
     List<User> findAll();
-    public User findOneByIdUser(int id);
+    public User findOneByUserId(int id);
 }
 
