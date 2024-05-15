@@ -10,16 +10,15 @@ public class Category {
     @Column(name = "Id_Category")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idCategory;
-
-    @Column(name = "Name_Category", length = 50)
+    @Column(name = "Name_Category", columnDefinition = "nvarchar(50)")
     private String name;
-
-    @Column(name = "Description", length = 50)
+    @Column(name = "Description", columnDefinition = "nvarchar(255)")
     private String description;
 
-    public Category(){
+    public Category() {
 
     }
+
     public Category(int idCategory, String name, String description) {
         this.idCategory = idCategory;
         this.name = name;

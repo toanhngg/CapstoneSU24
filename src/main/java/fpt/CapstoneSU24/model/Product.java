@@ -2,61 +2,57 @@ package fpt.CapstoneSU24.model;
 
 
 import jakarta.persistence.*;
+import org.hibernate.Length;
 
 @Entity
 @Table(name = "Product")
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_Product")
     private int idProduct;
-
-    @Column(name = "Product_Name", length = 10)
+    @Column(name = "Product_Name", columnDefinition = "nvarchar(255)")
     private String productName;
-
+    //    người taọ ra sẳn phẩm này, người có role là manu
     @ManyToOne
     @JoinColumn(name = "Id_Manufacturer")
-    private Manufacturer manufacturer;
-
+    private User Manufacturer;
     @ManyToOne
     @JoinColumn(name = "Id_Category")
     private Category category;
-
-    @Column(name = "QuantityPerUnit", length = 10)
-    private String quantityPerUnit;
-
-    @Column(name = "UnitPrice", length = 10)
+    @ManyToOne
+    @JoinColumn(name = "Id_Current_Owner")
+    private User currentOwner;
+    @Column(name = "Unit_Price")
     private String unitPrice;
-
-    @Column(name = "UnitsInStock", length = 10)
-    private String unitsInStock;
-
-    @Column(name = "UnitsOnOrder", length = 10)
-    private String unitsOnOrder;
-
-    @Column(name = "ReorderLevel", length = 10)
-    private String reorderLevel;
-
-    @Column(name = "Discontinued", length = 10)
-    private String discontinued;
-    @Column(name = "Supporting_Documents")
+    @Column(name = "Created_At")
+    private String createdAt;
+    @Column(name = "Dimensions")
+    private String dimensions;
+    @Column(name = "Material", columnDefinition = "nvarchar(50)")
+    private String material;
+    @Column(name = "Supporting_Documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
+    //    có thể là đường dẫn đến file ảnh, file model 3d...
+    @Column(name = "Product_Recognition", columnDefinition = "nvarchar(255)")
+    private String productRecognition;
+
     public Product(){
 
     }
-    public Product(int idProduct, String productName, Manufacturer manufacturer, Category category, String quantityPerUnit, String unitPrice, String unitsInStock, String unitsOnOrder, String reorderLevel, String discontinued, String supportingDocuments) {
+
+    public Product(int idProduct, String productName, User manufacturer, Category category, User currentOwner, String unitPrice, String createdAt, String dimensions, String material, String supportingDocuments, String productRecognition) {
         this.idProduct = idProduct;
         this.productName = productName;
-        this.manufacturer = manufacturer;
+        Manufacturer = manufacturer;
         this.category = category;
-        this.quantityPerUnit = quantityPerUnit;
+        this.currentOwner = currentOwner;
         this.unitPrice = unitPrice;
-        this.unitsInStock = unitsInStock;
-        this.unitsOnOrder = unitsOnOrder;
-        this.reorderLevel = reorderLevel;
-        this.discontinued = discontinued;
+        this.createdAt = createdAt;
+        this.dimensions = dimensions;
+        this.material = material;
         this.supportingDocuments = supportingDocuments;
+        this.productRecognition = productRecognition;
     }
 
     public int getIdProduct() {
@@ -75,12 +71,12 @@ public class Product {
         this.productName = productName;
     }
 
-    public Manufacturer getManufacturer() {
-        return manufacturer;
+    public User getManufacturer() {
+        return Manufacturer;
     }
 
-    public void setManufacturer(Manufacturer manufacturer) {
-        this.manufacturer = manufacturer;
+    public void setManufacturer(User manufacturer) {
+        Manufacturer = manufacturer;
     }
 
     public Category getCategory() {
@@ -91,12 +87,12 @@ public class Product {
         this.category = category;
     }
 
-    public String getQuantityPerUnit() {
-        return quantityPerUnit;
+    public User getCurrentOwner() {
+        return currentOwner;
     }
 
-    public void setQuantityPerUnit(String quantityPerUnit) {
-        this.quantityPerUnit = quantityPerUnit;
+    public void setCurrentOwner(User currentOwner) {
+        this.currentOwner = currentOwner;
     }
 
     public String getUnitPrice() {
@@ -107,36 +103,28 @@ public class Product {
         this.unitPrice = unitPrice;
     }
 
-    public String getUnitsInStock() {
-        return unitsInStock;
+    public String getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUnitsInStock(String unitsInStock) {
-        this.unitsInStock = unitsInStock;
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getUnitsOnOrder() {
-        return unitsOnOrder;
+    public String getDimensions() {
+        return dimensions;
     }
 
-    public void setUnitsOnOrder(String unitsOnOrder) {
-        this.unitsOnOrder = unitsOnOrder;
+    public void setDimensions(String dimensions) {
+        this.dimensions = dimensions;
     }
 
-    public String getReorderLevel() {
-        return reorderLevel;
+    public String getMaterial() {
+        return material;
     }
 
-    public void setReorderLevel(String reorderLevel) {
-        this.reorderLevel = reorderLevel;
-    }
-
-    public String getDiscontinued() {
-        return discontinued;
-    }
-
-    public void setDiscontinued(String discontinued) {
-        this.discontinued = discontinued;
+    public void setMaterial(String material) {
+        this.material = material;
     }
 
     public String getSupportingDocuments() {
@@ -145,5 +133,13 @@ public class Product {
 
     public void setSupportingDocuments(String supportingDocuments) {
         this.supportingDocuments = supportingDocuments;
+    }
+
+    public String getProductRecognition() {
+        return productRecognition;
+    }
+
+    public void setProductRecognition(String productRecognition) {
+        this.productRecognition = productRecognition;
     }
 }

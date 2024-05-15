@@ -6,47 +6,42 @@ import jakarta.persistence.*;
 @Table(name = "Origin") // Đặt tên bảng trong cơ sở dữ liệu
 public class Origin {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id_Origin")
     private int idOrigin;
-
     @ManyToOne
     @JoinColumn(name = "Id_Product")
-    private Product product;
-
-    @Column(name = "Dimensions")
-    private String dimensions;
-
-    @Column(name = "Material")
-    private String material;
-
-    @Column(name = "Created_At")
-    private String createdAt;
-
+    private Product Product;
+    @ManyToOne
+    @JoinColumn(name = "Id_User")
+    private User User;
     @Column(name = "Updated_At")
     private String updatedAt;
-
-    @Column(name = "End_At")
-    private String endAt;
-
-    @Column(name = "Supporting_Documents")
+    //    link URL đến cách giấy tờ liên quan
+    @Column(name = "Supporting_Documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
-
-    @Column(name = "Acquisition_Method")
+    //    kế thừa, bán lại, tặng ....
+    @Column(name = "Acquisition_Method", columnDefinition = "nvarchar(255)")
     private String acquisitionMethod;
+    @Column(name = "Note", columnDefinition = "nvarchar(255)")
+    private String note;
+    //   2 là cao nhất, số càng lớn thì sẽ đưa ra cảnh bảo
+    @Column(name = "Legit_Level")
+    private int legitLevel;
 
     public Origin(){
 
     }
-    public Origin(int idOrigin, Product product, String dimensions, String material, String createdAt, String updatedAt, String endAt, String supportingDocuments, String acquisitionMethod) {
+
+    public Origin(int idOrigin, fpt.CapstoneSU24.model.Product product, fpt.CapstoneSU24.model.User user, String updatedAt, String supportingDocuments, String acquisitionMethod, String note, int legitLevel) {
         this.idOrigin = idOrigin;
-        this.product = product;
-        this.dimensions = dimensions;
-        this.material = material;
-        this.createdAt = createdAt;
+        Product = product;
+        User = user;
         this.updatedAt = updatedAt;
-        this.endAt = endAt;
         this.supportingDocuments = supportingDocuments;
         this.acquisitionMethod = acquisitionMethod;
+        this.note = note;
+        this.legitLevel = legitLevel;
     }
 
     public int getIdOrigin() {
@@ -57,36 +52,20 @@ public class Origin {
         this.idOrigin = idOrigin;
     }
 
-    public Product getProduct() {
-        return product;
+    public fpt.CapstoneSU24.model.Product getProduct() {
+        return Product;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setProduct(fpt.CapstoneSU24.model.Product product) {
+        Product = product;
     }
 
-    public String getDimensions() {
-        return dimensions;
+    public fpt.CapstoneSU24.model.User getUser() {
+        return User;
     }
 
-    public void setDimensions(String dimensions) {
-        this.dimensions = dimensions;
-    }
-
-    public String getMaterial() {
-        return material;
-    }
-
-    public void setMaterial(String material) {
-        this.material = material;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setUser(fpt.CapstoneSU24.model.User user) {
+        User = user;
     }
 
     public String getUpdatedAt() {
@@ -95,14 +74,6 @@ public class Origin {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public String getEndAt() {
-        return endAt;
-    }
-
-    public void setEndAt(String endAt) {
-        this.endAt = endAt;
     }
 
     public String getSupportingDocuments() {
@@ -119,5 +90,21 @@ public class Origin {
 
     public void setAcquisitionMethod(String acquisitionMethod) {
         this.acquisitionMethod = acquisitionMethod;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public int getLegitLevel() {
+        return legitLevel;
+    }
+
+    public void setLegitLevel(int legitLevel) {
+        this.legitLevel = legitLevel;
     }
 }
