@@ -51,22 +51,22 @@
 //
 //        /*dummy data cho User*/
 //        List<User> userList = Stream.of(
-//                new User(0, "thanhnc@gmail.com", "123", roleRepository.findOneByIdRole(1), "thanh", "nguyen", "", "Tay Ho", "HN", "0987654321", 21, ""),
-//                new User(0, "haidp@gmail.com", "123",roleRepository.findOneByIdRole(2), "hai", "dang", "", "Tay Ho", "HN", "0987654321", 21, ""),
-//                new User(0, "manhdt@gmail.com", "123", roleRepository.findOneByIdRole(3), "manh", "duong", "", "Tay Ho", "HN", "0987654321", 21, "")
+//                new User(0, "thanhnc@gmail.com", "123", roleRepository.findOneByRoleId(1), "thanh", "nguyen", "", "Tay Ho", "HN", "0987654321", 21, ""),
+//                new User(0, "haidp@gmail.com", "123",roleRepository.findOneByRoleId(2), "hai", "dang", "", "Tay Ho", "HN", "0987654321", 21, ""),
+//                new User(0, "manhdt@gmail.com", "123", roleRepository.findOneByRoleId(3), "manh", "duong", "", "Tay Ho", "HN", "0987654321", 21, "")
 //
 //        ).collect(Collectors.toList());
 //        userRepository.saveAll(userList);
 //
 //        /*dummy data cho Product*/
 //        List<Product> productList = Stream.of(
-//                new Product(0, "bát gốm", userRepository.findOneByIdUser(2), categoryRepository.findOneByidCategory(2),  userRepository.findOneByIdUser(3), "1000$", "1715763897","100x50x12", "đồ gốm", "","")
+//                new Product(0, "bát gốm", userRepository.findOneByUserId(2), categoryRepository.findOneByCategoryId(2),  userRepository.findOneByUserId(3), "1000$", "1715763897","100x50x12", "đồ gốm", "","")
 //                ).collect(Collectors.toList());
 //        productRepository.saveAll(productList);
 //
 //        /*dummy data cho Product*/
 //        List<Origin> originList = Stream.of(
-//new Origin(0, productRepository.findOneByIdProduct(1),userRepository.findOneByIdUser(1),"1715773897","","","",1)
+//new Origin(0, productRepository.findOneByProductId(1),userRepository.findOneByUserId(1),"1715773897","","","",1)
 //        ).collect(Collectors.toList());
 //        originRepository.saveAll(originList);
 //            /*stop running*/

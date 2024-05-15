@@ -33,7 +33,7 @@ public class Product {
     private String material;
     @Column(name = "Supporting_Documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
-    //    có thể là đường dẫn đến file ảnh, file model 3d...
+    //    có thể là đường dẫn đến file ảnh, file model 3d, QR...
     @Column(name = "Product_Recognition", columnDefinition = "nvarchar(255)")
     private String productRecognition;
 
