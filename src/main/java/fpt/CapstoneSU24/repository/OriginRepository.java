@@ -16,4 +16,5 @@ public interface OriginRepository extends JpaRepository<Origin, Integer> {
     public Origin findOneByOriginId(int id);
     @Query("SELECT o FROM Origin o WHERE o.Product.productId = :id")
     List<Origin> findAllByProductId(@Param("id")  int id);
+
 }

@@ -7,18 +7,18 @@ import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.CategoryRepository;
 import fpt.CapstoneSU24.repository.ProductRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.util.JwtTokenUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/Product")
+@RequestMapping("/api/product")
 public class ProductController {
     @Autowired
     ProductRepository productRepository;
@@ -26,6 +26,29 @@ public class ProductController {
     UserRepository userRepository;
     @Autowired
     CategoryRepository categoryRepository;
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
+
+    @GetMapping("/findAllProductByManufacturerId")
+    public ResponseEntity findAll(HttpServletRequest request) {
+        List<Product> productList = new ArrayList<>();
+        final String requestTokenHeader = request.getHeader("Cookie");
+        String email = null;
+        String jwtToken = null;
+        if (requestTokenHeader != null && requestTokenHeader.startsWith("jwt=")) {
+            jwtToken = requestTokenHeader.substring(4);
+            try {
+                int roleId = jwtTokenUtil.getRoleIdFromToken(jwtToken);
+                int userId = jwtTokenUtil.getUserIdFromToken(jwtToken);
+                if (roleId == 2) {
+                     productList = productRepository.findAllByManufacturerId(userId);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+        return ResponseEntity.ok(productList);
+    }
     @PostMapping("/AddProduct")
     public ResponseEntity AddProduct(@RequestBody String req) {
         JSONObject jsonReq = new JSONObject(req);

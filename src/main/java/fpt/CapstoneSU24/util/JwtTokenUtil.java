@@ -37,15 +37,15 @@ public class JwtTokenUtil implements Serializable {
 
     public User getCustomerFromRequestToken(HttpServletRequest request){
         final String requestTokenHeader = request.getHeader("Authorization");
-        String username = null;
+        String email = null;
         String jwtToken = null;
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
-                username = getUsernameFromToken(jwtToken);
-                return userRepository.findOneByEmail(username);
+                email = getEmailFromToken(jwtToken);
+                return userRepository.findOneByEmail(email);
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
@@ -54,11 +54,18 @@ public class JwtTokenUtil implements Serializable {
         }
         return null;
     }
-    public String getUserRoleFromToken(String token) {
+    public String getEmailFromToken(String token) {
         final Claims claims = getAllClaimsFromToken(token);
-        return claims.get("role").toString();
+        return claims.get("email").toString();
     }
-
+    public int getRoleIdFromToken(String token) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return Integer.parseInt(claims.get("roleId").toString());
+    }
+    public int getUserIdFromToken(String token) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return Integer.parseInt(claims.get("userId").toString());
+    }
     //retrieve expiration date from jwt token
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
@@ -82,9 +89,10 @@ public class JwtTokenUtil implements Serializable {
     //generate token for user
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("id", user.getUserId());
-        claims.put("userName", user.getEmail());
-        return doGenerateToken(claims, user.getFirstName() + " " + user.getLastName());
+        claims.put("userId", user.getUserId());
+        claims.put("email",  user.getEmail());
+        claims.put("roleId",  user.getRole().getRoleId());
+        return doGenerateToken(claims, user.getFirstName() + user.getLastName());
     }
 
     //while creating the token -
@@ -109,7 +117,7 @@ public class JwtTokenUtil implements Serializable {
 
     //validate token
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
+        final String username = getEmailFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 }

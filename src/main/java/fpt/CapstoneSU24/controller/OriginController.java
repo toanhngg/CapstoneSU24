@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/Origin")
+@RequestMapping("/api/origin")
 public class OriginController {
     @Autowired
     private OriginRepository originRepository;
@@ -26,7 +26,6 @@ public class OriginController {
     @PostMapping("/findByIdProduct")
     public ResponseEntity findOriginByProduct(@RequestBody String req) {
         JSONObject jsonReq = new JSONObject(req);
-        System.out.println(jsonReq.getInt("productId")+"hehe");
         List<Origin> originList = originRepository.findAllByProductId(jsonReq.getInt("productId"));
         return ResponseEntity.ok(originList);
     }
