@@ -51,9 +51,9 @@
 //
 //        /*dummy data cho User*/
 //        List<User> userList = Stream.of(
-//                new User(0, "thanhnc@gmail.com", "123", roleRepository.findOneByRoleId(1), "thanh", "nguyen", "", "Tay Ho", "HN", "0987654321", 21, ""),
-//                new User(0, "haidp@gmail.com", "123",roleRepository.findOneByRoleId(2), "hai", "dang", "", "Tay Ho", "HN", "0987654321", 21, ""),
-//                new User(0, "manhdt@gmail.com", "123", roleRepository.findOneByRoleId(3), "manh", "duong", "", "Tay Ho", "HN", "0987654321", 21, "")
+//                new User(0, "thanhnc@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==", roleRepository.findOneByRoleId(1), "thanh", "nguyen", "", "Tay Ho", "HN", "0987654321", 21, ""),
+//                new User(0, "haidp@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==",roleRepository.findOneByRoleId(2), "hai", "dang", "", "Tay Ho", "HN", "0987654321", 21, ""),
+//                new User(0, "manhdt@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==", roleRepository.findOneByRoleId(3), "manh", "duong", "", "Tay Ho", "HN", "0987654321", 21, "")
 //
 //        ).collect(Collectors.toList());
 //        userRepository.saveAll(userList);

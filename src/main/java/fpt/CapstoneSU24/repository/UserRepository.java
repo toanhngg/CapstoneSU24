@@ -9,5 +9,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Override
     List<User> findAll();
     public User findOneByUserId(int id);
+    public User findOneByEmail(String email);
+    public User findOneByEmailAndPassword(String email, String password);
 }
 
