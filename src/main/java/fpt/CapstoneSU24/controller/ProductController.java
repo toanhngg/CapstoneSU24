@@ -29,41 +29,42 @@ public class ProductController {
     @Autowired
     JwtTokenUtil jwtTokenUtil;
 
-    @GetMapping("/findAllProductByManufacturerId")
-    public ResponseEntity findAll(HttpServletRequest request) {
-        List<Product> productList = new ArrayList<>();
-        final String requestTokenHeader = request.getHeader("Cookie");
-        String email = null;
-        String jwtToken = null;
-        if (requestTokenHeader != null && requestTokenHeader.startsWith("jwt=")) {
-            jwtToken = requestTokenHeader.substring(4);
-            try {
-                int roleId = jwtTokenUtil.getRoleIdFromToken(jwtToken);
-                int userId = jwtTokenUtil.getUserIdFromToken(jwtToken);
-                if (roleId == 2) {
-                     productList = productRepository.findAllByManufacturerId(userId);
-                }
-            } catch (Exception e) {
-                return ResponseEntity.notFound().build();
-            }
-        }
-        return ResponseEntity.ok(productList);
-    }
-    @PostMapping("/AddProduct")
-    public ResponseEntity AddProduct(@RequestBody String req) {
-        JSONObject jsonReq = new JSONObject(req);
-        String productName = jsonReq.getString("productName");
-        User manufacturer = userRepository.findOneByUserId(jsonReq.getInt("manufacturerId"));
-        Category category = categoryRepository.findOneByCategoryId(jsonReq.getInt("categoryId"));
-        User currentOwner = null;
-        String unitPrice = jsonReq.getString("unitPrice");
-        String createdAt = jsonReq.getString("createdAt");
-        String dimensions = jsonReq.getString("dimensions");
-        String material =jsonReq.getString("material");
-        String supportingDocuments = jsonReq.getString("supportingDocuments");
-        String productRecognition = jsonReq.getString("productRecognition");
-        Product product = new Product(0, productName, manufacturer, category, currentOwner, unitPrice, createdAt, dimensions,material, supportingDocuments, productRecognition);
-        productRepository.save(product);
-            return ResponseEntity.ok("ok");
-    }
+//    @GetMapping("/findAllProductByManufacturerId")
+//    public ResponseEntity findAll(HttpServletRequest request) {
+//        List<Product> productList = new ArrayList<>();
+//        final String requestTokenHeader = request.getHeader("Cookie");
+//        String email = null;
+//        String jwtToken = null;
+//        if (requestTokenHeader != null && requestTokenHeader.startsWith("jwt=")) {
+//            jwtToken = requestTokenHeader.substring(4);
+//            try {
+//                int roleId = jwtTokenUtil.getRoleIdFromToken(jwtToken);
+//                int userId = jwtTokenUtil.getUserIdFromToken(jwtToken);
+//                if (roleId == 2) {
+//                     productList = productRepository.findAllByManufacturerId(userId);
+//                }
+//            } catch (Exception e) {
+//                return ResponseEntity.notFound().build();
+//            }
+//        }
+//        return ResponseEntity.ok(productList);
+//    }
+//    @PostMapping("/AddProduct")
+//    public ResponseEntity AddProduct(@RequestBody String req) {
+//        JSONObject jsonReq = new JSONObject(req);
+//        String productName = jsonReq.getString("productName");
+////        User manufacturer = userRepository.findOneByUserId(jsonReq.getInt("manufacturerId"));
+//        Origin origin = new Origin(0,userRepository.findOneByUserId(jsonReq.getInt("manufacturerId")),System.currentTimeMillis(),"","");
+//        Category category = categoryRepository.findOneByCategoryId(jsonReq.getInt("categoryId"));
+//        User currentOwner = null;
+//        String unitPrice = jsonReq.getString("unitPrice");
+//        long createdAt = jsonReq.getLong("createdAt");
+//        String dimensions = jsonReq.getString("dimensions");
+//        String material =jsonReq.getString("material");
+//        String supportingDocuments = jsonReq.getString("supportingDocuments");
+//        String productRecognition = jsonReq.getString("productRecognition");
+//        Product product = new Product(0, productName, category, origin, currentOwner, unitPrice, createdAt, dimensions,material, supportingDocuments, productRecognition);
+//        productRepository.save(product);
+//            return ResponseEntity.ok("ok");
+//    }
 }

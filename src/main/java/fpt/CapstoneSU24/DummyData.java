@@ -24,6 +24,10 @@
 //    private RoleRepository roleRepository;
 //    @Autowired
 //    private ProductRepository productRepository;
+//    @Autowired
+//    private ActorRepository actorRepository;
+//    @Autowired
+//    private ProductLogRepository productLogRepository;
 //
 //    public static void main(String[] args) {
 //        SpringApplication.run(DummyData.class, args);
@@ -41,6 +45,12 @@
 //        ).collect(Collectors.toList());
 //        roleRepository.saveAll(roleList);
 //
+//        /*dummy data cho Actor*/
+//        List<Actor> actorList = Stream.of(
+//                new Actor(0, "Nguyen Chi Thanh", "", "09619000", "","")
+//        ).collect(Collectors.toList());
+//        actorRepository.saveAll(actorList);
+//
 //        /*dummy data cho Category*/
 //        List<Category> categoryList = Stream.of(
 //                new Category(0, "lọ hoa", "phần mô tả"),
@@ -52,24 +62,31 @@
 //        /*dummy data cho User*/
 //        List<User> userList = Stream.of(
 //                new User(0, "thanhnc@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==", roleRepository.findOneByRoleId(1), "thanh", "nguyen", "", "Tay Ho", "HN", "0987654321", 21, ""),
-//                new User(0, "haidp@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==",roleRepository.findOneByRoleId(2), "hai", "dang", "", "Tay Ho", "HN", "0987654321", 21, ""),
+//                new User(0, "haidp@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==", roleRepository.findOneByRoleId(2), "hai", "dang", "", "Tay Ho", "HN", "0987654321", 21, ""),
 //                new User(0, "manhdt@gmail.com", "o/NhoNP+F6OwaF3dn9i5hw==", roleRepository.findOneByRoleId(3), "manh", "duong", "", "Tay Ho", "HN", "0987654321", 21, "")
 //
 //        ).collect(Collectors.toList());
 //        userRepository.saveAll(userList);
 //
-//        /*dummy data cho Product*/
-//        List<Product> productList = Stream.of(
-//                new Product(0, "bát gốm", userRepository.findOneByUserId(2), categoryRepository.findOneByCategoryId(2),  userRepository.findOneByUserId(3), "1000$", "1715763897","100x50x12", "đồ gốm", "","")
-//                ).collect(Collectors.toList());
-//        productRepository.saveAll(productList);
-//
-//        /*dummy data cho Product*/
+//        /*dummy data cho Origin*/
 //        List<Origin> originList = Stream.of(
-//new Origin(0, productRepository.findOneByProductId(1),userRepository.findOneByUserId(1),"1715773897","","","",1)
+//                new Origin(0, userRepository.findOneByUserId(2), 0, "", "")
 //        ).collect(Collectors.toList());
 //        originRepository.saveAll(originList);
-//            /*stop running*/
+//
+//        /*dummy data cho Product*/
+//        List<Product> productList = Stream.of(
+//                new Product(0, "bát gốm", categoryRepository.findOneByCategoryId(2), originRepository.findOneByOriginId(1), userRepository.findOneByUserId(3), "1000$", 0, "100x50x12", "đồ gốm", "", "")
+//        ).collect(Collectors.toList());
+//        productRepository.saveAll(productList);
+//
+//        /*dummy data cho ProductLog*/
+//        List<ProductLog> productLogList = Stream.of(
+//                new ProductLog(0, productRepository.findOneByProductId(1), "FPTU", actorRepository.findOneByActorId(1), 0, "", "delivery", 0)
+//        ).collect(Collectors.toList());
+//        productLogRepository.saveAll(productLogList);
+//
+//        /*stop running*/
 //        System.exit(0);
 //    }
 //}

@@ -8,41 +8,40 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "[User]")
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id_User")
+@Table(name = "[user]")
+public class User implements UserDetails  {
+    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int userId;
-    @Column(name = "Email")
+    @Column(name = "email")
     private String email;
-    @Column(name = "Password")
+    @Column(name = "password")
     private String password;
     @ManyToOne
-    @JoinColumn(name = "Id_Role")
+    @JoinColumn(name = "role_id")
     private Role role;
-    @Column(name = "First_Name", columnDefinition = "nvarchar(50)")
+    @Column(name = "first_name", columnDefinition = "nvarchar(50)")
     private String firstName;
-    @Column(name = "Last_Name", columnDefinition = "nvarchar(50)")
+    @Column(name = "last_name", columnDefinition = "nvarchar(50)")
     private String lastName;
-    @Column(name = "Description", columnDefinition = "nvarchar(255)")
+    @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
-    @Column(name = "Address", columnDefinition = "nvarchar(255)")
+    @Column(name = "address", columnDefinition = "nvarchar(255)")
     private String address;
-    @Column(name = "Country", columnDefinition = "nvarchar(50)")
+    @Column(name = "country", columnDefinition = "nvarchar(50)")
     private String country;
-    @Column(name = "Phone")
+    @Column(name = "phone")
     private String phone;
-    @Column(name = "Age")
-    private int age;
-    @Column(name = "Supporting_Documents", columnDefinition = "nvarchar(255)")
+    @Column(name = "date_of_birth")
+    private long dateOfBirth;
+    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
 
     public User(){
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, int age, String supportingDocuments) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, long dateOfBirth, String supportingDocuments) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -53,7 +52,7 @@ public class User implements UserDetails {
         this.address = address;
         this.country = country;
         this.phone = phone;
-        this.age = age;
+        this.dateOfBirth = dateOfBirth;
         this.supportingDocuments = supportingDocuments;
     }
     @Override
@@ -166,12 +165,12 @@ public class User implements UserDetails {
         this.phone = phone;
     }
 
-    public int getAge() {
-        return age;
+    public long getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setDateOfBirth(long dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public String getSupportingDocuments() {

@@ -18,15 +18,15 @@ public class OriginController {
     private OriginRepository originRepository;
     @Autowired
     private ProductRepository productRepository;
-    @GetMapping("/findAll")
-    public ResponseEntity findAll() {
-        List<Origin> originList = originRepository.findAll();
-        return ResponseEntity.ok(originList);
-    }
-    @PostMapping("/findByIdProduct")
-    public ResponseEntity findOriginByProduct(@RequestBody String req) {
-        JSONObject jsonReq = new JSONObject(req);
-        List<Origin> originList = originRepository.findAllByProductId(jsonReq.getInt("productId"));
-        return ResponseEntity.ok(originList);
-    }
+//    @GetMapping("/findAll")
+//    public ResponseEntity findAll() {
+//        List<Origin> originList = originRepository.findAll();
+//        return ResponseEntity.ok(originList);
+//    }
+//    @PostMapping("/findByIdProduct")
+//    public ResponseEntity findOriginByProduct(@RequestBody String req) {
+//        JSONObject jsonReq = new JSONObject(req);
+//        List<Origin> originList = originRepository.findAllByProductId(jsonReq.getInt("productId"));
+//        return ResponseEntity.ok(originList);
+//    }
 }

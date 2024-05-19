@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Integer>  {
     public Product findOneByProductId(int id);
-    @Query("SELECT o FROM Product o WHERE o.Manufacturer.userId = :id")
-    List<Product> findAllByManufacturerId(@Param("id")  int id);
+//    @Query("SELECT o FROM Product o WHERE o.Manufacturer.userId = :id")
+//    List<Product> findAllByManufacturerId(@Param("id")  int id);
 
 }

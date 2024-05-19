@@ -3,45 +3,31 @@ package fpt.CapstoneSU24.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Origin") // Đặt tên bảng trong cơ sở dữ liệu
+@Table(name = "origin") // Đặt tên bảng trong cơ sở dữ liệu
 public class Origin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id_Origin")
+    @Column(name = "origin_id")
     private int originId;
     @ManyToOne
-    @JoinColumn(name = "Id_Product")
-    private Product Product;
-    @ManyToOne
-    @JoinColumn(name = "Id_User")
-    private User User;
-    @Column(name = "Updated_At")
-    private String updatedAt;
-    //    link URL đến cách giấy tờ liên quan
-    @Column(name = "Supporting_Documents", columnDefinition = "nvarchar(255)")
+    @JoinColumn(name = "manufacturer_id")
+    private User Manufacturer;
+    @Column(name = "created_at")
+    private long createdAt;
+    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
-    //    kế thừa, bán lại, tặng ....
-    @Column(name = "Acquisition_Method", columnDefinition = "nvarchar(255)")
-    private String acquisitionMethod;
-    @Column(name = "Note", columnDefinition = "nvarchar(255)")
-    private String note;
-    //   2 là cao nhất, số càng lớn thì sẽ đưa ra cảnh bảo
-    @Column(name = "Legit_Level")
-    private int legitLevel;
+    @Column(name = "description", columnDefinition = "nvarchar(255)")
+    private String description;
 
     public Origin(){
-
     }
 
-    public Origin(int originId, fpt.CapstoneSU24.model.Product product, fpt.CapstoneSU24.model.User user, String updatedAt, String supportingDocuments, String acquisitionMethod, String note, int legitLevel) {
+    public Origin(int originId, User manufacturer, long createdAt, String supportingDocuments, String description) {
         this.originId = originId;
-        Product = product;
-        User = user;
-        this.updatedAt = updatedAt;
+        Manufacturer = manufacturer;
+        this.createdAt = createdAt;
         this.supportingDocuments = supportingDocuments;
-        this.acquisitionMethod = acquisitionMethod;
-        this.note = note;
-        this.legitLevel = legitLevel;
+        this.description = description;
     }
 
     public int getOriginId() {
@@ -52,28 +38,20 @@ public class Origin {
         this.originId = originId;
     }
 
-    public fpt.CapstoneSU24.model.Product getProduct() {
-        return Product;
+    public User getManufacturer() {
+        return Manufacturer;
     }
 
-    public void setProduct(fpt.CapstoneSU24.model.Product product) {
-        Product = product;
+    public void setManufacturer(User manufacturer) {
+        Manufacturer = manufacturer;
     }
 
-    public fpt.CapstoneSU24.model.User getUser() {
-        return User;
+    public long getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUser(fpt.CapstoneSU24.model.User user) {
-        User = user;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getSupportingDocuments() {
@@ -84,27 +62,11 @@ public class Origin {
         this.supportingDocuments = supportingDocuments;
     }
 
-    public String getAcquisitionMethod() {
-        return acquisitionMethod;
+    public String getDescription() {
+        return description;
     }
 
-    public void setAcquisitionMethod(String acquisitionMethod) {
-        this.acquisitionMethod = acquisitionMethod;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public int getLegitLevel() {
-        return legitLevel;
-    }
-
-    public void setLegitLevel(int legitLevel) {
-        this.legitLevel = legitLevel;
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

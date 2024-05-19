@@ -3,13 +3,13 @@ package fpt.CapstoneSU24.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Role")
+@Table(name = "role")
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id_Role")
+    @Column(name = "role_id")
     private int roleId;
-    @Column(name = "Role_Name", columnDefinition = "nvarchar(50)")
+    @Column(name = "role_name", columnDefinition = "nvarchar(50)")
     private String roleName;
 
     public Role(){

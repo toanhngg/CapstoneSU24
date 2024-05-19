@@ -3,16 +3,16 @@ package fpt.CapstoneSU24.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Category")
+@Table(name = "category")
 public class Category {
 
     @Id
-    @Column(name = "Id_Category")
+    @Column(name = "category_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int categoryId;
-    @Column(name = "Name_Category", columnDefinition = "nvarchar(50)")
+    @Column(name = "category_name", columnDefinition = "nvarchar(50)")
     private String name;
-    @Column(name = "Description", columnDefinition = "nvarchar(255)")
+    @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
 
     public Category() {

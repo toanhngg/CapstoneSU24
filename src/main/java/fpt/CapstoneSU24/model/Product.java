@@ -5,47 +5,46 @@ import jakarta.persistence.*;
 import org.hibernate.Length;
 
 @Entity
-@Table(name = "Product")
+@Table(name = "product")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id_Product")
+    @Column(name = "product_id")
     private int productId;
-    @Column(name = "Product_Name", columnDefinition = "nvarchar(255)")
+    @Column(name = "product_name", columnDefinition = "nvarchar(255)")
     private String productName;
     //    người taọ ra sẳn phẩm này, người có role là manu
     @ManyToOne
-    @JoinColumn(name = "Id_Manufacturer")
-    private User Manufacturer;
-    @ManyToOne
-    @JoinColumn(name = "Id_Category")
+    @JoinColumn(name = "category_id")
     private Category category;
     @ManyToOne
-    @JoinColumn(name = "Id_Current_Owner")
+    @JoinColumn(name = "origin_id")
+    private Origin origin;
+    @ManyToOne
+    @JoinColumn(name = "currentOwner_id")
     private User currentOwner;
-    @Column(name = "Unit_Price")
+    @Column(name = "unit_price")
     private String unitPrice;
-    @Column(name = "Created_At")
-    private String createdAt;
-    @Column(name = "Dimensions")
+    @Column(name = "created_at")
+    private long createdAt;
+    @Column(name = "dimensions")
     private String dimensions;
-    @Column(name = "Material", columnDefinition = "nvarchar(50)")
+    @Column(name = "material")
     private String material;
-    @Column(name = "Supporting_Documents", columnDefinition = "nvarchar(255)")
+    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
-    //    có thể là đường dẫn đến file ảnh, file model 3d, QR...
-    @Column(name = "Product_Recognition", columnDefinition = "nvarchar(255)")
+    @Column(name = "product_recognition", columnDefinition = "nvarchar(255)")
     private String productRecognition;
 
     public Product(){
 
     }
 
-    public Product(int productId, String productName, User manufacturer, Category category, User currentOwner, String unitPrice, String createdAt, String dimensions, String material, String supportingDocuments, String productRecognition) {
+    public Product(int productId, String productName, Category category, Origin origin, User currentOwner, String unitPrice, long createdAt, String dimensions, String material, String supportingDocuments, String productRecognition) {
         this.productId = productId;
         this.productName = productName;
-        Manufacturer = manufacturer;
         this.category = category;
+        this.origin = origin;
         this.currentOwner = currentOwner;
         this.unitPrice = unitPrice;
         this.createdAt = createdAt;
@@ -71,20 +70,20 @@ public class Product {
         this.productName = productName;
     }
 
-    public User getManufacturer() {
-        return Manufacturer;
-    }
-
-    public void setManufacturer(User manufacturer) {
-        Manufacturer = manufacturer;
-    }
-
     public Category getCategory() {
         return category;
     }
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public Origin getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(Origin origin) {
+        this.origin = origin;
     }
 
     public User getCurrentOwner() {
@@ -103,11 +102,11 @@ public class Product {
         this.unitPrice = unitPrice;
     }
 
-    public String getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
 
