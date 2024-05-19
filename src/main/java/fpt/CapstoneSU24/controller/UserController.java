@@ -59,5 +59,20 @@ public class UserController {
 
         return ResponseEntity.ok(authenticatedUser);
     }
-
+    @PostMapping("/logout")
+    public ResponseEntity logout(HttpServletResponse response) {
+        try {
+            ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
+                    .secure(true).httpOnly(true)
+                    .path("/")
+                    .sameSite("None")
+                    .domain(null)
+                    .maxAge(0)
+                    .build();
+            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            return ResponseEntity.ok().body("LOGOUT SUCCESSFULLY!");
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(e);
+        }
+    }
 }
