@@ -1,17 +1,16 @@
 package fpt.CapstoneSU24.model;
 
 import jakarta.persistence.*;
-
 @Entity
-@Table(name = "product_log")
-public class ProductLog {
+@Table(name = "item_log")
+public class ItemLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_log_id")
+    @Column(name = "item_log_id")
     private int productLogId;
     @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "item_id")
+    private Item item;
     @Column(name = "address", columnDefinition = "nvarchar(255)")
     private String address;
     @ManyToOne
@@ -25,13 +24,10 @@ public class ProductLog {
     private String eventType;
     @Column(name = "status")
     private int status;
-    public ProductLog(){
 
-    }
-
-    public ProductLog(int productLogId, Product product, String address, Actor actor, long timeStamp, String description, String eventType, int status) {
+    public ItemLog(int productLogId, Item item, String address, Actor actor, long timeStamp, String description, String eventType, int status) {
         this.productLogId = productLogId;
-        this.product = product;
+        this.item = item;
         this.address = address;
         this.actor = actor;
         this.timeStamp = timeStamp;
@@ -48,12 +44,12 @@ public class ProductLog {
         this.productLogId = productLogId;
     }
 
-    public Product getProduct() {
-        return product;
+    public Item getItem() {
+        return item;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public String getAddress() {
