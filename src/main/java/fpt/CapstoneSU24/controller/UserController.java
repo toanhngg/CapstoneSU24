@@ -59,7 +59,6 @@ public class UserController {
 
         return ResponseEntity.ok(authenticatedUser);
     }
-    //dfdfdđ
     @PostMapping("/logout")
     public ResponseEntity logout(HttpServletResponse response) {
         try {
