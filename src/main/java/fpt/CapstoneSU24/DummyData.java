@@ -27,7 +27,7 @@
 //    @Autowired
 //    private ActorRepository actorRepository;
 //    @Autowired
-//    private ProductLogRepository productLogRepository;
+//    private ItemLogRepository productLogRepository;
 //
 //    public static void main(String[] args) {
 //        SpringApplication.run(DummyData.class, args);
