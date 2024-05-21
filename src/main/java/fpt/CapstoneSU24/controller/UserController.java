@@ -1,21 +1,17 @@
 package fpt.CapstoneSU24.controller;
 
+import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.UserRepository;
-import fpt.CapstoneSU24.service.AuthenticationService;
-import fpt.CapstoneSU24.service.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -28,6 +24,9 @@ import java.util.stream.Collectors;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JavaMailSender emailSender;
 
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser() {
@@ -88,6 +87,31 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/sendEmail")
+    public String sendEmail(@RequestParam String to, @RequestParam String subject, @RequestParam String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        emailSender.send(message);
+        return "Email sent successfully to " + to;
+    }
+
+    @PutMapping("/updateUserDescriptions")
+    public ResponseEntity<String> updateUserDescriptions(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
+        for (B03_GetDataGridDTO updateRequest : userUpdateRequests) {
+            Optional<User> optionalUser = userRepository.findById(updateRequest.getUserId());
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                user.setDescription(updateRequest.getDescription());
+                userRepository.save(user);
+            } else {
+                return ResponseEntity.badRequest().body("User with ID " + updateRequest.getUserId() + " not found.");
+            }
+        }
+        return ResponseEntity.ok("User descriptions updated successfully.");
     }
 
 }

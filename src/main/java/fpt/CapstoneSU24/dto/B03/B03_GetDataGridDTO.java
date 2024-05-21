@@ -1,4 +1,4 @@
-package fpt.CapstoneSU24.model;
+package fpt.CapstoneSU24.dto.B03;
 
 import java.util.Date;
 
