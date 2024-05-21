@@ -19,60 +19,11 @@ import java.util.List;
 @RequestMapping("/api/user")
 public class UserController {
     @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private AuthenticationService authenticationService;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
-
-        return ResponseEntity.ok(registeredUser);
-    }
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser() {
       List<User> userList = userRepository.findAll();
         return ResponseEntity.ok(userList);
-    }
-
-
-    @PostMapping("/login")
-    public ResponseEntity authenticate(@RequestBody String req, HttpServletResponse response) {
-        JSONObject jsonReq = new JSONObject(req);
-        String email = jsonReq.getString("email");
-        String password = jsonReq.getString("password");
-        User authenticatedUser = authenticationService.authenticate(email, password);
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-        ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken) // key & value
-                .secure(true).httpOnly(true)
-                .path("/")
-                .sameSite("None")
-                .domain(null)
-                .maxAge(-1)
-                .build();
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        System.out.println("jwt: " + jwtToken);
-
-        return ResponseEntity.ok(authenticatedUser);
-    }
-    @PostMapping("/logout")
-    public ResponseEntity logout(HttpServletResponse response) {
-        try {
-            ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
-                    .secure(true).httpOnly(true)
-                    .path("/")
-                    .sameSite("None")
-                    .domain(null)
-                    .maxAge(0)
-                    .build();
-            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            return ResponseEntity.ok().body("LOGOUT SUCCESSFULLY!");
-        } catch (Exception e) {
-            return ResponseEntity.ok().body(e);
-        }
     }
 }
