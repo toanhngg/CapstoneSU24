@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,7 +35,7 @@ public class UserController {
         return ResponseEntity.ok(userList);
     }
 
-    @GetMapping("/findByEmail")
+    @GetMapping("/getDataToTable")
     public ResponseEntity<List<B03_GetDataGridDTO>> getUsersByEmail(@RequestParam(value = "email", required = false) String email,
                                                                     @RequestParam(required = false) Integer roleId,
                                                                     @RequestParam(required = false) Integer status,
@@ -75,4 +76,18 @@ public class UserController {
         return ResponseEntity.ok(B03_GetDataGridDTOs);
 
     }
+
+    @PutMapping("/lockUser")
+    public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setStatus(status);
+            userRepository.save(user);
+            return ResponseEntity.ok("update " + userId + " updated to " + status + ".");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
