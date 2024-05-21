@@ -22,14 +22,15 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u " +
             "WHERE (:email IS NULL OR u.email = :email) " +
             "AND (:roleId IS NULL OR u.role.id = :roleId) " +
-            "AND (:isLock IS NULL OR u.isLock = :isLock) " +
-            "AND (:dateFrom IS NULL OR u`.createOn >= :dateFrom) " +
-            "AND (:dateTo IS NULL OR u.createOn <= :date`To)")
+            "AND (:status IS NULL OR u.status = :status) " +
+            "AND (:dateFrom IS NULL OR u.createOn >= :dateFrom) " +
+            "AND (:dateTo IS NULL OR u.createOn <= :dateTo)")
     Page<User> findByFilters(@Param("email") String email,
                              @Param("roleId") Integer roleId,
-                             @Param("isLock") Boolean isLock,
-                             @Param("dateFrom") long dateFrom,
-                             @Param("dateTo") long dateTo,
+                             @Param("status") Integer status,
+                             @Param("dateFrom") Long dateFrom,
+                             @Param("dateTo") Long dateTo,
                              Pageable pageable);
+
 }
 

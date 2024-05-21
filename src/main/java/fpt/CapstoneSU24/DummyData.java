@@ -85,8 +85,11 @@
 //                new ProductLog(0, productRepository.findOneByProductId(1), "FPTU", actorRepository.findOneByActorId(1), 0, "", "delivery", 0)
 //        ).collect(Collectors.toList());
 //        productLogRepository.saveAll(productLogList);
-//
-//        /*stop running*/
-//        System.exit(0);
-//    }
-//}
+
+/*stop running*//*
+        System.exit(0);
+    }
+            }*/
+
+/*ALTER DATABASE CapstoneSU24 SET SINGLE_USER WITH ROLLBACK IMMEDIATE;*/
+
