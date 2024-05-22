@@ -36,12 +36,13 @@ public class User implements UserDetails  {
     private long dateOfBirth;
     @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
-
+    @Column(name = "create_at")
+    private long createAt;
     public User(){
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, long dateOfBirth, String supportingDocuments) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, long dateOfBirth, String supportingDocuments, long createAt) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -54,6 +55,7 @@ public class User implements UserDetails  {
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
         this.supportingDocuments = supportingDocuments;
+        this.createAt = createAt;
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -179,5 +181,13 @@ public class User implements UserDetails  {
 
     public void setSupportingDocuments(String supportingDocuments) {
         this.supportingDocuments = supportingDocuments;
+    }
+
+    public long getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(long createAt) {
+        this.createAt = createAt;
     }
 }

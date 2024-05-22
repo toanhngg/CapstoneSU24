@@ -42,6 +42,7 @@ public class AuthenticationService {
         user.setPhone(input.getPhone());
         user.setRole(roleRepository.findOneByRoleId(input.getRole()));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
+        user.setCreateAt(System.currentTimeMillis());
         return userRepository.save(user);
     }
 
@@ -51,7 +52,6 @@ public class AuthenticationService {
                         email, password
                 )
         );
-        System.out.println("hihiihih");
         return userRepository.findByEmail(email)
                 .orElseThrow();
     }
