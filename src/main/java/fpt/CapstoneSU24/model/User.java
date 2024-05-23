@@ -36,6 +36,8 @@ public class User implements UserDetails  {
     private long dateOfBirth;
     @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
+    @Column(name = "create_at")
+    private long createAt;
     @Column(name = "status", columnDefinition = "int")
     private int status;
     @Column(name = "createOn")
@@ -45,7 +47,7 @@ public class User implements UserDetails  {
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, long dateOfBirth, String supportingDocuments, int status, long createOn) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, long dateOfBirth, String supportingDocuments) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -58,8 +60,6 @@ public class User implements UserDetails  {
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
         this.supportingDocuments = supportingDocuments;
-        this.status = status;
-        this.createOn = createOn;
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -185,21 +185,5 @@ public class User implements UserDetails  {
 
     public void setSupportingDocuments(String supportingDocuments) {
         this.supportingDocuments = supportingDocuments;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public long getCreateOn() {
-        return createOn;
-    }
-
-    public void setCreateOn(long createOn) {
-        this.createOn = createOn;
     }
 }

@@ -12,9 +12,8 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-    @ManyToOne
-    @JoinColumn(name = "currentOwner_id")
-    private User currentOwner;
+    @Column(name = "currentOwner")
+    private String currentOwner;
     @Column(name = "created_at")
     private long createdAt;
     @Column(name = "product_recognition", columnDefinition = "nvarchar(255)")
@@ -22,7 +21,7 @@ public class Item {
     @Column(name = "status")
     private int status;
 
-    public Item(int itemId, Product product, User currentOwner, long createdAt, String productRecognition, int status) {
+    public Item(int itemId, Product product, String currentOwner, long createdAt, String productRecognition, int status) {
         this.itemId = itemId;
         this.product = product;
         this.currentOwner = currentOwner;
@@ -30,7 +29,6 @@ public class Item {
         this.productRecognition = productRecognition;
         this.status = status;
     }
-
     public int getItemId() {
         return itemId;
     }
@@ -47,11 +45,11 @@ public class Item {
         this.product = product;
     }
 
-    public User getCurrentOwner() {
+    public String getCurrentOwner() {
         return currentOwner;
     }
 
-    public void setCurrentOwner(User currentOwner) {
+    public void setCurrentOwner(String currentOwner) {
         this.currentOwner = currentOwner;
     }
 
