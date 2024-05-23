@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
+import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +31,9 @@ import java.util.stream.Collectors;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JavaMailSender emailSender;
 
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser() {
@@ -114,6 +120,17 @@ public class UserController {
         }
         return ResponseEntity.ok("User descriptions updated successfully.");
     }
+    @GetMapping("/getRoleByUserId")
+    public ResponseEntity<Role>  getAllUser(@RequestParam int userId) {
+        User user = userRepository.findOneByUserId(userId);
+        if (user != null) {
+            Role role = user.getRole();
+            return ResponseEntity.ok(role);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     @GetMapping("/me")
     public ResponseEntity<User> authenticatedUser() {
