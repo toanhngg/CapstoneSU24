@@ -50,7 +50,7 @@ public class ProductController {
             String dimensions = jsonReq.getString("dimensions");
             String material = jsonReq.getString("material");
             String supportingDocuments = jsonReq.getString("supportingDocuments");
-            Product product = new Product(0, productName, manufacturer, category, origin, unitPrice, dimensions, material, supportingDocuments, System.currentTimeMillis());
+            Product product = new Product(0, productName, manufacturer, category, origin, unitPrice, dimensions, material, supportingDocuments, System.currentTimeMillis(),null);
             productRepository.save(product);
             return ResponseEntity.status(200).body("successfully");
         }else {

@@ -32,8 +32,11 @@ public class Product {
     private String supportingDocuments;
     @Column(name = "create_at")
     private long createAt;
+    @ManyToOne
+    @JoinColumn(name = "certificate_id")
+    private Certificate certificate;
 
-    public Product(int productId, String productName, User manufacturer, Category category, Origin origin, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt) {
+    public Product(int productId, String productName, User manufacturer, Category category, Origin origin, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt, Certificate certificate) {
         this.productId = productId;
         this.productName = productName;
         this.manufacturer = manufacturer;
@@ -44,6 +47,7 @@ public class Product {
         this.material = material;
         this.supportingDocuments = supportingDocuments;
         this.createAt = createAt;
+        this.certificate = certificate;
     }
 
     public int getProductId() {
@@ -124,5 +128,13 @@ public class Product {
 
     public void setCreateAt(long createAt) {
         this.createAt = createAt;
+    }
+
+    public Certificate getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(Certificate certificate) {
+        this.certificate = certificate;
     }
 }

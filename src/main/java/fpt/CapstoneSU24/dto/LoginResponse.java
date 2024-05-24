@@ -1,4 +1,4 @@
-package fpt.CapstoneSU24.model;
+package fpt.CapstoneSU24.dto;
 
 public class LoginResponse {
     private String token;

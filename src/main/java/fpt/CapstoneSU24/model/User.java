@@ -9,8 +9,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "[user]")
-public class User implements UserDetails  {
-    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
+public class User implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int userId;
     @Column(name = "email")
@@ -26,10 +27,6 @@ public class User implements UserDetails  {
     private String lastName;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
-    @Column(name = "address", columnDefinition = "nvarchar(255)")
-    private String address;
-    @Column(name = "country", columnDefinition = "nvarchar(50)")
-    private String country;
     @Column(name = "phone")
     private String phone;
     @Column(name = "date_of_birth")
@@ -38,11 +35,17 @@ public class User implements UserDetails  {
     private String supportingDocuments;
     @Column(name = "create_at")
     private long createAt;
-    public User(){
+    @Column(name = "status")
+    private int status;
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
+
+    public User() {
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String address, String country, String phone, long dateOfBirth, String supportingDocuments, long createAt) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long dateOfBirth, String supportingDocuments, long createAt, int status, Location location) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -50,13 +53,14 @@ public class User implements UserDetails  {
         this.firstName = firstName;
         this.lastName = lastName;
         this.description = description;
-        this.address = address;
-        this.country = country;
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
         this.supportingDocuments = supportingDocuments;
         this.createAt = createAt;
+        this.status = status;
+        this.location = location;
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
@@ -143,22 +147,6 @@ public class User implements UserDetails  {
         this.description = description;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -189,5 +177,21 @@ public class User implements UserDetails  {
 
     public void setCreateAt(long createAt) {
         this.createAt = createAt;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 }
