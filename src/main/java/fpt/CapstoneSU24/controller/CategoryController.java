@@ -28,8 +28,10 @@ public class CategoryController {
     private UserRepository userRepository;
     @Autowired
     private JwtService jwtService;
+
     @GetMapping("/findAll")
     public ResponseEntity findAll() {
+
         List<Category> categoryList = categoryRepository.findAll();
         return ResponseEntity.ok(categoryList);
     }

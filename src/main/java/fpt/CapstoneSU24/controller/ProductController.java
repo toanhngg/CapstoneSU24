@@ -10,6 +10,7 @@ import fpt.CapstoneSU24.repository.ProductRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -50,11 +51,22 @@ public class ProductController {
             String dimensions = jsonReq.getString("dimensions");
             String material = jsonReq.getString("material");
             String supportingDocuments = jsonReq.getString("supportingDocuments");
-            Product product = new Product(0, productName, manufacturer, category, origin, unitPrice, dimensions, material, supportingDocuments, System.currentTimeMillis(),null);
+            Product product = new Product(0, productName, manufacturer, category, origin, unitPrice, dimensions, material, supportingDocuments, System.currentTimeMillis(),10, 5,null);
             productRepository.save(product);
             return ResponseEntity.status(200).body("successfully");
         }else {
            throw new AccessDeniedException("");
+        }
+    }
+    @GetMapping("/findAllProductByManufacturerId")
+    public ResponseEntity findAllProductByManufacturerId(HttpServletResponse response) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if(currentUser.getRole().getRoleId() == 2){
+          List<Product> productList = productRepository.findAllByManufacturerId(currentUser.getUserId());
+            return ResponseEntity.status(200).body(productList);
+        }else {
+            throw new AccessDeniedException("");
         }
     }
 }
