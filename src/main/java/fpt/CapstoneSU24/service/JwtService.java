@@ -44,9 +44,6 @@ public class JwtService {
         if (authTokens != null){
             authTokens.setJwtHash(token);
             authTokensRepository.save(authTokens);
-        }else{
-            AuthTokens authTokens1 = new AuthTokens(0, userAuth,token);
-            authTokensRepository.save(authTokens1);
         }
         return generateToken(new HashMap<>(), userDetails);
     }

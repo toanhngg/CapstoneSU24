@@ -36,6 +36,7 @@ public class AuthenticationController {
         if(userRepository.findOneByEmail(registerUserDto.getEmail()) == null){
             try {
                 User registeredUser = authenticationService.signup(registerUserDto);
+                authTokensRepository.save(new AuthTokens(0,userRepository.findOneByEmail(registerUserDto.getEmail()),null));
                 return ResponseEntity.ok(registeredUser);
             }catch (Exception e){
                 return ResponseEntity.ok().body(e);
@@ -64,25 +65,31 @@ public class AuthenticationController {
     @PostMapping("/logout")
     public ResponseEntity logout(HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-        AuthTokens authTokens = authTokensRepository.findOneByUserAuth(currentUser);
-        if (authTokens != null) {
-            authTokens.setJwtHash(null);
-            authTokensRepository.save(authTokens);
-        }
         try {
-            ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
-                    .secure(true).httpOnly(true)
-                    .path("/")
-                    .sameSite("None")
-                    .domain(null)
-                    .maxAge(0)
-                    .build();
-            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            return ResponseEntity.status(200).body("logout successfully");
+            User currentUser = (User) authentication.getPrincipal();
+            if (currentUser != null) {
+                AuthTokens authTokens = authTokensRepository.findOneByUserAuth(currentUser);
+                if (authTokens != null) {
+                    authTokens.setJwtHash(null);
+                    authTokensRepository.save(authTokens);
+                }
+                try {
+                    ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
+                            .secure(true).httpOnly(true)
+                            .path("/")
+                            .sameSite("None")
+                            .domain(null)
+                            .maxAge(0)
+                            .build();
+                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                    return ResponseEntity.status(200).body("logout successfully");
+                } catch (Exception e) {
+                    return ResponseEntity.ok().body(e);
+                }
+            }
         } catch (Exception e) {
-            return ResponseEntity.ok().body(e);
+            return ResponseEntity.status(200).body("logout successfully");
         }
+        return ResponseEntity.status(200).body("logout successfully");
     }
-
 }

@@ -47,17 +47,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         final String requestTokenHeader = request.getHeader("Cookie");
         String username = null;
         String jwtToken = null;
+        String pevJwtToken = null;
+        AuthTokens authTokens = null;
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("jwt=")) {
             jwtToken = requestTokenHeader.substring(4);
-
             try {
                 username = jwtService.extractUsername(jwtToken);
-                User currentUser = userRepository.findOneByEmail(username);
 //                check matching in database
-                AuthTokens authTokens = authTokensRepository.findOneByUserAuth(currentUser);
-                if(authTokens.getJwtHash().equals(jwtToken)){
+                User currentUser = userRepository.findOneByEmail(username);
+                authTokens = authTokensRepository.findOneByUserAuth(currentUser);
+                pevJwtToken = authTokens.getJwtHash();
+                if(jwtToken.equals(pevJwtToken)){
                     //generate new token and save in database
                     String newJwtToken = jwtService.generateToken(currentUser, currentUser);
                     //save in cookie
@@ -71,8 +73,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 }else {
                     logger.warn("JWT Token does not matching");
+                    //set all session is null
+                    authTokens.setJwtHash(null);
+                    authTokensRepository.save(authTokens);
                 }
-
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
@@ -84,7 +88,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
         // Once we get the token validate it.
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null && jwtToken.equals(pevJwtToken)) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             // if token is valid configure Spring Security to manually set
             // authentication
