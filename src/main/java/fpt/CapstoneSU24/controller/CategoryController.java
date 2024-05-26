@@ -28,15 +28,10 @@ public class CategoryController {
     private UserRepository userRepository;
     @Autowired
     private JwtService jwtService;
+
     @GetMapping("/findAll")
-    public ResponseEntity findAll(HttpServletRequest request) {
-            final String requestTokenHeader = request.getHeader("Cookie");
-            String username = null;
-            String jwtToken = null;
-            if (requestTokenHeader != null && requestTokenHeader.startsWith("jwt=")) {
-                jwtToken = requestTokenHeader.substring(4);
-            }
-        System.out.println(jwtService.extractUsername(jwtToken)+"hihi");
+    public ResponseEntity findAll() {
+
         List<Category> categoryList = categoryRepository.findAll();
         return ResponseEntity.ok(categoryList);
     }

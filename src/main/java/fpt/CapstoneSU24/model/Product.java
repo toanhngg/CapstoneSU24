@@ -26,14 +26,23 @@ public class Product {
     private String unitPrice;
     @Column(name = "dimensions")
     private String dimensions;
-    @Column(name = "material")
+    @Column(name = "material", columnDefinition = "nvarchar(50)")
     private String material;
     @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
     private String supportingDocuments;
     @Column(name = "create_at")
     private long createAt;
+    @Column(name = "weight")
+    private float weight;
+    @Column(name = "warranty")
+    private int warranty;
+    @ManyToOne
+    @JoinColumn(name = "certificate_id")
+    private Certificate certificate;
 
-    public Product(int productId, String productName, User manufacturer, Category category, Origin origin, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt) {
+    public Product(){}
+
+    public Product(int productId, String productName, User manufacturer, Category category, Origin origin, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt, float weight, int warranty, Certificate certificate) {
         this.productId = productId;
         this.productName = productName;
         this.manufacturer = manufacturer;
@@ -44,6 +53,9 @@ public class Product {
         this.material = material;
         this.supportingDocuments = supportingDocuments;
         this.createAt = createAt;
+        this.weight = weight;
+        this.warranty = warranty;
+        this.certificate = certificate;
     }
 
     public int getProductId() {
@@ -124,5 +136,29 @@ public class Product {
 
     public void setCreateAt(long createAt) {
         this.createAt = createAt;
+    }
+
+    public Certificate getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(Certificate certificate) {
+        this.certificate = certificate;
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+
+    public int getWarranty() {
+        return warranty;
+    }
+
+    public void setWarranty(int warranty) {
+        this.warranty = warranty;
     }
 }
