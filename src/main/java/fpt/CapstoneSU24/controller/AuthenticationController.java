@@ -42,6 +42,7 @@ public class AuthenticationController {
 
         User authenticatedUser = authenticationService.authenticate(email, password);
         String jwtToken = jwtService.generateToken(authenticatedUser);
+
         ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken) // key & value
                 .secure(true).httpOnly(true)
                 .path("/")
