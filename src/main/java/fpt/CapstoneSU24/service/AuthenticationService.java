@@ -34,14 +34,13 @@ public class AuthenticationService {
     public User signup(RegisterUserDto input) {
         User user = new User();
         user.setEmail(input.getEmail());
-        user.setAddress(input.getAddress());
         user.setFirstName(input.getFirstName());
         user.setLastName(input.getLastName());
         user.setDateOfBirth(input.getDateOfBirth());
-        user.setCountry(input.getCountry());
         user.setPhone(input.getPhone());
         user.setRole(roleRepository.findOneByRoleId(input.getRole()));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
+        user.setCreateAt(System.currentTimeMillis());
         return userRepository.save(user);
     }
 
@@ -51,7 +50,6 @@ public class AuthenticationService {
                         email, password
                 )
         );
-        System.out.println("hihiihih");
         return userRepository.findByEmail(email)
                 .orElseThrow();
     }

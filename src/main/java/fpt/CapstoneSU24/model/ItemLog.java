@@ -14,22 +14,26 @@ public class ItemLog {
     @Column(name = "address", columnDefinition = "nvarchar(255)")
     private String address;
     @ManyToOne
-    @JoinColumn(name = "actor_Id")
+    @JoinColumn(name = "actor_id")
     private Actor actor;
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
     @Column(name = "timestamp")
     private long timeStamp;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
-    @Column(name = "event_Type", columnDefinition = "nvarchar(50)")
+    @Column(name = "event_type", columnDefinition = "nvarchar(50)")
     private String eventType;
     @Column(name = "status")
     private int status;
 
-    public ItemLog(int productLogId, Item item, String address, Actor actor, long timeStamp, String description, String eventType, int status) {
+    public ItemLog(int productLogId, Item item, String address, Actor actor, Location location, long timeStamp, String description, String eventType, int status) {
         this.productLogId = productLogId;
         this.item = item;
         this.address = address;
         this.actor = actor;
+        this.location = location;
         this.timeStamp = timeStamp;
         this.description = description;
         this.eventType = eventType;
@@ -73,6 +77,14 @@ public class ItemLog {
 
     public void setActor(Actor actor) {
         this.actor = actor;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public long getTimeStamp() {
