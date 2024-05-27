@@ -23,8 +23,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "WHERE (:email IS NULL OR u.email = :email) " +
             "AND (:roleId IS NULL OR u.role.id = :roleId) " +
             "AND (:status IS NULL OR u.status = :status) " +
-            "AND (:dateFrom IS NULL OR u.createOn >= :dateFrom) " +
-            "AND (:dateTo IS NULL OR u.createOn <= :dateTo)")
+            "AND (:dateFrom IS NULL OR u.createAt >= :dateFrom) " +
+            "AND (:dateTo IS NULL OR u.createAt <= :dateTo)")
     Page<User> findByFilters(@Param("email") String email,
                              @Param("roleId") Integer roleId,
                              @Param("status") Integer status,

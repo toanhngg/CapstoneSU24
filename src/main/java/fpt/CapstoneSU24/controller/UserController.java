@@ -1,10 +1,16 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
+import fpt.CapstoneSU24.dto.B03.B03_MailSend;
+import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
+import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.JwtService;
+import fpt.CapstoneSU24.util.Const;
+import fpt.CapstoneSU24.util.DataUtils;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,7 +37,10 @@ public class UserController {
     private UserRepository userRepository;
 
     @Autowired
-    private JavaMailSender emailSender;
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private EmailService mailService;
 
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser() {
@@ -47,7 +54,7 @@ public class UserController {
                                                                     @RequestParam(required = false) Integer status,
                                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateFrom,
                                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateTo,
-                                                                    @RequestParam(required = false, defaultValue = "createOn") String orderBy,
+                                                                    @RequestParam(required = false, defaultValue = "createAt") String orderBy,
                                                                     @RequestParam(required = false, defaultValue = "false") Boolean isAsc,
                                                                     @RequestParam(required = false, defaultValue = "0") int page,
                                                                     @RequestParam(required = false, defaultValue = "10") int size) {
@@ -69,12 +76,10 @@ public class UserController {
             B03_GetDataGridDTO.setRoleName(user.getRole().getRoleName());
             B03_GetDataGridDTO.setName(user.getFirstName() + " " + user.getLastName());
             B03_GetDataGridDTO.setDescription(user.getDescription());
-            B03_GetDataGridDTO.setAddress(user.getAddress());
-            B03_GetDataGridDTO.setCountry(user.getCountry());
             B03_GetDataGridDTO.setPhone(user.getPhone());
             B03_GetDataGridDTO.setDateOfBirth(new Date(user.getDateOfBirth() * 1000L));
             B03_GetDataGridDTO.setStatus(user.getStatus());
-            B03_GetDataGridDTO.setCreateOn(new Date(user.getCreateOn() * 1000L));
+            B03_GetDataGridDTO.setCreateOn(new Date(user.getCreateAt() * 1000L));
             B03_GetDataGridDTO.setUsername(user.getUsername());
             return B03_GetDataGridDTO;
         }).collect(Collectors.toList());
@@ -96,14 +101,35 @@ public class UserController {
         }
     }
 
+
     @PostMapping("/sendEmail")
-    public String sendEmail(@RequestParam String to, @RequestParam String subject, @RequestParam String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        emailSender.send(message);
-        return "Email sent successfully to " + to;
+    public String sendEmail(@RequestParam Boolean isLock,
+                            @RequestParam int userId) {
+        try {
+            String subject = isLock ? Const.SEND_MAIL_SUBJECTLockUser.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECTUnLockUser.SUBJECT_UNLOCKUSER ;
+
+            String template = isLock ? Const.TEMPLATE_FILE_NAME_LOCKUSER.LOCKUSER_DETAIL : Const.TEMPLATE_FILE_NAME_UNLOCKUSER.UNLOCKUSER_DETAIL;
+
+            User user = new User();
+            user = userRepository.findOneByUserId(userId);
+            DataMailDTO dataMail = new DataMailDTO();
+
+            dataMail.setTo(user.getEmail());
+
+            dataMail.setSubject(subject);
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("name", user.getFirstName() + user.getLastName());
+            props.put("username", user.getUsername());
+
+            dataMail.setProps(props);
+
+            mailService.sendHtmlMail(dataMail, template);
+            return "";
+        } catch (MessagingException exp) {
+            exp.printStackTrace();
+        }
+        return "";
     }
 
     @PutMapping("/updateUserDescriptions")

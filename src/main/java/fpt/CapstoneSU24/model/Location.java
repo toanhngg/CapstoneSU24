@@ -18,6 +18,9 @@ public class Location {
     @Column(name = "coordinates", columnDefinition = "nvarchar(50)")
     private String coordinates;
 
+    public Location() {
+    }
+
     public Location(int locationId, String address, String city, String country, String coordinates) {
         this.locationId = locationId;
         this.address = address;
