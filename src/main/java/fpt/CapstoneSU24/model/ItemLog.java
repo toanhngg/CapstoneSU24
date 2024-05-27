@@ -40,6 +40,13 @@ public class ItemLog {
         this.status = status;
     }
 
+    public ItemLog() {
+
+    }
+
+//    public ItemLog(int productLogId, Product oneByProductId, String fptu, Actor oneByActorId, int timeStamp, String description, String delivery, int status) {
+//    }
+
     public int getProductLogId() {
         return productLogId;
     }
