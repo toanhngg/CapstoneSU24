@@ -37,12 +37,12 @@ public class AuthenticationController {
             try {
                 User registeredUser = authenticationService.signup(registerUserDto);
                 authTokensRepository.save(new AuthTokens(0,userRepository.findOneByEmail(registerUserDto.getEmail()),null));
-                return ResponseEntity.ok(registeredUser);
+                return ResponseEntity.status(200).body("create successfully");
             }catch (Exception e){
                 return ResponseEntity.ok().body(e);
             }
         }
-        return  ResponseEntity.ok().body("your email already exists");
+        return  ResponseEntity.status(500).body("your email already exists");
     }
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody String req, HttpServletResponse response) {
