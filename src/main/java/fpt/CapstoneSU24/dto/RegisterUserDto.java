@@ -12,17 +12,19 @@ public class RegisterUserDto {
     private String lastName;
     private int role;
     private String address;
+    private String city;
     private String country;
     private String phone;
     private long dateOfBirth;
 
-    public RegisterUserDto(String email, String password, String firstName, String lastName, int role, String address, String country, String phone, long dateOfBirth) {
+    public RegisterUserDto(String email, String password, String firstName, String lastName, int role, String address, String city, String country, String phone, long dateOfBirth) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
         this.address = address;
+        this.city = city;
         this.country = country;
         this.phone = phone;
         this.dateOfBirth = dateOfBirth;
@@ -98,5 +100,13 @@ public class RegisterUserDto {
 
     public void setDateOfBirth(long dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 }

@@ -2,7 +2,9 @@ package fpt.CapstoneSU24.service;
 
 
 import fpt.CapstoneSU24.dto.RegisterUserDto;
+import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.repository.LocationRepository;
 import fpt.CapstoneSU24.repository.RoleRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ public class AuthenticationService {
     @Autowired
     RoleRepository roleRepository;
 
+    @Autowired
+    LocationRepository locationRepository;
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
@@ -41,6 +45,10 @@ public class AuthenticationService {
         user.setRole(roleRepository.findOneByRoleId(input.getRole()));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setCreateAt(System.currentTimeMillis());
+        user.setCreateAt(System.currentTimeMillis());
+        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(), "");
+        locationRepository.save(location);
+        user.setLocation(location);
         return userRepository.save(user);
     }
 
