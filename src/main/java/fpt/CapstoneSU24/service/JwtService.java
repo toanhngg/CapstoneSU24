@@ -40,7 +40,7 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails, User userAuth) {
         String token =  generateToken(new HashMap<>(), userDetails);
-        AuthToken authToken = authTokenRepository.findOneByUserAuth(userAuth);
+        AuthToken authToken = authTokenRepository.findOneById(userAuth.getUserId());
         if (authToken != null){
             authToken.setJwtHash(token);
             authTokenRepository.save(authToken);

@@ -68,7 +68,7 @@ public class AuthenticationController {
         try {
             User currentUser = (User) authentication.getPrincipal();
             if (currentUser != null) {
-                AuthToken authToken = authTokenRepository.findOneByUserAuth(currentUser);
+                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
                 if (authToken != null) {
                     authToken.setJwtHash(null);
                     authTokenRepository.save(authToken);

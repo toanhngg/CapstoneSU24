@@ -3,12 +3,12 @@ package fpt.CapstoneSU24.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "image") // Đặt tên bảng trong cơ sở dữ liệu
-public class Image {
+@Table(name = "image_product") // Đặt tên bảng trong cơ sở dữ liệu
+public class ImageProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "image_id")
-    private int imageId;
+    @Column(name = "image_product_id")
+    private int imageProductId;
 
     @Column(name = "image_name")
     private String imageName;
@@ -18,24 +18,23 @@ public class Image {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-    @ManyToOne
-    @JoinColumn(name = "item_log_id")
-    private ItemLog itemLog;
+    public ImageProduct(){
 
-    public Image(int imageId, String imageName, byte[] image, Product product, ItemLog itemLog) {
-        this.imageId = imageId;
+    }
+
+    public ImageProduct(int imageProductId, String imageName, byte[] image, Product product) {
+        this.imageProductId = imageProductId;
         this.imageName = imageName;
         this.image = image;
         this.product = product;
-        this.itemLog = itemLog;
     }
 
-    public int getImageId() {
-        return imageId;
+    public int getImageProductId() {
+        return imageProductId;
     }
 
-    public void setImageId(int imageId) {
-        this.imageId = imageId;
+    public void setImageProductId(int imageProductId) {
+        this.imageProductId = imageProductId;
     }
 
     public String getImageName() {
@@ -60,14 +59,6 @@ public class Image {
 
     public void setProduct(Product product) {
         this.product = product;
-    }
-
-    public ItemLog getItemLog() {
-        return itemLog;
-    }
-
-    public void setItemLog(ItemLog itemLog) {
-        this.itemLog = itemLog;
     }
 }
 

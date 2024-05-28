@@ -27,8 +27,11 @@ public class ItemLog {
     private String eventType;
     @Column(name = "status")
     private int status;
+    @OneToOne(mappedBy = "itemLog", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private ImageItemLog imageItemLog;
 
-    public ItemLog(int productLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status) {
+    public ItemLog(int productLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status, ImageItemLog imageItemLog) {
         this.productLogId = productLogId;
         this.item = item;
         this.address = address;
@@ -38,6 +41,15 @@ public class ItemLog {
         this.description = description;
         this.eventType = eventType;
         this.status = status;
+        this.imageItemLog = imageItemLog;
+    }
+
+    public ImageItemLog getImageItemLog() {
+        return imageItemLog;
+    }
+
+    public void setImageItemLog(ImageItemLog imageItemLog) {
+        this.imageItemLog = imageItemLog;
     }
 
     public int getProductLogId() {
