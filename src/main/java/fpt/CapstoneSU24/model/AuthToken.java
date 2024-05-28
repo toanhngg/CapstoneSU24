@@ -4,29 +4,30 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "auth_tokens")
-public class AuthTokens {
+public class AuthToken {
     @Id
-    @Column(name = "auth_tokens_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int authTokenId;
-    @ManyToOne
+    @Column(name = "user_id")
+    private int id;
+    @OneToOne
+    @MapsId
     @JoinColumn(name = "user_id")
     private User userAuth;
     @Column(name = "jwt_hash")
     private String jwtHash;
-public AuthTokens(){}
-    public AuthTokens(int authTokenId, User userAuth, String jwtHash) {
-        this.authTokenId = authTokenId;
+    public AuthToken(){}
+
+    public AuthToken(int id, User userAuth, String jwtHash) {
+        this.id = id;
         this.userAuth = userAuth;
         this.jwtHash = jwtHash;
     }
 
-    public int getAuthTokenId() {
-        return authTokenId;
+    public int getId() {
+        return id;
     }
 
-    public void setAuthTokenId(int authTokenId) {
-        this.authTokenId = authTokenId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public User getUserAuth() {
