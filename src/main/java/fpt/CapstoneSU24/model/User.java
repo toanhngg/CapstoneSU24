@@ -37,11 +37,14 @@ public class User implements UserDetails {
     @JoinColumn(name = "location_id")
     private Location location;
 
+    @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private AuthToken authToken;
     public User() {
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location, AuthToken authToken) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -53,6 +56,7 @@ public class User implements UserDetails {
         this.createAt = createAt;
         this.status = status;
         this.location = location;
+        this.authToken = authToken;
     }
 
     @Override
@@ -171,5 +175,13 @@ public class User implements UserDetails {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public AuthToken getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(AuthToken authToken) {
+        this.authToken = authToken;
     }
 }
