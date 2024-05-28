@@ -40,7 +40,6 @@ public class AuthenticationService {
         user.setEmail(input.getEmail());
         user.setFirstName(input.getFirstName());
         user.setLastName(input.getLastName());
-        user.setDateOfBirth(input.getDateOfBirth());
         user.setPhone(input.getPhone());
         user.setRole(roleRepository.findOneByRoleId(input.getRole()));
         user.setPassword(passwordEncoder.encode(input.getPassword()));

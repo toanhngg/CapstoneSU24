@@ -19,9 +19,6 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    @ManyToOne
-    @JoinColumn(name = "origin_id")
-    private Origin origin;
     @Column(name = "unit_price")
     private String unitPrice;
     @Column(name = "dimensions")
@@ -42,12 +39,11 @@ public class Product {
 
     public Product(){}
 
-    public Product(int productId, String productName, User manufacturer, Category category, Origin origin, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt, float weight, int warranty, Certificate certificate) {
+    public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt, float weight, int warranty, Certificate certificate) {
         this.productId = productId;
         this.productName = productName;
         this.manufacturer = manufacturer;
         this.category = category;
-        this.origin = origin;
         this.unitPrice = unitPrice;
         this.dimensions = dimensions;
         this.material = material;
@@ -88,14 +84,6 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
-    }
-
-    public Origin getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(Origin origin) {
-        this.origin = origin;
     }
 
     public String getUnitPrice() {

@@ -1,13 +1,7 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.model.Category;
-import fpt.CapstoneSU24.model.Origin;
-import fpt.CapstoneSU24.model.Product;
-import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.repository.CategoryRepository;
-import fpt.CapstoneSU24.repository.OriginRepository;
-import fpt.CapstoneSU24.repository.ProductRepository;
-import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.model.*;
+import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,6 +28,8 @@ public class ProductController {
     @Autowired
     OriginRepository originRepository;
     @Autowired
+    LocationRepository locationRepository;
+    @Autowired
     JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/addProduct")
@@ -42,8 +38,10 @@ public class ProductController {
         User currentUser = (User) authentication.getPrincipal();
         JSONObject jsonReq = new JSONObject(req);
         if(currentUser.getRole().getRoleId() == 2){
-            Origin origin = new Origin(0, userRepository.findOneByUserId(currentUser.getUserId()), System.currentTimeMillis(), "", "");
-            originRepository.save(origin);
+            Location location = new Location(0,jsonReq.getString("address"), jsonReq.getString("city"), jsonReq.getString("country"),"");
+            locationRepository.save(location);
+//            Origin origin = new Origin(0, System.currentTimeMillis(), currentUser.getEmail(), currentUser.getPhone(), currentUser.getLastName()+" "+currentUser.getFirstName(),"","",location);
+//            originRepository.save(origin);
             String productName = jsonReq.getString("productName");
             User manufacturer = userRepository.findOneByUserId(currentUser.getUserId());
             Category category = categoryRepository.findOneByCategoryId(jsonReq.getInt("categoryId"));
@@ -51,7 +49,7 @@ public class ProductController {
             String dimensions = jsonReq.getString("dimensions");
             String material = jsonReq.getString("material");
             String supportingDocuments = jsonReq.getString("supportingDocuments");
-            Product product = new Product(0, productName, manufacturer, category, origin, unitPrice, dimensions, material, supportingDocuments, System.currentTimeMillis(),10, 5,null);
+            Product product = new Product(0, productName, manufacturer, category, unitPrice, dimensions, material, supportingDocuments, System.currentTimeMillis(),10, 5,null);
             productRepository.save(product);
             return ResponseEntity.status(200).body("successfully");
         }else {

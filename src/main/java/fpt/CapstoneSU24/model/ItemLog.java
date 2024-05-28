@@ -14,8 +14,8 @@ public class ItemLog {
     @Column(name = "address", columnDefinition = "nvarchar(255)")
     private String address;
     @ManyToOne
-    @JoinColumn(name = "actor_id")
-    private Actor actor;
+    @JoinColumn(name = "party_id")
+    private Party party;
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
@@ -28,11 +28,11 @@ public class ItemLog {
     @Column(name = "status")
     private int status;
 
-    public ItemLog(int productLogId, Item item, String address, Actor actor, Location location, long timeStamp, String description, String eventType, int status) {
+    public ItemLog(int productLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status) {
         this.productLogId = productLogId;
         this.item = item;
         this.address = address;
-        this.actor = actor;
+        this.party = party;
         this.location = location;
         this.timeStamp = timeStamp;
         this.description = description;
@@ -71,12 +71,12 @@ public class ItemLog {
         this.address = address;
     }
 
-    public Actor getActor() {
-        return actor;
+    public Party getParty() {
+        return party;
     }
 
-    public void setActor(Actor actor) {
-        this.actor = actor;
+    public void setParty(Party party) {
+        this.party = party;
     }
 
     public Location getLocation() {

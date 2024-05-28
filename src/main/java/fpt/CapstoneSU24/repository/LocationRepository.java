@@ -1,6 +1,5 @@
 package fpt.CapstoneSU24.repository;
 
-import fpt.CapstoneSU24.model.Actor;
 import fpt.CapstoneSU24.model.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 
