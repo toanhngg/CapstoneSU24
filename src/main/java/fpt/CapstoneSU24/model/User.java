@@ -29,10 +29,6 @@ public class User implements UserDetails {
     private String description;
     @Column(name = "phone")
     private String phone;
-    @Column(name = "date_of_birth")
-    private long dateOfBirth;
-    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
-    private String supportingDocuments;
     @Column(name = "create_at")
     private long createAt;
     @Column(name = "status")
@@ -45,7 +41,7 @@ public class User implements UserDetails {
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long dateOfBirth, String supportingDocuments, long createAt, int status, Location location) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -54,8 +50,6 @@ public class User implements UserDetails {
         this.lastName = lastName;
         this.description = description;
         this.phone = phone;
-        this.dateOfBirth = dateOfBirth;
-        this.supportingDocuments = supportingDocuments;
         this.createAt = createAt;
         this.status = status;
         this.location = location;
@@ -153,22 +147,6 @@ public class User implements UserDetails {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public long getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(long dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getSupportingDocuments() {
-        return supportingDocuments;
-    }
-
-    public void setSupportingDocuments(String supportingDocuments) {
-        this.supportingDocuments = supportingDocuments;
     }
 
     public long getCreateAt() {

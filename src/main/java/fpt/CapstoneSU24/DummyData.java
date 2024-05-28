@@ -23,10 +23,6 @@
 //    @Autowired
 //    private RoleRepository roleRepository;
 //    @Autowired
-//    private ProductRepository productRepository;
-//    @Autowired
-//    private ActorRepository actorRepository;
-//    @Autowired
 //    private ItemLogRepository productLogRepository;
 //
 //    public static void main(String[] args) {
