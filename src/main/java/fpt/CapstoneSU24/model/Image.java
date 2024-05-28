@@ -13,7 +13,7 @@ public class Image {
     @Column(name = "image_name")
     private String imageName;
 
-    @Column(name = "image")
+    @Column(name = "image", columnDefinition = "varbinary(MAX)")
     private byte[] image;
     @ManyToOne
     @JoinColumn(name = "product_id")

@@ -3,7 +3,7 @@ package fpt.CapstoneSU24.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "auth_tokens")
+@Table(name = "auth_token")
 public class AuthToken {
     @Id
     @Column(name = "user_id")
