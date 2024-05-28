@@ -18,12 +18,16 @@ public class Image {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+    @ManyToOne
+    @JoinColumn(name = "item_log_id")
+    private ItemLog itemLog;
 
-    public Image(int imageId, String imageName, byte[] image, Product product) {
+    public Image(int imageId, String imageName, byte[] image, Product product, ItemLog itemLog) {
         this.imageId = imageId;
         this.imageName = imageName;
         this.image = image;
         this.product = product;
+        this.itemLog = itemLog;
     }
 
     public int getImageId() {
@@ -56,6 +60,14 @@ public class Image {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public ItemLog getItemLog() {
+        return itemLog;
+    }
+
+    public void setItemLog(ItemLog itemLog) {
+        this.itemLog = itemLog;
     }
 }
 
