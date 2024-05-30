@@ -58,7 +58,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 //                check matching in database
                 User currentUser = userRepository.findOneByEmail(username);
                 authToken = authTokenRepository.findOneById(currentUser.getUserId());
+               // System.out.println("To anh oi authToken" + authToken);
+                //System.out.println("To anh oi jwtToken" + jwtToken);
+
                 pevJwtToken = authToken.getJwtHash();
+               // System.out.println("To anh oi" + pevJwtToken);
+
                 if(jwtToken.equals(pevJwtToken)){
                     //generate new token and save in database
                     String newJwtToken = jwtService.generateToken(currentUser, currentUser);

@@ -13,4 +13,5 @@ public interface PartyRepository extends JpaRepository<Party, Integer> {
 //    @Query("SELECT o FROM Origin o WHERE o.Product.productId = :id")
 //    List<Origin> findAllByProductId(@Param("id")  int id);
 
+
 }

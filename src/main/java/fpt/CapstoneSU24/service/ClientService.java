@@ -5,10 +5,10 @@ import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.repository.ClientResponsitory;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DataUtils;
-import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +16,8 @@ import java.util.Map;
 public class ClientService implements ClientResponsitory {
     @Autowired
     private EmailService mailService;
+    @Autowired
+    private RedisSortedSetService redisSortedSetService;
 
     @Override
     public Boolean create(ClientSdi sdi) {
@@ -29,23 +31,33 @@ public class ClientService implements ClientResponsitory {
             Map<String, Object> props = new HashMap<>();
             props.put("name", sdi.getName());
             props.put("username", sdi.getUsername());
-            props.put("codeOTP", DataUtils.generateTempPwd(6));
+            String codeOTP = DataUtils.generateTempPwd(6);
+            props.put("codeOTP", codeOTP);
 
             dataMail.setProps(props);
-
-            mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_REGISTER);
+            Date dateOTP = new Date();
+            // Lưu redis
+            redisSortedSetService.saveHash("OTPCODE",sdi.getEmail(), codeOTP);
+        // tam cmt de test cho do bi spam
+            //mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_REGISTER);
             return true;
-        } catch (MessagingException exp) {
+        } catch (Exception exp) {
             exp.printStackTrace();
         }
         return false;
     }
 
     @Override
-    public Boolean confirmOTP(String otp) {
+    public Boolean checkOTP(String email, String otp) {
         try {
-
-            return true;
+           String otpRar = (redisSortedSetService.getHash("OTPCODE",email)).toString();
+           if(otpRar.equals(otp)) {
+               System.out.println("yuuuus");
+               return true;
+           }
+           else{
+               return false;
+           }
         } catch (Exception exp) {
             exp.printStackTrace();
         }

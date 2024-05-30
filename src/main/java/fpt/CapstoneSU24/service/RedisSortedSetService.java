@@ -1,9 +1,12 @@
 package fpt.CapstoneSU24.service;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -11,7 +14,24 @@ public class RedisSortedSetService {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    private HashOperations<String, String, Object> hashOperations;
 
+   @PostConstruct
+   private void init() {
+       hashOperations = redisTemplate.opsForHash();
+   }
+
+    public void saveHash(String key,String field, String value) {
+        hashOperations.put(key, field, value);
+    }
+
+    public Object getHash(String key,String field) {
+        return hashOperations.get(key, field);
+    }
+
+    public void deleteHash(String key, String field) {
+        hashOperations.delete(key, field);
+    }
     // Thêm một phần tử vào sorted set
     public void addToSortedSet(String key, Object value, double score) {
         redisTemplate.opsForZSet().add(key, value, score);

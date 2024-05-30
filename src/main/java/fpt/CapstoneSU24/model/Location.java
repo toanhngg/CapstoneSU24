@@ -30,6 +30,7 @@ public class Location {
         this.coordinates = coordinates;
     }
 
+
     public int getLocationId() {
         return locationId;
     }

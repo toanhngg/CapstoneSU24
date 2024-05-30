@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static io.jsonwebtoken.Jwts.parser;
+
 @Component
 public class JwtTokenUtil implements Serializable {
 
