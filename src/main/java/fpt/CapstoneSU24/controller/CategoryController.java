@@ -31,7 +31,6 @@ public class CategoryController {
 
     @GetMapping("/findAll")
     public ResponseEntity findAll() {
-
         List<Category> categoryList = categoryRepository.findAll();
         return ResponseEntity.ok(categoryList);
     }
@@ -46,6 +45,22 @@ public class CategoryController {
            return ResponseEntity.status(200).body("successfully");
         }else {
             throw new AccessDeniedException("");
+        }
+    }
+    @PostMapping("/deleteById")
+    public ResponseEntity deleteById(@RequestBody String req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        JSONObject jsonReq = new JSONObject(req);
+        if(currentUser.getRole().getRoleId() == 2){
+         try {
+             categoryRepository.deleteById(jsonReq.getInt("idCategory"));
+         }catch (Exception e){
+             return ResponseEntity.ok(e);
+         }
+            return ResponseEntity.status(200).body("successfully");
+        }else{
+            return ResponseEntity.status(200).body("your account not permitted");
         }
     }
 }

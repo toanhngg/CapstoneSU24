@@ -19,17 +19,14 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    @ManyToOne
-    @JoinColumn(name = "origin_id")
-    private Origin origin;
     @Column(name = "unit_price")
     private String unitPrice;
     @Column(name = "dimensions")
     private String dimensions;
     @Column(name = "material", columnDefinition = "nvarchar(50)")
     private String material;
-    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
-    private String supportingDocuments;
+    @Column(name = "description", columnDefinition = "nvarchar(255)")
+    private String description;
     @Column(name = "create_at")
     private long createAt;
     @Column(name = "weight")
@@ -42,16 +39,15 @@ public class Product {
 
     public Product(){}
 
-    public Product(int productId, String productName, User manufacturer, Category category, Origin origin, String unitPrice, String dimensions, String material, String supportingDocuments, long createAt, float weight, int warranty, Certificate certificate) {
+    public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String description, long createAt, float weight, int warranty, Certificate certificate) {
         this.productId = productId;
         this.productName = productName;
         this.manufacturer = manufacturer;
         this.category = category;
-        this.origin = origin;
         this.unitPrice = unitPrice;
         this.dimensions = dimensions;
         this.material = material;
-        this.supportingDocuments = supportingDocuments;
+        this.description = description;
         this.createAt = createAt;
         this.weight = weight;
         this.warranty = warranty;
@@ -90,14 +86,6 @@ public class Product {
         this.category = category;
     }
 
-    public Origin getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(Origin origin) {
-        this.origin = origin;
-    }
-
     public String getUnitPrice() {
         return unitPrice;
     }
@@ -122,12 +110,12 @@ public class Product {
         this.material = material;
     }
 
-    public String getSupportingDocuments() {
-        return supportingDocuments;
+    public String getDescription() {
+        return description;
     }
 
-    public void setSupportingDocuments(String supportingDocuments) {
-        this.supportingDocuments = supportingDocuments;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public long getCreateAt() {
@@ -136,14 +124,6 @@ public class Product {
 
     public void setCreateAt(long createAt) {
         this.createAt = createAt;
-    }
-
-    public Certificate getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(Certificate certificate) {
-        this.certificate = certificate;
     }
 
     public float getWeight() {
@@ -160,5 +140,13 @@ public class Product {
 
     public void setWarranty(int warranty) {
         this.warranty = warranty;
+    }
+
+    public Certificate getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(Certificate certificate) {
+        this.certificate = certificate;
     }
 }

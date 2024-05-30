@@ -29,10 +29,6 @@ public class User implements UserDetails {
     private String description;
     @Column(name = "phone")
     private String phone;
-    @Column(name = "date_of_birth")
-    private long dateOfBirth;
-    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
-    private String supportingDocuments;
     @Column(name = "create_at")
     private long createAt;
     @Column(name = "status")
@@ -41,11 +37,14 @@ public class User implements UserDetails {
     @JoinColumn(name = "location_id")
     private Location location;
 
+    @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private AuthToken authToken;
     public User() {
 
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long dateOfBirth, String supportingDocuments, long createAt, int status, Location location) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location, AuthToken authToken) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -54,11 +53,10 @@ public class User implements UserDetails {
         this.lastName = lastName;
         this.description = description;
         this.phone = phone;
-        this.dateOfBirth = dateOfBirth;
-        this.supportingDocuments = supportingDocuments;
         this.createAt = createAt;
         this.status = status;
         this.location = location;
+        this.authToken = authToken;
     }
 
     @Override
@@ -155,22 +153,6 @@ public class User implements UserDetails {
         this.phone = phone;
     }
 
-    public long getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(long dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getSupportingDocuments() {
-        return supportingDocuments;
-    }
-
-    public void setSupportingDocuments(String supportingDocuments) {
-        this.supportingDocuments = supportingDocuments;
-    }
-
     public long getCreateAt() {
         return createAt;
     }
@@ -193,5 +175,13 @@ public class User implements UserDetails {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public AuthToken getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(AuthToken authToken) {
+        this.authToken = authToken;
     }
 }

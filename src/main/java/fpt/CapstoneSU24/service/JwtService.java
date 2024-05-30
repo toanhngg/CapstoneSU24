@@ -1,8 +1,8 @@
 package fpt.CapstoneSU24.service;
 
-import fpt.CapstoneSU24.model.AuthTokens;
+import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.repository.AuthTokensRepository;
+import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -27,7 +27,7 @@ public class JwtService {
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
     @Autowired
-    private AuthTokensRepository authTokensRepository;
+    private AuthTokenRepository authTokenRepository;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -40,10 +40,10 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails, User userAuth) {
         String token =  generateToken(new HashMap<>(), userDetails);
-        AuthTokens authTokens = authTokensRepository.findOneByUserAuth(userAuth);
-        if (authTokens != null){
-            authTokens.setJwtHash(token);
-            authTokensRepository.save(authTokens);
+        AuthToken authToken = authTokenRepository.findOneById(userAuth.getUserId());
+        if (authToken != null){
+            authToken.setJwtHash(token);
+            authTokenRepository.save(authToken);
         }
         return generateToken(new HashMap<>(), userDetails);
     }

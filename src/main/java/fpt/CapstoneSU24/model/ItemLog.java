@@ -14,8 +14,8 @@ public class ItemLog {
     @Column(name = "address", columnDefinition = "nvarchar(255)")
     private String address;
     @ManyToOne
-    @JoinColumn(name = "actor_id")
-    private Actor actor;
+    @JoinColumn(name = "party_id")
+    private Party party;
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
@@ -27,17 +27,29 @@ public class ItemLog {
     private String eventType;
     @Column(name = "status")
     private int status;
+    @OneToOne(mappedBy = "itemLog", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private ImageItemLog imageItemLog;
 
-    public ItemLog(int productLogId, Item item, String address, Actor actor, Location location, long timeStamp, String description, String eventType, int status) {
+    public ItemLog(int productLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status, ImageItemLog imageItemLog) {
         this.productLogId = productLogId;
         this.item = item;
         this.address = address;
-        this.actor = actor;
+        this.party = party;
         this.location = location;
         this.timeStamp = timeStamp;
         this.description = description;
         this.eventType = eventType;
         this.status = status;
+        this.imageItemLog = imageItemLog;
+    }
+
+    public ImageItemLog getImageItemLog() {
+        return imageItemLog;
+    }
+
+    public void setImageItemLog(ImageItemLog imageItemLog) {
+        this.imageItemLog = imageItemLog;
     }
 
     public ItemLog() {
@@ -71,12 +83,12 @@ public class ItemLog {
         this.address = address;
     }
 
-    public Actor getActor() {
-        return actor;
+    public Party getParty() {
+        return party;
     }
 
-    public void setActor(Actor actor) {
-        this.actor = actor;
+    public void setParty(Party party) {
+        this.party = party;
     }
 
     public Location getLocation() {

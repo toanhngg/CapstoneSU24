@@ -3,9 +3,9 @@ package fpt.CapstoneSU24.config;
 import java.io.IOException;
 
 
-import fpt.CapstoneSU24.model.AuthTokens;
+import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.repository.AuthTokensRepository;
+import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.util.JwtTokenUtil;
@@ -38,7 +38,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private AuthTokensRepository authTokensRepository;
+    private AuthTokenRepository authTokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -48,7 +48,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
         String pevJwtToken = null;
-        AuthTokens authTokens = null;
+        AuthToken authToken = null;
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("jwt=")) {
@@ -57,8 +57,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 username = jwtService.extractUsername(jwtToken);
 //                check matching in database
                 User currentUser = userRepository.findOneByEmail(username);
-                authTokens = authTokensRepository.findOneByUserAuth(currentUser);
-                pevJwtToken = authTokens.getJwtHash();
+                authToken = authTokenRepository.findOneById(currentUser.getUserId());
+                pevJwtToken = authToken.getJwtHash();
                 if(jwtToken.equals(pevJwtToken)){
                     //generate new token and save in database
                     String newJwtToken = jwtService.generateToken(currentUser, currentUser);
@@ -74,13 +74,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 }else {
                     logger.warn("JWT Token does not matching");
                     //set all session is null
-                    authTokens.setJwtHash(null);
-                    authTokensRepository.save(authTokens);
+                    authToken.setJwtHash(null);
+                    authTokenRepository.save(authToken);
                 }
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT Token has expired");
+                authToken = authTokenRepository.findOneByJwtHash(jwtToken);
+                authToken.setJwtHash(null);
+                authTokenRepository.save(authToken);
             }
             }else{
                 logger.warn("JWT Token does not exist");

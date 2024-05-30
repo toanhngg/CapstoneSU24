@@ -1,9 +1,9 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.RegisterUserDto;
-import fpt.CapstoneSU24.model.AuthTokens;
+import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.repository.AuthTokensRepository;
+import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.JwtService;
@@ -30,19 +30,19 @@ public class AuthenticationController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private AuthTokensRepository authTokensRepository;
+    private AuthTokenRepository authTokenRepository;
     @PostMapping("/signup")
     public ResponseEntity signup(@RequestBody RegisterUserDto registerUserDto) {
         if(userRepository.findOneByEmail(registerUserDto.getEmail()) == null){
             try {
                 User registeredUser = authenticationService.signup(registerUserDto);
-                authTokensRepository.save(new AuthTokens(0,userRepository.findOneByEmail(registerUserDto.getEmail()),null));
-                return ResponseEntity.ok(registeredUser);
+                authTokenRepository.save(new AuthToken(0,registeredUser,null));
+                return ResponseEntity.status(200).body("create successfully");
             }catch (Exception e){
                 return ResponseEntity.ok().body(e);
             }
         }
-        return  ResponseEntity.ok().body("your email already exists");
+        return  ResponseEntity.status(500).body("your email already exists");
     }
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody String req, HttpServletResponse response) {
@@ -68,10 +68,10 @@ public class AuthenticationController {
         try {
             User currentUser = (User) authentication.getPrincipal();
             if (currentUser != null) {
-                AuthTokens authTokens = authTokensRepository.findOneByUserAuth(currentUser);
-                if (authTokens != null) {
-                    authTokens.setJwtHash(null);
-                    authTokensRepository.save(authTokens);
+                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
+                if (authToken != null) {
+                    authToken.setJwtHash(null);
+                    authTokenRepository.save(authToken);
                 }
                 try {
                     ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
