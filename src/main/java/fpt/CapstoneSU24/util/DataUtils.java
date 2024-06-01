@@ -1,5 +1,12 @@
 package fpt.CapstoneSU24.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class DataUtils {
@@ -15,5 +22,28 @@ public class DataUtils {
             optCode += otp[i];
         }
         return optCode;
+    }
+
+    public static Map<Integer, String> getComponentMapping() {
+        Map<Integer, String> componentMap = new HashMap<>();
+        try {
+
+            InputStream inputStream = DataUtils.class.getClassLoader().getResourceAsStream("reportComponents.json");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(inputStream);
+            JsonNode componentsNode = rootNode.path("reportComponents");
+
+
+            if (componentsNode.isArray()) {
+                for (JsonNode componentNode : componentsNode) {
+                    int code = componentNode.path("code").asInt();
+                    String name = componentNode.path("name").asText();
+                    componentMap.put(code, name);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return componentMap;
     }
 }

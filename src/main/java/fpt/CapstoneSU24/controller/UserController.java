@@ -28,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -93,8 +94,11 @@ public class UserController {
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
 
         //Convert Date
-        Long timestampFrom = userRequestDTO.getDateFrom() != null ? userRequestDTO.getDateFrom().getTime() / 1000 : null;
-        Long timestampTo = userRequestDTO.getDateTo() != null ? userRequestDTO.getDateTo().getTime() / 1000 : null;
+        Long timestampFrom = userRequestDTO.getDateFrom() != null ?
+                userRequestDTO.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
+        Long timestampTo = userRequestDTO.getDateTo() != null ?
+                userRequestDTO.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
+
 
         //Chia Page
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);

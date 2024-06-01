@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.dto.B02.B02_GetListReport;
 import fpt.CapstoneSU24.model.Report;
 import fpt.CapstoneSU24.repository.ReportRepository;
+import fpt.CapstoneSU24.util.DataUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -11,7 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +43,8 @@ public class ReportService {
             // Tạo request
             Pageable pageable = PageRequest.of(page, size, sort);
 
-            // Get data
+
+
             Page<Report> reportsPage = reportRepository.findReports(code, title, reportBy, type, dateFrom, dateTo, status, pageable);
 
             // Mapping
@@ -60,7 +66,13 @@ public class ReportService {
         B02_GetListReport listReport = new B02_GetListReport();
         listReport.setReportId(report.getReportId());
         listReport.setStatus(report.getStatus());
-        //code here
+
+        Map<Integer, String> componentMap = DataUtils.getComponentMapping();
+        int componentCode = report.getComponent();
+        String componentName = componentMap.getOrDefault(componentCode, "Other");
+        listReport.setCode("[ " + componentName + " ]" + report.getCode());
+
+        listReport.setTitle(report.getTitle());
         return listReport;
     }
 }

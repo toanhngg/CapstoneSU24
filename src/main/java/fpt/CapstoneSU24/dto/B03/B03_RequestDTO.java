@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.dto.B03;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 public class B03_RequestDTO {
@@ -9,9 +10,9 @@ public class B03_RequestDTO {
     private Integer roleId = null;
     private Integer status = null;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private Date dateFrom = null;
+    private LocalDate dateFrom = null;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private Date dateTo = null;
+    private LocalDate dateTo = null;
     private String orderBy = "createAt";
     private Boolean isAsc = false;
     private int page = 0;
@@ -43,19 +44,19 @@ public class B03_RequestDTO {
         this.status = status;
     }
 
-    public Date getDateFrom() {
+    public LocalDate getDateFrom() {
         return dateFrom;
     }
 
-    public void setDateFrom(Date dateFrom) {
+    public void setDateFrom(LocalDate dateFrom) {
         this.dateFrom = dateFrom;
     }
 
-    public Date getDateTo() {
+    public LocalDate getDateTo() {
         return dateTo;
     }
 
-    public void setDateTo(Date dateTo) {
+    public void setDateTo(LocalDate dateTo) {
         this.dateTo = dateTo;
     }
 

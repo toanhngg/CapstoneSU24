@@ -23,7 +23,7 @@ public class Report {
     @Column(name = "code", columnDefinition = "nvarchar(50)")
     private String code;
     @Column(name = "title", columnDefinition = "nvarchar(250)")
-    private String tile;
+    private String title;
     @Column(name = "type")
     private int type;
     @Column(name = "status")
@@ -46,13 +46,13 @@ public class Report {
     public Report() {
     }
 
-    public Report(int reportId, long createOn, long updateOn, User updateBy, String code, String tile, int type, int status, int priority, User createBy, User reportTo, List<ReportComment> reportComments, int component, List<ImageReport> imageReports) {
+    public Report(int reportId, long createOn, long updateOn, User updateBy, String code, String title, int type, int status, int priority, User createBy, User reportTo, List<ReportComment> reportComments, int component, List<ImageReport> imageReports) {
         this.reportId = reportId;
         this.createOn = createOn;
         this.updateOn = updateOn;
         this.updateBy = updateBy;
         this.code = code;
-        this.tile = tile;
+        this.title = title;
         this.type = type;
         this.status = status;
         this.priority = priority;
@@ -103,12 +103,12 @@ public class Report {
         this.code = code;
     }
 
-    public String getTile() {
-        return tile;
+    public String getTitle() {
+        return title;
     }
 
-    public void setTile(String tile) {
-        this.tile = tile;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public int getType() {
