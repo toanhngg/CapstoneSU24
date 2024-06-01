@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
 
     @Query("SELECT u FROM User u " +
-            "WHERE (:email IS NULL OR u.email = :email) " +
+            "WHERE (:email IS NULL OR :email = '' OR u.email = :email) " +
             "AND (:roleId IS NULL OR u.role.id = :roleId) " +
             "AND (:status IS NULL OR u.status = :status) " +
             "AND (:dateFrom IS NULL OR u.createAt >= :dateFrom) " +
@@ -31,6 +31,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                              @Param("dateFrom") Long dateFrom,
                              @Param("dateTo") Long dateTo,
                              Pageable pageable);
-
 }
 

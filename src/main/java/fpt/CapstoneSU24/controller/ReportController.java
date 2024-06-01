@@ -1,39 +1,31 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
-import fpt.CapstoneSU24.dto.B03.B03_MailSend;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.DataMailDTO;
-import fpt.CapstoneSU24.model.*;
+import fpt.CapstoneSU24.model.Role;
+import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.UserRepository;
-import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.EmailService;
-import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.util.Const;
-import fpt.CapstoneSU24.util.DataUtils;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletResponse;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("/api/report")
+public class ReportController {
     @Autowired
     private UserRepository userRepository;
 
@@ -49,23 +41,18 @@ public class UserController {
         return ResponseEntity.ok(userList);
     }
 
-
-/*//Lay data của bảng B03
     @GetMapping("/getDataToTable")
     public ResponseEntity<List<B03_GetDataGridDTO>> getUsersByEmail(@RequestBody  B03_RequestDTO userRequestDTO) {
 
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
 
-        //Convert Date
         Long timestampFrom = userRequestDTO.getDateFrom() != null ? userRequestDTO.getDateFrom().getTime() / 1000 : null;
         Long timestampTo = userRequestDTO.getDateTo() != null ? userRequestDTO.getDateTo().getTime() / 1000 : null;
 
-        //Chia Page
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
         Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), userRequestDTO.getRoleId(), userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
 
-        //mapping Dtop
         List<B03_GetDataGridDTO> B03_GetDataGridDTOs = userPage.getContent().stream().map(user -> {
             B03_GetDataGridDTO B03_GetDataGridDTO = new B03_GetDataGridDTO();
             B03_GetDataGridDTO.setUserId(user.getUserId());
@@ -85,40 +72,6 @@ public class UserController {
 
         return ResponseEntity.ok(B03_GetDataGridDTOs);
 
-    }*/
-
-    @GetMapping("/getDataToTable")
-    public ResponseEntity<Page<B03_GetDataGridDTO>> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
-        Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
-
-        //Convert Date
-        Long timestampFrom = userRequestDTO.getDateFrom() != null ? userRequestDTO.getDateFrom().getTime() / 1000 : null;
-        Long timestampTo = userRequestDTO.getDateTo() != null ? userRequestDTO.getDateTo().getTime() / 1000 : null;
-
-        //Chia Page
-        Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
-        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), userRequestDTO.getRoleId(), userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
-
-        //mapping DTO
-        Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
-            B03_GetDataGridDTO B03_GetDataGridDTO = new B03_GetDataGridDTO();
-            B03_GetDataGridDTO.setUserId(user.getUserId());
-            B03_GetDataGridDTO.setEmail(user.getEmail());
-            B03_GetDataGridDTO.setRoleId(user.getRole().getRoleId());
-            B03_GetDataGridDTO.setRoleName(user.getRole().getRoleName());
-            B03_GetDataGridDTO.setName(user.getFirstName() + " " + user.getLastName());
-            B03_GetDataGridDTO.setDescription(user.getDescription());
-            B03_GetDataGridDTO.setPhone(user.getPhone());
-            B03_GetDataGridDTO.setStatus(user.getStatus());
-            B03_GetDataGridDTO.setCreateOn(new Date(user.getCreateAt() * 1000L));
-            B03_GetDataGridDTO.setUsername(user.getUsername());
-            B03_GetDataGridDTO.setAddress(user.getLocation().getAddress());
-            B03_GetDataGridDTO.setCountry(user.getLocation().getCountry());
-            return B03_GetDataGridDTO;
-        });
-
-        return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
 
     @PutMapping("/lockUser")
@@ -165,8 +118,6 @@ public class UserController {
         }
     }
 
-
-//Update Table
     @PutMapping("/updateUserDescriptions")
     public ResponseEntity<String> updateUserDescriptions(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
         for (B03_GetDataGridDTO updateRequest : userUpdateRequests) {
@@ -181,8 +132,6 @@ public class UserController {
         }
         return ResponseEntity.ok("User descriptions updated successfully.");
     }
-
-    //get Role
     @GetMapping("/getRoleByUserId")
     public ResponseEntity<Role>  getAllUser(@RequestParam int userId) {
         User user = userRepository.findOneByUserId(userId);

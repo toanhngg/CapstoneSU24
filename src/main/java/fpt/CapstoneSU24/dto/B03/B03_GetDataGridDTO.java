@@ -15,16 +15,14 @@ public class B03_GetDataGridDTO {
     private String address;
     private String country;
     private String phone;
-    private Date dateOfBirth;
     private Integer status;
 
 
     public B03_GetDataGridDTO() {
     }
 
-    public B03_GetDataGridDTO(Integer status, Date dateOfBirth, String phone, String country, String address, String description, String roleName, int roleId, String email, String name, String username, Date createOn, int userId) {
+    public B03_GetDataGridDTO(Integer status, String phone, String country, String address, String description, String roleName, int roleId, String email, String name, String username, Date createOn, int userId) {
         this.status = status;
-        this.dateOfBirth = dateOfBirth;
         this.phone = phone;
         this.country = country;
         this.address = address;
@@ -126,13 +124,6 @@ public class B03_GetDataGridDTO {
         this.phone = phone;
     }
 
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
 
     public Integer getStatus() {
         return status;

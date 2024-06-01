@@ -19,7 +19,7 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", columnDefinition = "int default 0")
     private Role role;
     @Column(name = "first_name", columnDefinition = "nvarchar(50)")
     private String firstName;
