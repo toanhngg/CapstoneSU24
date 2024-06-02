@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,6 +11,7 @@ public class AuthToken {
     private int id;
     @OneToOne
     @MapsId
+    @JsonIgnore
     @JoinColumn(name = "user_id")
     private User userAuth;
     @Column(name = "jwt_hash")
