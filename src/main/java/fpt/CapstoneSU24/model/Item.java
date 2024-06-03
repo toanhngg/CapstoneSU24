@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -10,10 +11,12 @@ public class Item {
     @Column(name = "item_id")
     private int itemId;
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "product_id")
     private Product product;
     @Column(name = "currentOwner")
     private String currentOwner;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "origin_id")
     private Origin origin;
@@ -23,6 +26,10 @@ public class Item {
     private String productRecognition;
     @Column(name = "status")
     private int status;
+
+    public Item() {
+
+    }
 
     public Item(int itemId, Product product, String currentOwner, Origin origin, long createdAt, String productRecognition, int status) {
         this.itemId = itemId;
