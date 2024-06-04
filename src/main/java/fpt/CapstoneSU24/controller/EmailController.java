@@ -37,7 +37,9 @@ public class EmailController {
         // sau đó generate mã OTP r send mail
         //User authenticatedUser = authenticationService.authenticate(email, password);
         //String jwtToken = jwtService.generateToken(authenticatedUser);
-        return ResponseEntity.ok(clientService.create(sdi));
+        //return ResponseEntity.ok(clientService.create(sdi));
+
+        return ResponseEntity.ok(clientService.creatAndSaveSQL(sdi));
     }
 
     // người duùng nhập OTP ở đây hệ thống cf đúng thì trả về oke

@@ -15,11 +15,23 @@ public class Location {
     private String city;
     @Column(name = "country", columnDefinition = "nvarchar(50)")
     private String country;
+    @Column(name = "coordinateX", columnDefinition = "nvarchar(50)")
+    private String coordinateX;
+    @Column(name = "coordinateY", columnDefinition = "nvarchar(50)")
+    private String coordinateY;
     @Column(name = "coordinates", columnDefinition = "nvarchar(50)")
     private String coordinates;
 
     public Location() {
 
+    }
+    public Location(int locationId, String address, String city, String country, String coordinateX,String coordinateY) {
+        this.locationId = locationId;
+        this.address = address;
+        this.city = city;
+        this.country = country;
+        this.coordinateX = coordinateX;
+        this.coordinateY = coordinateY;
     }
 
     public Location(int locationId, String address, String city, String country, String coordinates) {
@@ -30,6 +42,21 @@ public class Location {
         this.coordinates = coordinates;
     }
 
+    public String getCoordinateX() {
+        return coordinateX;
+    }
+
+    public void setCoordinateX(String coordinateX) {
+        this.coordinateX = coordinateX;
+    }
+
+    public String getCoordinateY() {
+        return coordinateY;
+    }
+
+    public void setCoordinateY(String coordinateY) {
+        this.coordinateY = coordinateY;
+    }
 
     public int getLocationId() {
         return locationId;

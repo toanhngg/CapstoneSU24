@@ -28,6 +28,8 @@ public class ProductController {
     CertificateRepository certificateRepository;
     @Autowired
     ImageProductRepository imageProductRepository;
+    @Autowired
+    ItemResponsitory itemResponsitory;
     @PostMapping("/addProduct")
     public ResponseEntity addProduct(@RequestBody String req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -73,4 +75,6 @@ public class ProductController {
             throw new AccessDeniedException("");
         }
     }
+
+
 }
