@@ -16,5 +16,5 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     Page<Item> findAll(Pageable pageable);
     Page<Item> findAllByCurrentOwnerContaining(String currentOwner, Pageable pageable);
     Page<Item> findByCreatedAtBetween(Long startDate, Long endDate, Pageable pageable);
-
+    List<Item> findByCreatedAtBetween(Long startDate, Long endDate);
 }
