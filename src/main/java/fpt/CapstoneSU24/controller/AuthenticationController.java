@@ -114,4 +114,6 @@ public class AuthenticationController {
             return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
         }
     }
+
+
 }
