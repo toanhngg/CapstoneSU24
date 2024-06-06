@@ -27,11 +27,11 @@ public class ReportService {
 
     public Page<B02_GetListReport> getListReports(String code,
                                                   String title,
-                                                  int reportBy,
-                                                  int type,
+                                                  Integer reportBy,
+                                                  Integer type,
                                                   long dateFrom,
                                                   long dateTo,
-                                                  int status,
+                                                  Integer status,
                                                   String orderBy,
                                                   Boolean isAsc,
                                                   int page,
@@ -44,10 +44,7 @@ public class ReportService {
             Pageable pageable = PageRequest.of(page, size, sort);
 
 
-
-            //Page<Report> reportsPage = reportRepository.findReports(code, title, reportBy, type, dateFrom, dateTo, status, pageable);
-
-            Page<Report> reportsPage = null;
+            Page<Report> reportsPage = reportRepository.findReports(code, title, reportBy, type, dateFrom, dateTo, status, pageable);
             // Mapping
             List<B02_GetListReport> listReports = reportsPage.getContent().stream()
                     .map(this::transformToB02_GetListReport)

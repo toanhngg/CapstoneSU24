@@ -28,7 +28,7 @@ public class DataUtils {
         Map<Integer, String> componentMap = new HashMap<>();
         try {
 
-            InputStream inputStream = DataUtils.class.getClassLoader().getResourceAsStream("reportComponents.json");
+            InputStream inputStream = DataUtils.class.getClassLoader().getResourceAsStream("Json/reportComponents.json");
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(inputStream);
             JsonNode componentsNode = rootNode.path("reportComponents");

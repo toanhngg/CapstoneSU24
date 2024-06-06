@@ -9,14 +9,14 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReportRepository extends JpaRepository<Report, Integer> {
 
-/*    @Query("SELECT r FROM Report r " +
+    @Query("SELECT r FROM Report r " +
             "WHERE (:code IS NULL OR :code = '' OR r.code = :code) " +
-//            "AND (:title IS NULL OR :title = '' OR r.title = :title) " +
-*//*            "AND (:reportBy IS NULL OR r.createBy.userId = :reportBy) " +
-            "AND (:type IS NULL OR r.type = :type) " +
-            "AND (:status IS NULL OR r.status = :status) " +
-            "AND (:dateFrom IS NULL OR r.createOn >= :dateFrom) " +*//*
-            "AND (:dateTo IS NULL OR r.createOn <= :dateTo)")
+            "AND (:title IS NULL OR :title = '' OR r.title = :title) " +
+            "AND (:reportBy = -1 OR r.reportTo.userId = :reportBy) " +
+            "AND (:type = -1 OR r.type = :type) " +
+            "AND (:status = -1 OR r.status = :status) " +
+            "AND (:dateFrom IS NULL OR :dateFrom = 0 OR r.createOn >= :dateFrom) " +
+            "AND (:dateTo IS NULL OR :dateTo = 0 OR r.createOn <= :dateTo)")
     Page<Report> findReports(@Param("code") String code,
                              @Param("title") String title,
                              @Param("reportBy") Integer reportBy,
@@ -24,6 +24,11 @@ public interface ReportRepository extends JpaRepository<Report, Integer> {
                              @Param("dateFrom") Long dateFrom,
                              @Param("dateTo") Long dateTo,
                              @Param("status") Integer status,
-                             Pageable pageable);*/
+                             Pageable pageable);
+
+    @Query("SELECT r FROM Report r " +
+            "WHERE (:code IS NULL OR :code = '' OR r.code = :code) ")
+    Page<Report> test(@Param("code") String code,
+                             Pageable pageable);
 
 }

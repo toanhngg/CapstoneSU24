@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "[report]")
@@ -17,7 +16,6 @@ public class Report {
     private long createOn;
     @Column(name = "updateOn")
     private long updateOn;
-    private User updateBy;
     @Column(name = "code", columnDefinition = "nvarchar(50)")
     private String code;
     @Column(name = "title", columnDefinition = "nvarchar(250)")
@@ -28,7 +26,7 @@ public class Report {
     private int status;
     @Column(name = "priority")
     private int priority;
-    @Column(name = "createBy")
+    @Column(name = "createBy", columnDefinition = "nvarchar(250)")
     private String createBy;
     @ManyToOne
     @JoinColumn(name = "report_to_id")
@@ -41,20 +39,19 @@ public class Report {
     public Report() {
     }
 
-    public Report(int reportId, long createOn, long updateOn, User updateBy, String code, String title, int type, int status, int priority,  User reportTo,  int component, List<ImageReport> imageReports, String createBy) {
+    public Report(int reportId, long createOn, long updateOn, String code, String title, int type, int status, int priority, String createBy, User reportTo, int component, List<ImageReport> imageReports) {
         this.reportId = reportId;
         this.createOn = createOn;
         this.updateOn = updateOn;
-        this.updateBy = updateBy;
         this.code = code;
         this.title = title;
         this.type = type;
         this.status = status;
         this.priority = priority;
+        this.createBy = createBy;
         this.reportTo = reportTo;
         this.component = component;
         this.imageReports = imageReports;
-        this.createBy = createBy;
     }
 
     public int getReportId() {
@@ -79,14 +76,6 @@ public class Report {
 
     public void setUpdateOn(long updateOn) {
         this.updateOn = updateOn;
-    }
-
-    public User getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(User updateBy) {
-        this.updateBy = updateBy;
     }
 
     public String getCode() {
@@ -129,8 +118,13 @@ public class Report {
         this.priority = priority;
     }
 
+    public String getCreateBy() {
+        return createBy;
+    }
 
-
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
 
     public User getReportTo() {
         return reportTo;
@@ -154,13 +148,5 @@ public class Report {
 
     public void setImageReports(List<ImageReport> imageReports) {
         this.imageReports = imageReports;
-    }
-
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
     }
 }
