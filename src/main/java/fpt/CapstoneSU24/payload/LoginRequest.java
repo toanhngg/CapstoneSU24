@@ -1,11 +1,12 @@
 package fpt.CapstoneSU24.payload;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 public class LoginRequest {
-    @NotEmpty(message = "The email is required")
+    @NotBlank(message = "The email is required")
     private String email;
-    @NotEmpty(message = "The password is required")
+    @NotBlank(message = "The password is required")
     private String password;
 
     public String getEmail() {

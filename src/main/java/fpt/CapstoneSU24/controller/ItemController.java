@@ -2,9 +2,12 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.payload.FilterByTimeStampRequest;
+import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.repository.ItemRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.ExportExcelService;
+import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,32 +37,30 @@ public class ItemController {
      * default data startDate and endDate equal 0 (need insert 2 data)
      * */
     @PostMapping("/search")
-    public ResponseEntity searchItem(@RequestBody String req) {
-        JSONObject jsonReq = new JSONObject(req);
-        int pageNumber = jsonReq.getInt("pageNumber");
-        int pageSize = jsonReq.getInt("pageSize");
-        long startDate = jsonReq.getLong("startDate");
-        long endDate = jsonReq.getLong("endDate");
-        Page<Item> items = null;
-        Pageable pageable = jsonReq.getString("type").equals("desc") ? PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")) :
-                jsonReq.getString("currentOwner").equals("asc") ? PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "createdAt")) :
-                        PageRequest.of(pageNumber, pageSize);
+    public ResponseEntity searchItem(@Valid @RequestBody FilterSearchRequest req) {
+        try {
+            Page<Item> items = null;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
 //        Page<Item> items = jsonReq.getString("type") == null? itemRepository.findAll(pageable) : jsonReq.getString("type").equals("desc") ? itemRepository.sortItemsByCreatedAtDesc(pageable) :  itemRepository.sortItemsByCreatedAtAsc(pageable);
-        if (startDate != 0 && endDate != 0) {
-            items = itemRepository.findByCreatedAtBetween(startDate, endDate, pageable);
+            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate(), pageable);
 
-        } else {
-            items = jsonReq.getString("currentOwner").equals("") ? itemRepository.findAll(pageable) : itemRepository.findAllByCurrentOwnerContaining(jsonReq.getString("currentOwner"), pageable);
+            } else {
+                items = itemRepository.findAllByCurrentOwnerContaining(req.getName(), pageable);
+            }
+            return ResponseEntity.status(200).body(items);
+        }catch (Exception e){
+            return ResponseEntity.status(500).body("Error when fetching data");
         }
-        return ResponseEntity.ok(items);
+
     }
 
     @PostMapping("/exportListItem")
-    public ResponseEntity<byte[]>  exportListItem(@RequestBody String req) throws IOException {
+    public ResponseEntity<byte[]>  exportListItem(@Valid @RequestBody FilterByTimeStampRequest req) throws IOException {
         JSONObject jsonReq = new JSONObject(req);
-        long startDate = jsonReq.getLong("startDate");
-        long endDate = jsonReq.getLong("endDate");
-        List<Item> items = itemRepository.findByCreatedAtBetween(startDate, endDate);
+        List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
         byte[] excelBytes = exportExcelService.exportItemToExcel(items);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
