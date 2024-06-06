@@ -5,6 +5,7 @@ import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.RegisterUserDto;
 import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.LocationRepository;
 import fpt.CapstoneSU24.repository.RoleRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
@@ -39,13 +40,13 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User signup(RegisterUserDto input) {
+    public User signup(RegisterRequest input) {
         User user = new User();
         user.setEmail(input.getEmail());
         user.setFirstName(input.getFirstName());
         user.setLastName(input.getLastName());
         user.setPhone(input.getPhone());
-        user.setRole(roleRepository.findOneByRoleId(input.getRole()));
+        user.setRole(roleRepository.findOneByRoleId(2));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setCreateAt(System.currentTimeMillis());
         Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(), "");

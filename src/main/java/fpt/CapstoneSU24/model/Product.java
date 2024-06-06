@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.Length;
 
+import java.util.List;
+
 @Entity
 @Table(name = "product")
 public class Product {
@@ -40,7 +42,8 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "certificate_id")
     private Certificate certificate;
-
+//    @OneToMany(mappedBy = "product")
+//    private List<ImageProduct> imageProduct;
     public Product(){}
 
     public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String description, long createAt, float weight, int warranty, Certificate certificate) {

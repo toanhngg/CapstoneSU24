@@ -4,12 +4,14 @@ import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.RegisterUserDto;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.JwtService;
+import fpt.CapstoneSU24.payload.LoginRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.json.JSONObject;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -34,10 +36,10 @@ public class AuthenticationController {
     @Autowired
     private AuthTokenRepository authTokenRepository;
     @PostMapping("/signup")
-    public ResponseEntity signup(@RequestBody RegisterUserDto registerUserDto) {
-        if(userRepository.findOneByEmail(registerUserDto.getEmail()) == null){
+    public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
+        if(userRepository.findOneByEmail(registerRequest.getEmail()) == null){
             try {
-                User registeredUser = authenticationService.signup(registerUserDto);
+                User registeredUser = authenticationService.signup(registerRequest);
                 authTokenRepository.save(new AuthToken(0,registeredUser,null));
                 return ResponseEntity.status(200).body("create successfully");
             }catch (Exception e){
@@ -47,11 +49,8 @@ public class AuthenticationController {
         return  ResponseEntity.status(500).body("your email already exists");
     }
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody String req, HttpServletResponse response) {
-        JSONObject jsonReq = new JSONObject(req);
-        String email = jsonReq.getString("email");
-        String password = jsonReq.getString("password");
-        User authenticatedUser = authenticationService.authenticate(email, password);
+    public ResponseEntity login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        User authenticatedUser = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);
         ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken) // key & value
                 .secure(true).httpOnly(true)
