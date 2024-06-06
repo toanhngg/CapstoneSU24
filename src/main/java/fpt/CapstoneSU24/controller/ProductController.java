@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,6 +29,8 @@ public class ProductController {
     CertificateRepository certificateRepository;
     @Autowired
     ImageProductRepository imageProductRepository;
+    @Autowired
+    ItemRepository itemRepository;
     @PostMapping("/addProduct")
     public ResponseEntity addProduct(@RequestBody String req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -63,14 +66,46 @@ public class ProductController {
     }
 
     @GetMapping("/findAllProductByManufacturerId")
-    public ResponseEntity findAllProductByManufacturerId(HttpServletResponse response) {
+    public ResponseEntity findAllProductByManufacturerId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2) {
             List<Product> productList = productRepository.findAllByManufacturerId(currentUser.getUserId());
             return ResponseEntity.status(200).body(productList);
-        } else {
-            throw new AccessDeniedException("");
+    }
+    @PostMapping("/findImgByProductId")
+    public ResponseEntity findImgByProductId(@RequestBody String req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        JSONObject jsonReq = new JSONObject(req);
+        if (productRepository.findOneByProductId(jsonReq.getInt("productId")).getManufacturer().getUserId() == currentUser.getUserId()) {
+            List<ImageProduct> imageProductList = imageProductRepository.findAllByProductId(jsonReq.getInt("productId"));
+            List<String> listImg = new ArrayList<String>();
+            for (ImageProduct i : imageProductList) {
+                listImg.add(new String(i.getImage(), StandardCharsets.UTF_8));
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("data", listImg);
+            return ResponseEntity.status(200).body(jsonObject.toString());
+        }else{
+            return ResponseEntity.status(404).body("your account is not allowed for this action");
+        }
+    }
+    @PostMapping("/deleteProductById")
+    public ResponseEntity deleteProductById(@RequestBody String req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        JSONObject jsonReq = new JSONObject(req);
+        int productId = jsonReq.getInt("productId");
+        if (productRepository.findOneByProductId(productId).getManufacturer().getUserId() == currentUser.getUserId()) {
+                if(itemRepository.findAllByProductId(productId).isEmpty()){
+                    productRepository.deleteOneByProductId(productId);
+                    return ResponseEntity.status(200).body("delete product success");
+                }else {
+                    return ResponseEntity.status(500).body("product can't delete because product have instants");
+                }
+
+        }else{
+            return ResponseEntity.status(404).body("your account is not allowed for this action");
         }
     }
 }

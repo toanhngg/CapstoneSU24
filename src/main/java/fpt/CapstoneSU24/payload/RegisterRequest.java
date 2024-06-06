@@ -1,35 +1,24 @@
-package fpt.CapstoneSU24.dto;
-
-import fpt.CapstoneSU24.model.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-
-public class RegisterUserDto {
+package fpt.CapstoneSU24.payload;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+public class RegisterRequest {
+    @NotBlank(message = "The email is required")
     private String email;
+    @NotBlank(message = "The password is required")
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*()]).{8,}$", message = "Password must be 8 characters long and combination of uppercase letters, lowercase letters, numbers, special characters.")
     private String password;
+    @NotBlank(message = "The firstName is required")
     private String firstName;
+    @NotBlank(message = "The lastName is required")
     private String lastName;
-    private int role;
+    @NotBlank(message = "The address is required")
     private String address;
+    @NotBlank(message = "The city is required")
     private String city;
+    @NotBlank(message = "The country is required")
     private String country;
+    @NotBlank(message = "The phone is required")
     private String phone;
-    private long dateOfBirth;
-
-    public RegisterUserDto(String email, String password, String firstName, String lastName, int role, String address, String city, String country, String phone, long dateOfBirth) {
-        this.email = email;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.role = role;
-        this.address = address;
-        this.city = city;
-        this.country = country;
-        this.phone = phone;
-        this.dateOfBirth = dateOfBirth;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -62,14 +51,6 @@ public class RegisterUserDto {
         this.lastName = lastName;
     }
 
-    public int getRole() {
-        return role;
-    }
-
-    public void setRole(int role) {
-        this.role = role;
-    }
-
     public String getAddress() {
         return address;
     }
@@ -92,14 +73,6 @@ public class RegisterUserDto {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public long getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(long dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
     }
 
     public String getCity() {
