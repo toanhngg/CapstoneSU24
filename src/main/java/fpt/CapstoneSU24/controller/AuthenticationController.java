@@ -33,7 +33,7 @@ public class AuthenticationController {
     @Autowired
     private AuthTokenRepository authTokenRepository;
     @PostMapping("/signup")
-    public ResponseEntity signup(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
         if(userRepository.findOneByEmail(registerRequest.getEmail()) == null){
             try {
                 User registeredUser = authenticationService.signup(registerRequest);
