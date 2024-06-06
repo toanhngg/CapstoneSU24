@@ -2,7 +2,9 @@ package fpt.CapstoneSU24.payload;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 public class RegisterRequest {
+
     @NotBlank(message = "The email is required")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$", message = "Invalid email format")
     private String email;
     @NotBlank(message = "The password is required")
     @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*()]).{8,}$", message = "Password must be 8 characters long and combination of uppercase letters, lowercase letters, numbers, special characters.")
@@ -17,6 +19,7 @@ public class RegisterRequest {
     private String city;
     @NotBlank(message = "The country is required")
     private String country;
+    @Pattern(regexp = "\\d{10}", message = "Invalid phone number format")
     @NotBlank(message = "The phone is required")
     private String phone;
     public String getEmail() {
