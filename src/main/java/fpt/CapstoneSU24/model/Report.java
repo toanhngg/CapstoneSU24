@@ -17,8 +17,6 @@ public class Report {
     private long createOn;
     @Column(name = "updateOn")
     private long updateOn;
-    @ManyToOne
-    @JoinColumn(name = "update_by", nullable = true)
     private User updateBy;
     @Column(name = "code", columnDefinition = "nvarchar(50)")
     private String code;
@@ -30,14 +28,11 @@ public class Report {
     private int status;
     @Column(name = "priority")
     private int priority;
-    @ManyToOne
-    @JoinColumn(name = "creator_id")
-    private User createBy;
+    @Column(name = "createBy")
+    private String createBy;
     @ManyToOne
     @JoinColumn(name = "report_to_id")
     private User reportTo;
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ReportComment> reportComments = new ArrayList<>();
     @Column(name = "component")
     private int component;
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -46,7 +41,7 @@ public class Report {
     public Report() {
     }
 
-    public Report(int reportId, long createOn, long updateOn, User updateBy, String code, String title, int type, int status, int priority, User createBy, User reportTo, List<ReportComment> reportComments, int component, List<ImageReport> imageReports) {
+    public Report(int reportId, long createOn, long updateOn, User updateBy, String code, String title, int type, int status, int priority,  User reportTo,  int component, List<ImageReport> imageReports, String createBy) {
         this.reportId = reportId;
         this.createOn = createOn;
         this.updateOn = updateOn;
@@ -56,11 +51,10 @@ public class Report {
         this.type = type;
         this.status = status;
         this.priority = priority;
-        this.createBy = createBy;
         this.reportTo = reportTo;
-        this.reportComments = reportComments;
         this.component = component;
         this.imageReports = imageReports;
+        this.createBy = createBy;
     }
 
     public int getReportId() {
@@ -135,13 +129,8 @@ public class Report {
         this.priority = priority;
     }
 
-    public User getCreateBy() {
-        return createBy;
-    }
 
-    public void setCreateBy(User createBy) {
-        this.createBy = createBy;
-    }
+
 
     public User getReportTo() {
         return reportTo;
@@ -149,14 +138,6 @@ public class Report {
 
     public void setReportTo(User reportTo) {
         this.reportTo = reportTo;
-    }
-
-    public List<ReportComment> getReportComments() {
-        return reportComments;
-    }
-
-    public void setReportComments(List<ReportComment> reportComments) {
-        this.reportComments = reportComments;
     }
 
     public int getComponent() {
@@ -173,5 +154,13 @@ public class Report {
 
     public void setImageReports(List<ImageReport> imageReports) {
         this.imageReports = imageReports;
+    }
+
+    public String getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
     }
 }

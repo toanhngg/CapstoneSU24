@@ -45,8 +45,9 @@ public class ReportService {
 
 
 
-            Page<Report> reportsPage = reportRepository.findReports(code, title, reportBy, type, dateFrom, dateTo, status, pageable);
+            //Page<Report> reportsPage = reportRepository.findReports(code, title, reportBy, type, dateFrom, dateTo, status, pageable);
 
+            Page<Report> reportsPage = null;
             // Mapping
             List<B02_GetListReport> listReports = reportsPage.getContent().stream()
                     .map(this::transformToB02_GetListReport)
