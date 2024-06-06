@@ -5,7 +5,6 @@ import fpt.CapstoneSU24.dto.B03.B03_MailSend;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
-import fpt.CapstoneSU24.dto.RegisterUserDto;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;

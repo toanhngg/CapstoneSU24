@@ -2,7 +2,6 @@ package fpt.CapstoneSU24.service;
 
 
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
-import fpt.CapstoneSU24.dto.RegisterUserDto;
 import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.RegisterRequest;

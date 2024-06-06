@@ -1,7 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
-import fpt.CapstoneSU24.dto.RegisterUserDto;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.RegisterRequest;
