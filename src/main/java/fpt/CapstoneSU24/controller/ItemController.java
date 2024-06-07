@@ -1,10 +1,15 @@
 package fpt.CapstoneSU24.controller;
 
+import fpt.CapstoneSU24.dto.*;
+import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.repository.*;
+import fpt.CapstoneSU24.service.ClientService;
 import fpt.CapstoneSU24.service.ExportExcelService;
+import fpt.CapstoneSU24.service.QRCodeGenerator;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
