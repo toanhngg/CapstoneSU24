@@ -5,15 +5,15 @@ import fpt.CapstoneSU24.model.*;
 import java.util.List;
 
 public class ItemLogResponse {
-    private final List<ItemLogDTO> itemLogDTOs;
+    private final List<ItemLogDTOResponse> itemLogDTOs;
    // private ItemDTO item;
 
-    public ItemLogResponse(/*ItemDTO item,*/ List<ItemLogDTO> itemLogDTOs) {
+    public ItemLogResponse(/*ItemDTO item,*/ List<ItemLogDTOResponse> itemLogDTOs) {
         //this.item = item;
         this.itemLogDTOs = itemLogDTOs;
     }
 
-    public List<ItemLogDTO> getItemLogDTOs() {
+    public List<ItemLogDTOResponse> getItemLogDTOs() {
         return itemLogDTOs;
     }
 

@@ -2,27 +2,32 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
-import fpt.CapstoneSU24.model.Category;
 import fpt.CapstoneSU24.model.OTP;
-import fpt.CapstoneSU24.repository.ClientResponsitory;
-import fpt.CapstoneSU24.repository.OTPResponsitory;
+import fpt.CapstoneSU24.repository.ClientRepository;
+import fpt.CapstoneSU24.repository.OTPRepository;
+import fpt.CapstoneSU24.repository.PartyRepository;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DataUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class ClientService implements ClientResponsitory {
+public class ClientService implements ClientRepository {
     @Autowired
     private EmailService mailService;
     @Autowired
     private RedisSortedSetService redisSortedSetService;
     @Autowired
-    private OTPResponsitory otpResponsitory;
+    private OTPRepository otpResponsitory;
+    @Autowired
+    private PartyRepository partyRepository;
+    @Autowired
+    private  OTPService otpService;
 
     @Override
     public Boolean create(ClientSdi sdi) {
@@ -52,7 +57,7 @@ public class ClientService implements ClientResponsitory {
         return false;
     }
     @Override
-    public Boolean creatAndSaveSQL(ClientSdi sdi) {
+    public Boolean createMailAndSaveSQL(ClientSdi sdi) {
         try {
             DataMailDTO dataMail = new DataMailDTO();
 
@@ -67,14 +72,15 @@ public class ClientService implements ClientResponsitory {
             props.put("codeOTP", codeOTP);
 
             dataMail.setProps(props);
-            Date dateOTP = new Date();
-            // Lưu redis
-            //redisSortedSetService.saveHash("OTPCODE",sdi.getEmail(), codeOTP);
-            //luu sql
+            Date expiryTime = otpService.calculateExpiryTime(2); // OTP sẽ hết hạn sau 2 phút
 
-            OTP otp = new OTP(sdi.getEmail(),codeOTP);
-
-             otpResponsitory.save(otp);
+            OTP otpCheck = otpResponsitory.findOTPByEmail(sdi.getEmail());
+           if(otpCheck == null) {
+               otpCheck = new OTP(sdi.getEmail(), codeOTP, expiryTime);
+               otpResponsitory.save(otpCheck);
+           }else{
+               otpService.updateOTPCode(sdi.getEmail(), codeOTP);
+           }
             // tam cmt de test cho do bi spam
             //mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_REGISTER);
             return true;
@@ -83,7 +89,6 @@ public class ClientService implements ClientResponsitory {
         }
         return false;
     }
-
     @Override
     public Boolean notification(ClientSdi sdi) {
         try {
@@ -97,8 +102,6 @@ public class ClientService implements ClientResponsitory {
             props.put("name", sdi.getName());
             props.put("username", sdi.getUsername());
             dataMail.setProps(props);
-            Date dateOTP = new Date();
-
             mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_NOTIFICATION);
             return true;
         } catch (Exception exp) {
@@ -126,17 +129,12 @@ public class ClientService implements ClientResponsitory {
     @Override
     public Boolean checkOTPinSQL(String email, String otp) {
         try {
-            //Laays ra tu redis
-           // String otpRar = (redisSortedSetService.getHash("OTPCODE",email)).toString();
-            //Lay ra tu SQL
-            String otpRar = otpResponsitory.findOTPByEmail(email);
-            if(otpRar.equals(otp)) {
-                System.out.println("yuuuus");
+            boolean otpRar = otpService.verifyOTP(email,otp);
+            if(otpRar) {
                 return true;
             }
-            else{
-                return false;
-            }
+            else return false;
+
         } catch (Exception exp) {
             exp.printStackTrace();
         }

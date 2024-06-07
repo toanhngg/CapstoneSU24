@@ -3,20 +3,17 @@ package fpt.CapstoneSU24.repository;
 import fpt.CapstoneSU24.dto.ItemLogDTO;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.ItemLog;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Override
     List<ItemLog> findAll();
-  //  List<ItemLog> getItemLogsByItemId(int ItemId);
-
-//    @Query("SELECT il FROM ItemLog il LEFT JOIN FETCH Item i WHERE il.item.itemId = :itemId")
-//    List<ItemLog> getItemLogsByItemId(@Param("itemId") Integer itemId);
-
     @Query("SELECT il " +
             "FROM ItemLog il " +
             "LEFT JOIN Party p ON p.partyId = il.party.partyId " +
@@ -35,8 +32,14 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
             "WHERE il.itemLogId = :itemLogId")
     ItemLog getItemLogs(@Param("itemLogId") int itemLogId);
 
-    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId")
+    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId")
     List<ItemLog> getItemLogsByItemId(@Param("itemId") Integer itemId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ItemLog i SET i.authorized.authorized_id = :authorizedId  WHERE i.itemLogId = :itemLogId")
+    void updateAuthorized(@Param("authorizedId") int authorizedId, @Param("itemLogId") int itemLogId);
+
 
 
 

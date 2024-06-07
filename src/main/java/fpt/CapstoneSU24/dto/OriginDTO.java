@@ -10,24 +10,40 @@ public class OriginDTO {
     private String DescriptionProduct;
     private String DescriptionOrigin;
      private int Warranty;
+ private String CoordinateX;
+ private String CoordinateY;
 
+    public String getCoordinateX() {
+        return CoordinateX;
+    }
+
+    public void setCoordinateX(String coordinateX) {
+        CoordinateX = coordinateX;
+    }
+
+    public String getCoordinateY() {
+        return CoordinateY;
+    }
+
+    public void setCoordinateY(String coordinateY) {
+        CoordinateY = coordinateY;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    private String address;
      private byte[] image;
 
     public OriginDTO() {
     }
 
-    public OriginDTO(String productName, String productRecognition, String orgName, String phone, String fullName, long createAt, String descriptionProduct, String descriptionOrigin, int warranty, byte[] image) {
-        ProductName = productName;
-        ProductRecognition = productRecognition;
-        OrgName = orgName;
-        Phone = phone;
-        FullName = fullName;
-        CreateAt = createAt;
-        DescriptionProduct = descriptionProduct;
-        DescriptionOrigin = descriptionOrigin;
-        Warranty = warranty;
-        this.image = image;
-    }
+
 
     public String getProductName() {
         return ProductName;

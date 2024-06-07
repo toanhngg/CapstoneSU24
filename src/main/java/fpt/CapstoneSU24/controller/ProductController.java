@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -29,7 +28,7 @@ public class ProductController {
     @Autowired
     ImageProductRepository imageProductRepository;
     @Autowired
-    ItemResponsitory itemResponsitory;
+    ItemRepository itemResponsitory;
     @PostMapping("/addProduct")
     public ResponseEntity addProduct(@RequestBody String req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

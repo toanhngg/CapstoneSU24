@@ -28,7 +28,7 @@ public class ItemLogDTO {
         private String signature;
 
         private String descriptionItemLog;
-        private String eventType;
+        private int eventId;
         private int statusItemLog;
         private Object imageItemLog;
 
@@ -185,12 +185,12 @@ public class ItemLogDTO {
                 this.descriptionItemLog = descriptionItemLog;
         }
 
-        public String getEventType() {
-                return eventType;
+        public int getEventId() {
+                return eventId;
         }
 
-        public void setEventType(String eventType) {
-                this.eventType = eventType;
+        public void setEventId(int eventId) {
+                this.eventId = eventId;
         }
 
         public int getStatusItemLog() {

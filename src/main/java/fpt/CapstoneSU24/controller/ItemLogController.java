@@ -1,10 +1,9 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.dto.ItemDTO;
 import fpt.CapstoneSU24.dto.ItemLogDTO;
 import fpt.CapstoneSU24.dto.ItemLogDetailResponse;
-import fpt.CapstoneSU24.dto.OriginDTO;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
+import fpt.CapstoneSU24.model.EventType;
 import fpt.CapstoneSU24.model.ItemLog;
 import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.Party;
@@ -23,17 +22,61 @@ public class ItemLogController {
     @Autowired
     public OriginRepository originRepository;
     @Autowired
-    public ItemResponsitory itemResponsitory;
+    public ItemRepository itemResponsitory;
     @Autowired
     public PartyRepository partyRepository;
     @Autowired
     public ItemLogRepository itemLogRepository;
     @Autowired
     private ClientService clientService;
-    @PostMapping(value = "/additemlog") // SAU ADD SHIPPER
-    public ResponseEntity addItemLog(@RequestBody ItemLogDTO itemLogDTO) {
-        try {
 
+
+//    @PostMapping(value = "/additemlog") // SAU ADD SHIPPER
+//    public ResponseEntity addItemLog(@RequestBody ItemLogDTO itemLogDTO) {
+//        try {
+//
+////            Location location = new Location();
+////            location.setAddress(itemLogDTO.getAddress());
+////            location.setCity(itemLogDTO.getCity());
+////            location.setCountry(itemLogDTO.getCountry());
+////            location.setCoordinateX(itemLogDTO.getCoordinateX());
+////            location.setCoordinateY(itemLogDTO.getCoordinateY());
+////
+////            Location locationId = locationRepository.save(location);
+//
+//            Party party = new Party();
+//            party.setDescription(itemLogDTO.getDescriptionParty());
+//            party.setEmail(itemLogDTO.getEmail());
+//            party.setPartyFullName(itemLogDTO.getFullName());
+//            party.setSignature(itemLogDTO.getSignature());
+//
+//            Party partyId = partyRepository.save(party);
+//
+//            ItemLog itemLog = new ItemLog();
+//            itemLog.setAddress(itemLogDTO.getAddress());
+//            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+//            itemLog.setEventType(itemLogDTO.getEventType());
+//            itemLog.setStatus(itemLogDTO.getStatusItemLog());
+//            itemLog.setTimeStamp(System.currentTimeMillis());
+//            //itemLog.setLocation(locationId);
+//            itemLog.setParty(partyId);
+//
+//            itemLogRepository.save(itemLog);
+//            ClientSdi sdi = new ClientSdi();
+//            sdi.setName(itemLogDTO.getFullName());
+//            sdi.setEmail(itemLogDTO.getEmail());
+//            clientService.notification(sdi);
+//            // add bảng location, item_log and party
+//            return ResponseEntity.status(200).body("Add successfully");
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        return null;
+//    }
+
+//    @PostMapping(value = "/additemlogAuthor")
+//    public ResponseEntity additemlogAuthor(@RequestBody ItemLogDTO itemLogDTO) {
+//        try {
 //            Location location = new Location();
 //            location.setAddress(itemLogDTO.getAddress());
 //            location.setCity(itemLogDTO.getCity());
@@ -42,80 +85,38 @@ public class ItemLogController {
 //            location.setCoordinateY(itemLogDTO.getCoordinateY());
 //
 //            Location locationId = locationRepository.save(location);
-
-            Party party = new Party();
-            party.setDescription(itemLogDTO.getDescriptionParty());
-            party.setEmail(itemLogDTO.getEmail());
-            party.setPartyFullName(itemLogDTO.getFullName());
-            party.setSignature(itemLogDTO.getSignature());
-
-            Party partyId = partyRepository.save(party);
-
-            ItemLog itemLog = new ItemLog();
-            itemLog.setAddress(itemLogDTO.getAddress());
-            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-            itemLog.setEventType(itemLogDTO.getEventType());
-            itemLog.setStatus(itemLogDTO.getStatusItemLog());
-            itemLog.setTimeStamp(System.currentTimeMillis());
-            //itemLog.setLocation(locationId);
-            itemLog.setParty(partyId);
-
-            itemLogRepository.save(itemLog);
-            ClientSdi sdi = new ClientSdi();
-            sdi.setName(itemLogDTO.getFullName());
-            sdi.setEmail(itemLogDTO.getEmail());
-            clientService.notification(sdi);
-            // add bảng location, item_log and party
-            return ResponseEntity.status(200).body("Add successfully");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    @PostMapping(value = "/additemlogAuthor")
-    public ResponseEntity additemlogAuthor(@RequestBody ItemLogDTO itemLogDTO) {
-        try {
-            Location location = new Location();
-            location.setAddress(itemLogDTO.getAddress());
-            location.setCity(itemLogDTO.getCity());
-            location.setCountry(itemLogDTO.getCountry());
-            location.setCoordinateX(itemLogDTO.getCoordinateX());
-            location.setCoordinateY(itemLogDTO.getCoordinateY());
-
-            Location locationId = locationRepository.save(location);
-
-            Party party = new Party();
-            party.setDescription(itemLogDTO.getDescriptionParty());
-            party.setEmail(itemLogDTO.getEmail());
-            party.setPartyFullName(itemLogDTO.getFullName());
-            party.setSignature(itemLogDTO.getSignature());
-
-            Party partyId = partyRepository.save(party);
-
-            ItemLog itemLog = new ItemLog();
-            itemLog.setAddress(itemLogDTO.getAddress());
-            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-            itemLog.setEventType(itemLogDTO.getEventType());
-            itemLog.setStatus(itemLogDTO.getStatusItemLog());
-            itemLog.setTimeStamp(System.currentTimeMillis());
-            itemLog.setLocation(locationId);
-            itemLog.setParty(partyId);
-
-            itemLogRepository.save(itemLog);
-            ClientSdi sdi = new ClientSdi();
-            sdi.setName(itemLogDTO.getFullName());
-            sdi.setEmail(itemLogDTO.getEmail());
-
-            //send mail
-            clientService.notification(sdi);
-            // add bảng location, item_log and party
-            return ResponseEntity.status(200).body("Uy quyen thanh cong!");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
+//
+//            Party party = new Party();
+//            party.setDescription(itemLogDTO.getDescriptionParty());
+//            party.setEmail(itemLogDTO.getEmail());
+//            party.setPartyFullName(itemLogDTO.getFullName());
+//            party.setSignature(itemLogDTO.getSignature());
+//
+//            Party partyId = partyRepository.save(party);
+//
+//            ItemLog itemLog = new ItemLog();
+//            itemLog.setAddress(itemLogDTO.getAddress());
+//            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+//            itemLog.setEventType(itemLogDTO.getEventType());
+//            itemLog.setStatus(itemLogDTO.getStatusItemLog());
+//            itemLog.setTimeStamp(System.currentTimeMillis());
+//            itemLog.setLocation(locationId);
+//            itemLog.setParty(partyId);
+//
+//            itemLogRepository.save(itemLog);
+//            ClientSdi sdi = new ClientSdi();
+//            sdi.setName(itemLogDTO.getFullName());
+//            sdi.setEmail(itemLogDTO.getEmail());
+//
+//            //send mail
+//            clientService.notification(sdi);
+//            // add bảng location, item_log and party
+//            return ResponseEntity.status(200).body("Uy quyen thanh cong!");
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        return null;
+//    }
 
     @GetMapping(value = "/getItemLogDetail")
     public ResponseEntity getItemLogDetail(@RequestParam int itemLogId) {
@@ -123,9 +124,11 @@ public class ItemLogController {
           ItemLog itemlogDetail =  itemLogRepository.getItemLogsById(itemLogId);
             ItemLogDetailResponse detailResponse = new ItemLogDetailResponse();
             detailResponse.setItemLogId(itemlogDetail.getItemLogId());
-            detailResponse.setEventType(itemlogDetail.getEventType());
+            detailResponse.setEventType(itemlogDetail.getEvent_id());
+            detailResponse.setSender(itemlogDetail.getAuthorized().getAuthorized_email());
+            detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorized_email());
             detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());
-            detailResponse.setPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
+            detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
             detailResponse.setAddress(itemlogDetail.getAddress());
             detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
             detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());

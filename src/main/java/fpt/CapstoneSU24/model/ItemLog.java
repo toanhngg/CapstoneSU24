@@ -23,25 +23,62 @@ public class ItemLog {
     private long timeStamp;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
-    @Column(name = "event_type", columnDefinition = "nvarchar(50)")
-    private String eventType;
+
+    @ManyToOne
+    @JoinColumn(name = "authorized_id")
+    private Authorized authorized;
+
+//    @Column(name = "event_type", columnDefinition = "nvarchar(50)")
+//    private String eventType;
     @Column(name = "status")
     private int status;
     @OneToOne(mappedBy = "itemLog", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private ImageItemLog imageItemLog;
+    @Column(name = "event_id")
+    private int event_id;
 
-    public ItemLog(int itemLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status, ImageItemLog imageItemLog) {
-        this.itemLogId = itemLogId;
+//    public ItemLog(int itemLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status, ImageItemLog imageItemLog) {
+//        this.itemLogId = itemLogId;
+//        this.item = item;
+//        this.address = address;
+//        this.party = party;
+//        this.location = location;
+//        this.timeStamp = timeStamp;
+//        this.description = description;
+//        this.eventType = eventType;
+//        this.status = status;
+//        this.imageItemLog = imageItemLog;
+//    }
+
+
+    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, int status, ImageItemLog imageItemLog, int event_id) {
         this.item = item;
         this.address = address;
         this.party = party;
         this.location = location;
         this.timeStamp = timeStamp;
         this.description = description;
-        this.eventType = eventType;
+        this.authorized = authorized;
         this.status = status;
         this.imageItemLog = imageItemLog;
+        this.event_id = event_id;
+    }
+
+    public Authorized getAuthorized() {
+        return authorized;
+    }
+
+    public void setAuthorized(Authorized authorized) {
+        this.authorized = authorized;
+    }
+
+    public int getEvent_id() {
+        return event_id;
+    }
+
+    public void setEvent_id(int event_id) {
+        this.event_id = event_id;
     }
 
     public int getItemLogId() {
@@ -121,13 +158,13 @@ public class ItemLog {
         this.description = description;
     }
 
-    public String getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
-    }
+//    public String getEventType() {
+//        return eventType;
+//    }
+//
+//    public void setEventType(String eventType) {
+//        this.eventType = eventType;
+//    }
 
     public int getStatus() {
         return status;

@@ -11,5 +11,5 @@ import java.util.List;
 public interface ImageProductRepository extends JpaRepository<ImageProduct, Integer> {
 
     @Query("SELECT i FROM ImageProduct i WHERE i.product.productId = :productId")
-    ImageProduct findByCurrentOwner(@Param("productId") int productId);
+    ImageProduct findByproductId(@Param("productId") int productId);
 }

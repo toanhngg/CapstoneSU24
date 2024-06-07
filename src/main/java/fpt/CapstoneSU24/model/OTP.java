@@ -2,6 +2,8 @@ package fpt.CapstoneSU24.model;
 
 import jakarta.persistence.*;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "OTP")
 public class OTP {
@@ -9,18 +11,28 @@ public class OTP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "otp_id")
     private int otpId;
-    @Column(name = "party_id")
-    private int partyId;
     @Column(name = "email", columnDefinition = "nchar(100)")
     private String email;
     @Column(name = "codeOTP", columnDefinition = "nchar(10)")
     private String codeOTP;
+    @Column(name = "expiry_time")
+    private Date expiryTime; // Thời gian hết hạn của OTP
 
-    public OTP( String email, String codeOTP) {
+    public OTP() {
+    }
+
+    public OTP(String email, String codeOTP, Date expiryTime) {
         this.email = email;
         this.codeOTP = codeOTP;
+        this.expiryTime = expiryTime;
     }
-    public OTP() {
+
+    public Date getExpiryTime() {
+        return expiryTime;
+    }
+
+    public void setExpiryTime(Date expiryTime) {
+        this.expiryTime = expiryTime;
     }
 
     public int getOtpId() {
@@ -29,14 +41,6 @@ public class OTP {
 
     public void setOtpId(int otpId) {
         this.otpId = otpId;
-    }
-
-    public int getPartyId() {
-        return partyId;
-    }
-
-    public void setPartyId(int partyId) {
-        this.partyId = partyId;
     }
 
     public String getEmail() {
