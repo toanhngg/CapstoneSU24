@@ -108,6 +108,17 @@ public class ProductController {
             return ResponseEntity.status(404).body("your account is not allowed for this action");
         }
     }
+    @PostMapping("/findProductById")
+    public ResponseEntity findProductById(@Valid @RequestBody IdRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
+            Product product = productRepository.findOneByProductId(req.getId());
+            return ResponseEntity.status(200).body(product);
+        }else{
+            return ResponseEntity.status(404).body("your account is not allowed for this action");
+        }
+    }
     @PostMapping("/deleteProductById")
     public ResponseEntity deleteProductById(@Valid @RequestBody IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
