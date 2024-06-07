@@ -1,6 +1,7 @@
 package fpt.CapstoneSU24.service;
 
 
+import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.RegisterRequest;
@@ -8,10 +9,13 @@ import fpt.CapstoneSU24.repository.LocationRepository;
 import fpt.CapstoneSU24.repository.RoleRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class AuthenticationService {
@@ -44,7 +48,7 @@ public class AuthenticationService {
         user.setRole(roleRepository.findOneByRoleId(2));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setCreateAt(System.currentTimeMillis());
-        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(), "");
+        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),"","");
         locationRepository.save(location);
         user.setLocation(location);
         return userRepository.save(user);
@@ -59,4 +63,11 @@ public class AuthenticationService {
         return userRepository.findByEmail(email)
                 .orElseThrow();
     }
+
+    public User ChangePassword(User user)
+    {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
+
 }

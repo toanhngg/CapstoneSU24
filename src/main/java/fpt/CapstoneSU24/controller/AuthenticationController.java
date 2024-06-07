@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
+import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.RegisterRequest;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
@@ -90,4 +92,26 @@ public class AuthenticationController {
         }
         return ResponseEntity.status(200).body("logout successfully");
     }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
+        try {
+            if (userRepository.findOneByEmail(changePasswordDto.getEmail()) == null) {
+                return ResponseEntity.status(500).body("Your email does not exist");
+            } else {
+                try {
+                    User user = authenticationService.authenticate(changePasswordDto.getEmail(), changePasswordDto.getOldPassword());
+                    user.setPassword(changePasswordDto.getPassword());
+                    authenticationService.ChangePassword(user);
+                    return ResponseEntity.status(200).body("Change password successfully");
+                } catch (BadCredentialsException e) {
+                    return ResponseEntity.status(401).body("Invalid Password");
+                }
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+
 }

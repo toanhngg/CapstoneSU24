@@ -19,7 +19,7 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", columnDefinition = "int default 0")
     private Role role;
     @Column(name = "first_name", columnDefinition = "nvarchar(50)")
     private String firstName;
@@ -40,6 +40,9 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private AuthToken authToken;
+
+    @Column(name = "profileImage", columnDefinition = "varbinary(MAX)")
+    private byte[] profileImage;
     public User() {
 
     }
@@ -183,5 +186,13 @@ public class User implements UserDetails {
 
     public void setAuthToken(AuthToken authToken) {
         this.authToken = authToken;
+    }
+
+    public byte[] getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(byte[] profileImage) {
+        this.profileImage = profileImage;
     }
 }

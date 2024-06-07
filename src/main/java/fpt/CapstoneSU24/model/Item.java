@@ -27,9 +27,7 @@ public class Item {
     @Column(name = "status")
     private int status;
 
-    public Item() {
 
-    }
 
     public Item(int itemId, Product product, String currentOwner, Origin origin, long createdAt, String productRecognition, int status) {
         this.itemId = itemId;
@@ -40,6 +38,11 @@ public class Item {
         this.productRecognition = productRecognition;
         this.status = status;
     }
+
+    public Item() {
+
+    }
+
 
     public int getItemId() {
         return itemId;

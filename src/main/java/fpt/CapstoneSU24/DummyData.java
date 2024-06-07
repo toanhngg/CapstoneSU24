@@ -41,7 +41,7 @@
 //        ).collect(Collectors.toList());
 //        roleRepository.saveAll(roleList);
 //
-////        /*dummy data cho Actor*/
+//        /*dummy data cho Actor*/
 ////        List<Actor> actorList = Stream.of(
 ////                new Actor(0, "Nguyen Chi Thanh", "", "09619000", "","")
 ////        ).collect(Collectors.toList());
