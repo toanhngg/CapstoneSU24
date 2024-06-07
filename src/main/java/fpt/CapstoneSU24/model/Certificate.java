@@ -30,6 +30,9 @@ public class Certificate {
         this.manufacturer = manufacturer;
     }
 
+    public Certificate() {
+    }
+
     public int getCertificateId() {
         return certificateId;
     }

@@ -41,6 +41,11 @@ public class Item {
         this.status = status;
     }
 
+    public Item() {
+
+    }
+
+
     public int getItemId() {
         return itemId;
     }

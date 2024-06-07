@@ -28,6 +28,9 @@ public class Category {
         this.user = user;
     }
 
+//    public Category(int i, String bát, String phầnMôTả) {
+//    }
+
     public int getCategoryId() {
         return categoryId;
     }

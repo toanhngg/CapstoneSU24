@@ -23,14 +23,21 @@ public class Party {
     public Party(){
 
     }
-
     public Party(int partyId, String partyFullName, String description, String phoneNumber, String email, String signature) {
-        this.partyId = partyId;
+          this.partyId = partyId;
         this.partyFullName = partyFullName;
         this.description = description;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.signature = signature;
+         this.signature = signature;
+    }
+    public Party( String partyFullName, String description, String phoneNumber, String email) {
+      //  this.partyId = partyId;
+        this.partyFullName = partyFullName;
+        this.description = description;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+      //  this.signature = signature;
     }
 
     public int getPartyId() {

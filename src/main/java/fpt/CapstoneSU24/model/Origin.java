@@ -19,8 +19,8 @@ public class Origin {
     private String org_name;
     @Column(name = "full_name_manufacturer", columnDefinition = "nvarchar(255)")
     private String fullNameManufacturer;
-    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
-    private String supportingDocuments;
+//    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
+//    private String supportingDocuments;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
     @ManyToOne
@@ -31,14 +31,14 @@ public class Origin {
 
    ;
 
-    public Origin(int originId, long createdAt, String email, String phone, String org_name, String fullNameManufacturer, String supportingDocuments, String description, Location location) {
+    public Origin(int originId, long createdAt, String email, String phone, String org_name, String fullNameManufacturer,String description, Location location) {
         this.originId = originId;
         this.createdAt = createdAt;
         this.email = email;
         this.phone = phone;
         this.org_name = org_name;
         this.fullNameManufacturer = fullNameManufacturer;
-        this.supportingDocuments = supportingDocuments;
+      //  this.supportingDocuments = supportingDocuments;
         this.description = description;
         this.location = location;
     }
@@ -83,13 +83,13 @@ public class Origin {
         this.fullNameManufacturer = fullNameManufacturer;
     }
 
-    public String getSupportingDocuments() {
-        return supportingDocuments;
-    }
-
-    public void setSupportingDocuments(String supportingDocuments) {
-        this.supportingDocuments = supportingDocuments;
-    }
+//    public String getSupportingDocuments() {
+//        return supportingDocuments;
+//    }
+//
+//    public void setSupportingDocuments(String supportingDocuments) {
+//        this.supportingDocuments = supportingDocuments;
+//    }
 
     public String getDescription() {
         return description;
