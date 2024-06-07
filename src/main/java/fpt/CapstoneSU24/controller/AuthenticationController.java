@@ -94,7 +94,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/changePassword")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
         try {
             if (userRepository.findOneByEmail(changePasswordDto.getEmail()) == null) {
                 return ResponseEntity.status(500).body("Your email does not exist");

@@ -13,7 +13,7 @@ public class Report {
     @Column(name = "report_id")
     private int reportId;
     @Column(name = "createOn")
-    private long createOn;
+    protected long createOn;
     @Column(name = "updateOn")
     private long updateOn;
     @Column(name = "code", columnDefinition = "nvarchar(50)")
