@@ -3,8 +3,9 @@ package fpt.CapstoneSU24.repository;
 import fpt.CapstoneSU24.model.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jdbc.repository.query.Modifying;
+//import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -34,10 +35,18 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     void updateStatusAndCurrent(@Param("itemId") int itemId, @Param("currentOwner") String currentOwner);
 
 
+//    @Modifying
+//    @Transactional
+//    @Query("UPDATE Item i SET i.status = 1 WHERE i.itemId = :itemId")
+//    void updateStatus(@Param("itemId") int itemId);
+
+    // Phương thức cập nhật status của item
+
     @Modifying
     @Transactional
-    @Query("UPDATE Item i SET i.status = 1 WHERE i.itemId = :itemId")
-    void updateStatus(@Param("itemId") int itemId);
+    @Query("UPDATE Item i SET i.status = :status WHERE i.itemId = :itemId")
+    void updateItemStatus(@Param("itemId") Long itemId, @Param("status") Integer status);
+
 
     @Query("SELECT i FROM Item i WHERE i.currentOwner = :currentOwner")
     List<Item> findByCurrentOwner(@Param("currentOwner") String currentOwner);

@@ -65,7 +65,12 @@ public class SecurityConfiguration {
                                 "/webjars/**",
                                 "/api/itemlog/getItemLogDetail",
                                 "/api/item/viewOrigin",
-                                "/api/item/viewLineItem"
+                                "/api/item/viewLineItem",
+                                "/api/item/authorized",
+                                "/api/item/checkAuthorized",
+                                "/api/item/checkCurrentOwner",
+                                "/api/item/sendOTP",
+                                "/api/item/confirmOTP"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
