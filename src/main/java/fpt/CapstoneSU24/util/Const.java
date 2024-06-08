@@ -28,4 +28,8 @@ public class Const {
     public final static class TEMPLATE_FILE_NAME_UNLOCKUSER {
         public final static String UNLOCKUSER_DETAIL = "UnLockUserMail";
     }
+
+    public final static class TEMPLATE_FILE_NAME_eSgin{
+        public final static String ESGIN = "eSgin";
+    }
 }
