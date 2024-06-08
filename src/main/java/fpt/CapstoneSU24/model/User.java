@@ -29,6 +29,8 @@ public class User implements UserDetails {
     private String description;
     @Column(name = "phone")
     private String phone;
+    @Column(name = "org_name", columnDefinition = "nvarchar(255)")
+    private String org_name;
     @Column(name = "create_at")
     private long createAt;
     @Column(name = "status")

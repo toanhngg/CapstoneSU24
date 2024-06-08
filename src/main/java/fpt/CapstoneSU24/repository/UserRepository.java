@@ -31,5 +31,21 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                              @Param("dateFrom") Long dateFrom,
                              @Param("dateTo") Long dateTo,
                              Pageable pageable);
+
+    /*@Query("SELECT u," +
+// "COALESCE(c.certificate_id, 0) AS certificateId" +
+            " FROM User u" +
+// "LEFT JOIN Certificate c ON u.userId = c.manufacturer.userId" +
+            "WHERE (:email IS NULL OR :email = '' OR u.email = :email) " +
+            "AND (:roleId IS NULL OR u.role.id = :roleId) " +
+            "AND (:status IS NULL OR u.status = :status) " +
+            "AND (:dateFrom IS NULL OR u.createAt >= :dateFrom) " +
+            "AND (:dateTo IS NULL OR u.createAt <= :dateTo)")
+    Page<User> findByFilters(@Param("email") String email,
+                             @Param("roleId") Integer roleId,
+                             @Param("status") Integer status,
+                             @Param("dateFrom") Long dateFrom,
+                             @Param("dateTo") Long dateTo,
+                             Pageable pageable);*/
 }
 

@@ -61,7 +61,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/getDataToTable")
+    @PostMapping("/getDataToTable")
     public ResponseEntity<Page<B03_GetDataGridDTO>> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
@@ -97,6 +97,8 @@ public class UserController {
 
         return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
+
+
 
     @PutMapping("/lockUser")
     public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
