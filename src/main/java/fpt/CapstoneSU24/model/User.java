@@ -38,8 +38,6 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
-    @Column(name = "org_name")
-    private String org_name;
 
     @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn

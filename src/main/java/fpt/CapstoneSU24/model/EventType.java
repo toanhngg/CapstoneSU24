@@ -8,24 +8,24 @@ public class EventType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "event_id")
-    private int event_id;
+    private int eventId;
     @Column(name = "event_type")
     private String event_type;
 
-    public EventType(int event_id, String event_type) {
-        this.event_id = event_id;
+    public EventType(int eventId, String event_type) {
+        this.eventId = eventId;
         this.event_type = event_type;
     }
 
     public EventType() {
     }
 
-    public int getEvent_id() {
-        return event_id;
+    public int getEventId() {
+        return eventId;
     }
 
-    public void setEvent_id(int event_id) {
-        this.event_id = event_id;
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
     }
 
     public String getEvent_type() {

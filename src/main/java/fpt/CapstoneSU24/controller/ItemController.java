@@ -152,7 +152,7 @@ public class ItemController {
                 ItemLog itemLog = new ItemLog();
                 itemLog.setAddress(itemLogDTO.getAddress());
                 itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
-                itemLog.setEvent_id(1); // tạo mới
+                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(1)); // tạo mới
                 itemLog.setStatus(1);
                 itemLog.setTimeStamp(scoreTime);
                 itemLog.setItem(item);
@@ -285,8 +285,8 @@ public class ItemController {
         String formattedDate = formatter.format(date);
 
         dto.setCreatedAt(formattedDate);
-        EventType eventType = eventTypeRepository.getReferenceById(itemLog.getEvent_id());
-        dto.setEventType(eventType.getEvent_type());
+        //EventType eventType = eventTypeRepository.getReferenceById(itemLog.getEvent_id());
+        dto.setEventType(itemLog.getEvent_id().getEvent_type());
         dto.setPartyName(itemLog.getParty().getPartyFullName());
         dto.setDescription(itemLog.getDescription());
 
@@ -467,7 +467,7 @@ public class ItemController {
                 itemLog.setItem(item);
                 itemLog.setLocation(authorized.getLocation());
                 itemLog.setParty(party);
-                itemLog.setEvent_id(2);
+                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
                 itemLog.setImageItemLog(null);
 
                 itemLogRepository.save(itemLog);

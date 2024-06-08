@@ -126,7 +126,7 @@ public class ItemLogController {
           ItemLog itemlogDetail =  itemLogRepository.getItemLogsById(itemLogId);
             ItemLogDetailResponse detailResponse = new ItemLogDetailResponse();
             detailResponse.setItemLogId(itemlogDetail.getItemLogId());
-            detailResponse.setEventType(eventTypeRepository.getReferenceById(itemlogDetail.getEvent_id()).getEvent_type());
+            detailResponse.setEventType(itemlogDetail.getEvent_id().getEvent_type());
             detailResponse.setSender(itemlogDetail.getAuthorized().getAssign_person_mail());
             detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorized_email());
             detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());

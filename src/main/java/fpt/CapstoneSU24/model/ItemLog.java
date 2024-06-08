@@ -23,10 +23,12 @@ public class ItemLog {
     private long timeStamp;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
-
     @ManyToOne
-    @JoinColumn(name = "authorized_id")
+    @JoinColumn(name = "strategy")
     private Authorized authorized;
+    @ManyToOne
+    @JoinColumn(name = "event_id", columnDefinition = "int default 0")
+    private EventType event_id;
 
 //    @Column(name = "event_type", columnDefinition = "nvarchar(50)")
 //    private String eventType;
@@ -35,8 +37,8 @@ public class ItemLog {
     @OneToOne(mappedBy = "itemLog", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private ImageItemLog imageItemLog;
-    @Column(name = "event_id")
-    private int event_id;
+/*    @Column(name = "event_id")
+    private int event_id;*/
 
 //    public ItemLog(int itemLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status, ImageItemLog imageItemLog) {
 //        this.itemLogId = itemLogId;
@@ -52,7 +54,7 @@ public class ItemLog {
 //    }
 
 
-    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, int status, ImageItemLog imageItemLog, int event_id) {
+    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, int status, ImageItemLog imageItemLog, EventType event_id) {
         this.item = item;
         this.address = address;
         this.party = party;
@@ -73,11 +75,11 @@ public class ItemLog {
         this.authorized = authorized;
     }
 
-    public int getEvent_id() {
+    public EventType getEvent_id() {
         return event_id;
     }
 
-    public void setEvent_id(int event_id) {
+    public void setEvent_id(EventType event_id) {
         this.event_id = event_id;
     }
 

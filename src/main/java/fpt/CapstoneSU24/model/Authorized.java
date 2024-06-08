@@ -6,13 +6,13 @@ import jakarta.persistence.*;
     @Table(name = "authorized")
     public class Authorized {
         @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "authorized_id")
         private int authorized_id;
         @Column(name = "authorized_name")
         private String authorized_name;
         @Column(name = "authorized_email")
         private String authorized_email;
-
         @Column(name = "assign_person")
         private String assign_person;
         @Column(name = "assign_person_mail")

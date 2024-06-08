@@ -12,6 +12,9 @@ public class AuthenLog {
     @ManyToOne
     @JoinColumn(name = "user_id", columnDefinition = "int default 0")
     private User userId;
-    @Column(name = "authen_log", columnDefinition = "nvarchar(50)")
-    private String firstName;
+    @Column(name = "authen_log", columnDefinition = "nvarchar(max)")
+    private String authenLog;
+    @Column(name = "time", columnDefinition = "nvarchar(50)")
+    private String time;
+
 }
