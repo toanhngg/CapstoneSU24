@@ -19,8 +19,6 @@ public class QRCodeGenerator {
 public ProductRepository productRepository;
     private static final Random random = new Random();
     public String generateProductCode(int productId, int quantity) throws NoSuchAlgorithmException {
-        // Assuming productRepository is properly initialized
-        System.out.println("var" + productId );
 
         Product product = productRepository.findOneByProductId(productId);
         if (product == null) {
@@ -34,7 +32,28 @@ public ProductRepository productRepository;
         long currentTimeMillis = System.currentTimeMillis();
 
         // Create raw code string
-        String rawCode = product.getProductName() + "-" + product.getCategory().getName() + "-" + randomNumber + "-" + currentTimeMillis;
+        String rawCode = product.getProductName() + "-" + product.getCategory().getName()  + currentTimeMillis;
+
+        // Hash the raw code using SHA-256
+        String hashedCode = hashString(rawCode);
+
+        return hashedCode;
+    }
+    public String generateProductDescription(int productId) throws NoSuchAlgorithmException {
+
+        Product product = productRepository.findOneByProductId(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("Product not found with ID: " + productId);
+        }
+
+        // Generate a random number between 0 and quantity - 1
+      //  int randomNumber = random.nextInt(quantity);
+
+        // Get current time in milliseconds
+        long currentTimeMillis = System.currentTimeMillis();
+
+        // Create raw code string
+        String rawCode = product.getProductName() + "-" + product.getCategory().getName()  + currentTimeMillis;
 
         // Hash the raw code using SHA-256
         String hashedCode = hashString(rawCode);

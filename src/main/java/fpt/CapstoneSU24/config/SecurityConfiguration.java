@@ -60,7 +60,10 @@ public class SecurityConfiguration {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/api/itemlog/getItemLogDetail",
+                                "/api/item/viewOrigin",
+                                "/api/item/viewLineItem"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
