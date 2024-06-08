@@ -5,40 +5,55 @@ import lombok.Data;
 
 @Data
 public class ItemLogDTO {
-        private int itemLogId;
+
+        private int quantity;
+        private int userId;
         private String address;
         private String city;
         private String country;
         private String coordinateX;
         private String coordinateY;
+      //  private long createdAt;
 
-        private long createdAt;
-        private String phone;
-        private String orgName;
-        private String fullName;
-        private String supportingDocuments;
+     //   private String phone;
+       // private String orgName;
+       // private String fullName;
+       // private String supportingDocuments;
         private String descriptionOrigin;
 
         private int productId;
-        private String productRecognition;
-        private int statusProduct;
+       // private String productRecognition;
+       // private int statusItem;
 
-        private String descriptionParty;
-        private String email;
-        private String signature;
+      //  private String descriptionParty;
+     //   private String email;
 
-        private String descriptionItemLog;
-        private int eventId;
-        private int statusItemLog;
-        private Object imageItemLog;
+       // private String descriptionItemLog;
+       // private int eventId;
+       // private int statusItemLog;
 
-        public int getItemLogId() {
-                return itemLogId;
+        public int getUserId() {
+                return userId;
         }
 
-        public void setItemLogId(int itemLogId) {
-                this.itemLogId = itemLogId;
+        public void setUserId(int userId) {
+                this.userId = userId;
         }
+
+        public int getQuantity() {
+                return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+                this.quantity = quantity;
+        }
+//        public int getItemLogId() {
+//                return itemLogId;
+//        }
+//
+//        public void setItemLogId(int itemLogId) {
+//                this.itemLogId = itemLogId;
+//        }
 
         // Getters and Setters
         public String getAddress() {
@@ -81,45 +96,45 @@ public class ItemLogDTO {
                 this.coordinateY = coordinateY;
         }
 
-        public long getCreatedAt() {
-                return createdAt;
-        }
+//        public long getCreatedAt() {
+//                return createdAt;
+//        }
+//
+//        public void setCreatedAt(long createdAt) {
+//                this.createdAt = createdAt;
+//        }
 
-        public void setCreatedAt(long createdAt) {
-                this.createdAt = createdAt;
-        }
-
-        public String getPhone() {
-                return phone;
-        }
-
-        public void setPhone(String phone) {
-                this.phone = phone;
-        }
-
-        public String getOrgName() {
-                return orgName;
-        }
-
-        public void setOrgName(String orgName) {
-                this.orgName = orgName;
-        }
-
-        public String getFullName() {
-                return fullName;
-        }
-
-        public void setFullName(String fullName) {
-                this.fullName = fullName;
-        }
-
-        public String getSupportingDocuments() {
-                return supportingDocuments;
-        }
-
-        public void setSupportingDocuments(String supportingDocuments) {
-                this.supportingDocuments = supportingDocuments;
-        }
+//        public String getPhone() {
+//                return phone;
+//        }
+//
+//        public void setPhone(String phone) {
+//                this.phone = phone;
+//        }
+//
+//        public String getOrgName() {
+//                return orgName;
+//        }
+//
+//        public void setOrgName(String orgName) {
+//                this.orgName = orgName;
+//        }
+//
+//        public String getFullName() {
+//                return fullName;
+//        }
+//
+//        public void setFullName(String fullName) {
+//                this.fullName = fullName;
+//        }
+//
+//        public String getSupportingDocuments() {
+//                return supportingDocuments;
+//        }
+//
+//        public void setSupportingDocuments(String supportingDocuments) {
+//                this.supportingDocuments = supportingDocuments;
+//        }
 
         public String getDescriptionOrigin() {
                 return descriptionOrigin;
@@ -136,76 +151,76 @@ public class ItemLogDTO {
         public void setProductId(int productId) {
                 this.productId = productId;
         }
+//
+//        public String getProductRecognition() {
+//                return productRecognition;
+//        }
+//
+//        public void setProductRecognition(String productRecognition) {
+//                this.productRecognition = productRecognition;
+//        }
 
-        public String getProductRecognition() {
-                return productRecognition;
-        }
+//        public int getStatusItem() {
+//                return statusItem;
+//        }
+//
+//        public void setStatusItem(int statusItem) {
+//                this.statusItem = statusItem;
+//        }
+//
+//        public String getDescriptionParty() {
+//                return descriptionParty;
+//        }
+//
+//        public void setDescriptionParty(String descriptionParty) {
+//                this.descriptionParty = descriptionParty;
+//        }
+//
+//        public String getEmail() {
+//                return email;
+//        }
+//
+//        public void setEmail(String email) {
+//                this.email = email;
+//        }
 
-        public void setProductRecognition(String productRecognition) {
-                this.productRecognition = productRecognition;
-        }
+//        public String getSignature() {
+//                return signature;
+//        }
+//
+//        public void setSignature(String signature) {
+//                this.signature = signature;
+//        }
 
-        public int getStatusProduct() {
-                return statusProduct;
-        }
+//        public String getDescriptionItemLog() {
+//                return descriptionItemLog;
+//        }
 
-        public void setStatusProduct(int statusProduct) {
-                this.statusProduct = statusProduct;
-        }
+//        public void setDescriptionItemLog(String descriptionItemLog) {
+//                this.descriptionItemLog = descriptionItemLog;
+//        }
 
-        public String getDescriptionParty() {
-                return descriptionParty;
-        }
+//        public int getEventId() {
+//                return eventId;
+//        }
+//
+//        public void setEventId(int eventId) {
+//                this.eventId = eventId;
+//        }
 
-        public void setDescriptionParty(String descriptionParty) {
-                this.descriptionParty = descriptionParty;
-        }
+//        public int getStatusItemLog() {
+//                return statusItemLog;
+//        }
+//
+//        public void setStatusItemLog(int statusItemLog) {
+//                this.statusItemLog = statusItemLog;
+//        }
 
-        public String getEmail() {
-                return email;
-        }
-
-        public void setEmail(String email) {
-                this.email = email;
-        }
-
-        public String getSignature() {
-                return signature;
-        }
-
-        public void setSignature(String signature) {
-                this.signature = signature;
-        }
-
-        public String getDescriptionItemLog() {
-                return descriptionItemLog;
-        }
-
-        public void setDescriptionItemLog(String descriptionItemLog) {
-                this.descriptionItemLog = descriptionItemLog;
-        }
-
-        public int getEventId() {
-                return eventId;
-        }
-
-        public void setEventId(int eventId) {
-                this.eventId = eventId;
-        }
-
-        public int getStatusItemLog() {
-                return statusItemLog;
-        }
-
-        public void setStatusItemLog(int statusItemLog) {
-                this.statusItemLog = statusItemLog;
-        }
-
-        public Object getImageItemLog() {
-                return imageItemLog;
-        }
-
-        public void setImageItemLog(Object imageItemLog) {
-                this.imageItemLog = imageItemLog;
-        }
+//        public Object getImageItemLog() {
+//                return imageItemLog;
+//        }
+//
+//        public void setImageItemLog(Object imageItemLog) {
+//                this.imageItemLog = imageItemLog;
+//        }
 }

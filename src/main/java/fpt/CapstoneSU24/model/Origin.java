@@ -19,8 +19,8 @@ public class Origin {
     private String org_name;
     @Column(name = "full_name_manufacturer", columnDefinition = "nvarchar(255)")
     private String fullNameManufacturer;
-//    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
-//    private String supportingDocuments;
+    @Column(name = "supporting_documents", columnDefinition = "nvarchar(255)")
+    private String supportingDocuments;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
     @ManyToOne
@@ -83,13 +83,13 @@ public class Origin {
         this.fullNameManufacturer = fullNameManufacturer;
     }
 
-//    public String getSupportingDocuments() {
-//        return supportingDocuments;
-//    }
-//
-//    public void setSupportingDocuments(String supportingDocuments) {
-//        this.supportingDocuments = supportingDocuments;
-//    }
+    public String getSupportingDocuments() {
+        return supportingDocuments;
+    }
+
+    public void setSupportingDocuments(String supportingDocuments) {
+        this.supportingDocuments = supportingDocuments;
+    }
 
     public String getDescription() {
         return description;

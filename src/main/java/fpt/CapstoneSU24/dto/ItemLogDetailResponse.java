@@ -2,17 +2,25 @@ package fpt.CapstoneSU24.dto;
 
 public class ItemLogDetailResponse {
 private int itemLogId;
-private int eventType;
+private String eventType;
 private String partyFullname;
 
 private String sender;
 private String receiver;
 private String PartyPhoneNumber;
-private String address;
+private String addressInParty;
 private String coordinateX;
 private String coordinateY;
 private double timeReceive;
 private String descriptionItemLog;
+
+    public String getAddressInParty() {
+        return addressInParty;
+    }
+
+    public void setAddressInParty(String addressInParty) {
+        this.addressInParty = addressInParty;
+    }
 
     public String getSender() {
         return sender;
@@ -38,11 +46,11 @@ private String descriptionItemLog;
         this.itemLogId = itemLogId;
     }
 
-    public int getEventType() {
+    public String getEventType() {
         return eventType;
     }
 
-    public void setEventType(int eventType) {
+    public void setEventType(String eventType) {
         this.eventType = eventType;
     }
 
@@ -62,13 +70,6 @@ private String descriptionItemLog;
         PartyPhoneNumber = partyPhoneNumber;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
 
     public String getCoordinateX() {
         return coordinateX;
