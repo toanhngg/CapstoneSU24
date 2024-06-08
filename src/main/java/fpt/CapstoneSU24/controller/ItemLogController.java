@@ -29,6 +29,8 @@ public class ItemLogController {
     public ItemLogRepository itemLogRepository;
     @Autowired
     private ClientService clientService;
+    @Autowired
+    public EventTypeRepository eventTypeRepository;
 
 
 //    @PostMapping(value = "/additemlog") // SAU ADD SHIPPER
@@ -124,12 +126,12 @@ public class ItemLogController {
           ItemLog itemlogDetail =  itemLogRepository.getItemLogsById(itemLogId);
             ItemLogDetailResponse detailResponse = new ItemLogDetailResponse();
             detailResponse.setItemLogId(itemlogDetail.getItemLogId());
-            detailResponse.setEventType(itemlogDetail.getEvent_id());
-            detailResponse.setSender(itemlogDetail.getAuthorized().getAuthorized_email());
+            detailResponse.setEventType(eventTypeRepository.getReferenceById(itemlogDetail.getEvent_id()).getEvent_type());
+            detailResponse.setSender(itemlogDetail.getAuthorized().getAssign_person_mail());
             detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorized_email());
             detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());
             detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
-            detailResponse.setAddress(itemlogDetail.getAddress());
+            detailResponse.setAddressInParty(itemlogDetail.getAddress());
             detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
             detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
             detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());

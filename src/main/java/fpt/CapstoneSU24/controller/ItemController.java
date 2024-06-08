@@ -27,13 +27,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RestController
 @RequestMapping("/api/item")
+@RestController
 public class ItemController {
     @Autowired
     public LocationRepository locationRepository;
@@ -59,6 +60,8 @@ public class ItemController {
     private EventTypeRepository eventTypeRepository;
     @Autowired
     ExportExcelService exportExcelService;
+    @Autowired
+    UserRepository userRepository;
     /*
      * type is sort type: "desc" or "asc"
      * default data startDate and endDate equal 0 (need insert 2 data)
@@ -97,6 +100,10 @@ public class ItemController {
     @PostMapping("/addItem")
     public ResponseEntity addItem(@RequestBody ItemLogDTO itemLogDTO) {
         try {
+            // Lấy thông tin của User
+            User user = userRepository.getReferenceById(itemLogDTO.getUserId());
+
+            // Lưu địa chỉ
             Location location = new Location();
             location.setAddress(itemLogDTO.getAddress());
             location.setCity(itemLogDTO.getCity());
@@ -108,112 +115,127 @@ public class ItemController {
             long scoreTime = System.currentTimeMillis();
             Origin origin = new Origin();
             origin.setCreatedAt(scoreTime);
+            // generateProductDescription
             origin.setDescription(itemLogDTO.getDescriptionOrigin());
-            origin.setEmail(itemLogDTO.getEmail());
-            origin.setFullNameManufacturer(itemLogDTO.getFullName());
-            origin.setOrg_name(itemLogDTO.getOrgName());
-            origin.setPhone(itemLogDTO.getPhone());
-            //  origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments());
+            origin.setSupportingDocuments(qrCodeGenerator.generateProductDescription(itemLogDTO.getProductId(), itemLogDTO.getAddress(), scoreTime));
+            origin.setEmail(user.getEmail());
+            origin.setFullNameManufacturer(user.getFirstName() + " " + user.getLastName());
+            origin.setOrg_name(user.getOrg_name());
+            origin.setPhone(user.getPhone());
             origin.setLocation(savedLocation);
             Origin saveOrigin = originRepository.save(origin);
 
-            Item item = new Item();
-            item.setCreatedAt(scoreTime);
-            item.setCurrentOwner(itemLogDTO.getEmail());
-            //item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId()));
-            item.setStatus(-1);
-            item.setOrigin(saveOrigin);
-            item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-            Item saveItem = itemRepository.save(item);
+            List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
+            List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
+            List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
 
-            Party party = new Party();
-            party.setDescription(itemLogDTO.getDescriptionParty());
-            party.setEmail(itemLogDTO.getEmail());
-            party.setPartyFullName(itemLogDTO.getFullName());
-            party.setPhoneNumber(itemLogDTO.getPhone());
-            party.setSignature(itemLogDTO.getSignature());
-            Party saveParty = partyRepository.save(party);
-//[item_id],[location_id],[party_id])
-            ItemLog itemLog = new ItemLog();
-            itemLog.setAddress(itemLogDTO.getAddress());
-            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-            itemLog.setEvent_id(itemLogDTO.getEventId());
-            itemLog.setStatus(itemLogDTO.getStatusItemLog());
-            itemLog.setTimeStamp(scoreTime);
-            itemLog.setItem(saveItem);
-            itemLog.setLocation(savedLocation);
-            itemLog.setParty(saveParty);
-            itemLogRepository.save(itemLog);
-            return ResponseEntity.ok("ok");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    @PostMapping("/addItemByQuantity")
-    public ResponseEntity addItemByQuantity(@RequestBody ItemLogDTO itemLogDTO, @RequestParam int quantity) {
-        try {
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//            User currentUser = (User) authentication.getPrincipal();
-//            currentUser.
-            Location location = new Location();
-            location.setAddress(itemLogDTO.getAddress());
-            location.setCity(itemLogDTO.getCity());
-            location.setCountry(itemLogDTO.getCountry());
-            location.setCoordinateX(itemLogDTO.getCoordinateX());
-            location.setCoordinateY(itemLogDTO.getCoordinateY());
-            Location savedLocation = locationRepository.save(location);
-
-            long scoreTime = System.currentTimeMillis();
-            Origin origin = new Origin();
-            origin.setCreatedAt(scoreTime);
-            origin.setDescription(itemLogDTO.getDescriptionOrigin());
-            origin.setEmail(itemLogDTO.getEmail()); // mai lay tu User
-            origin.setFullNameManufacturer(itemLogDTO.getFullName()); // mai lay tu User
-            origin.setOrg_name(itemLogDTO.getOrgName());  // mai lay tu User
-            origin.setPhone(itemLogDTO.getPhone()); // mai lay tu User
-            // origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments()); // mai lay tu User
-            origin.setLocation(savedLocation);
-            Origin saveOrigin = originRepository.save(origin);
-            for (int i = 0; i < quantity; i++) {
+            for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
+                // Create Item
                 Item item = new Item();
                 item.setCreatedAt(scoreTime);
-                item.setCurrentOwner(itemLogDTO.getEmail());
-                String productRe = qrCodeGenerator.generateProductCode(itemLogDTO.getProductId(),quantity);
-                item.setProductRecognition(productRe);
-                item.setStatus(-1);
+                item.setCurrentOwner(user.getEmail());
+                item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId()));
+                item.setStatus(1);
                 item.setOrigin(saveOrigin);
                 item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-                Item saveItem = itemRepository.save(item);
+                items.add(item);
 
+                // Create Party
                 Party party = new Party();
-                party.setDescription(itemLogDTO.getDescriptionParty());
-                party.setEmail(itemLogDTO.getEmail()); // mai lay tu User
-                party.setPartyFullName(itemLogDTO.getFullName()); // mai lay tu User
-                party.setPhoneNumber(itemLogDTO.getPhone()); // mai lay tu User
-                party.setSignature(itemLogDTO.getSignature()); // mai lay tu User
-                Party saveParty = partyRepository.save(party);
+                party.setDescription(itemLogDTO.getDescriptionOrigin());
+                party.setEmail(user.getEmail());
+                party.setPartyFullName(user.getFirstName() + " " + user.getLastName());
+                party.setPhoneNumber(user.getPhone());
+                parties.add(party);
 
+                // Create ItemLog
                 ItemLog itemLog = new ItemLog();
                 itemLog.setAddress(itemLogDTO.getAddress());
-                itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-                itemLog.setEvent_id(itemLogDTO.getEventId());
-                itemLog.setStatus(itemLogDTO.getStatusItemLog());
+                itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
+                itemLog.setEvent_id(1); // tạo mới
+                itemLog.setStatus(1);
                 itemLog.setTimeStamp(scoreTime);
-                itemLog.setItem(saveItem);
+                itemLog.setItem(item);
                 itemLog.setLocation(savedLocation);
-                itemLog.setParty(saveParty);
-                itemLogRepository.save(itemLog);
+                itemLog.setParty(party);
+                itemLogs.add(itemLog);
             }
-            return ResponseEntity.ok("ok");
 
+            // Save all entities in batch
+            itemRepository.saveAll(items);
+            partyRepository.saveAll(parties);
+            itemLogRepository.saveAll(itemLogs);
+
+            return ResponseEntity.ok("ok");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return null;
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
     }
+
+
+//    @PostMapping("/addItemByQuantity")
+//    public ResponseEntity addItemByQuantity(@RequestBody ItemLogDTO itemLogDTO, @RequestParam int quantity) {
+//        try {
+////            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+////            User currentUser = (User) authentication.getPrincipal();
+////            currentUser.
+//            Location location = new Location();
+//            location.setAddress(itemLogDTO.getAddress());
+//            location.setCity(itemLogDTO.getCity());
+//            location.setCountry(itemLogDTO.getCountry());
+//            location.setCoordinateX(itemLogDTO.getCoordinateX());
+//            location.setCoordinateY(itemLogDTO.getCoordinateY());
+//            Location savedLocation = locationRepository.save(location);
+//
+//            long scoreTime = System.currentTimeMillis();
+//            Origin origin = new Origin();
+//            origin.setCreatedAt(scoreTime);
+//            origin.setDescription(itemLogDTO.getDescriptionOrigin());
+//            origin.setEmail(itemLogDTO.getEmail()); // mai lay tu User
+//            origin.setFullNameManufacturer(itemLogDTO.getFullName()); // mai lay tu User
+//            origin.setOrg_name(itemLogDTO.getOrgName());  // mai lay tu User
+//            origin.setPhone(itemLogDTO.getPhone()); // mai lay tu User
+//            // origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments()); // mai lay tu User
+//            origin.setLocation(savedLocation);
+//            Origin saveOrigin = originRepository.save(origin);
+//            for (int i = 0; i < quantity; i++) {
+//                Item item = new Item();
+//                item.setCreatedAt(scoreTime);
+//                item.setCurrentOwner(itemLogDTO.getEmail());
+//                String productRe = qrCodeGenerator.generateProductCode(itemLogDTO.getProductId(),quantity);
+//                item.setProductRecognition(productRe);
+//                item.setStatus(-1);
+//                item.setOrigin(saveOrigin);
+//                item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
+//                Item saveItem = itemRepository.save(item);
+//
+//                Party party = new Party();
+//                party.setDescription(itemLogDTO.getDescriptionParty());
+//                party.setEmail(itemLogDTO.getEmail()); // mai lay tu User
+//                party.setPartyFullName(itemLogDTO.getFullName()); // mai lay tu User
+//                party.setPhoneNumber(itemLogDTO.getPhone()); // mai lay tu User
+//                party.setSignature(itemLogDTO.getSignature()); // mai lay tu User
+//                Party saveParty = partyRepository.save(party);
+//
+//                ItemLog itemLog = new ItemLog();
+//                itemLog.setAddress(itemLogDTO.getAddress());
+//                itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+//                itemLog.setEvent_id(itemLogDTO.getEventId());
+//                itemLog.setStatus(itemLogDTO.getStatusItemLog());
+//                itemLog.setTimeStamp(scoreTime);
+//                itemLog.setItem(saveItem);
+//                itemLog.setLocation(savedLocation);
+//                itemLog.setParty(saveParty);
+//                itemLogRepository.save(itemLog);
+//            }
+//            return ResponseEntity.ok("ok");
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//        return null;
+//    }
 
     @GetMapping("/findAllItemByProductId")
     public ResponseEntity findAllItemByProductId(@RequestParam int ProductId) {
@@ -231,15 +253,15 @@ public class ItemController {
     public ResponseEntity viewLineItem(@RequestParam String productRecognition) {
         try {
             Item item = itemRepository.findByProductRecognition(productRecognition);
-            System.out.println(item.getItemId());
+          //  System.out.println(item.getItemId());
             List<ItemLog> itemList = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
             if (itemList.isEmpty()) {
                 // Trả về chỉ thông tin của Item nếu không có ItemLog nào
-                //  ItemDTO itemDTO = convertToItemDTO(item);
+              //  ItemDTO itemDTO = convertToItemDTO(item);
                 return ResponseEntity.ok(new ItemLogDTOResponse(/*itemDTO, */Collections.emptyList()));
             } else {
-                //  ItemDTO itemDTO = convertToItemDTO(item);
+              //  ItemDTO itemDTO = convertToItemDTO(item);
                 List<ItemLogDTOResponse> itemLogDTOs = itemList.stream()
                         .map(this::convertToItemLogDTO)
                         .collect(Collectors.toList());
@@ -275,10 +297,10 @@ public class ItemController {
     }
 
     private ItemDTO convertToItemDTO(Item item) {
-        ItemDTO dto = new ItemDTO();
-        dto.setProductRecognition(item.getProductRecognition());
-        return dto;
-    }
+    ItemDTO dto = new ItemDTO();
+    dto.setProductRecognition(item.getProductRecognition());
+    return dto;
+}
 
     @GetMapping("/viewOrigin")
     public ResponseEntity getOrigin(@RequestParam int itemLogId) {
@@ -346,10 +368,10 @@ public class ItemController {
                 location.setCoordinateY(authorized.getLocation().getCoordinateY());
                 Location savedLocation = locationRepository.save(location);
                 locationRepository.save(new Location());
-                Authorized authorizedSaved =  authorizedResponsitory.save(new Authorized(authorized.getAuthorized_name(),
+               Authorized authorizedSaved =  authorizedResponsitory.save(new Authorized(authorized.getAuthorized_name(),
                         authorized.getAuthorized_email(),itemLog.getParty().getPartyFullName(),item.getCurrentOwner(),
                         savedLocation,authorized.getPhoneNumber(),authorized.getDescription()
-                ));
+                    ));
                 // Uy quyen thi update vao bang item voi currentOwner voi status la 0
                 itemRepository.updateStatusAndCurrent(item.getItemId(), authorized.getAuthorized_email());
                 // add authorized_id vao bang itemlog

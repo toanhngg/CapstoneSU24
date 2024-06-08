@@ -38,6 +38,8 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
+    @Column(name = "org_name")
+    private String org_name;
 
     @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
@@ -46,7 +48,13 @@ public class User implements UserDetails {
     @Column(name = "profileImage", columnDefinition = "varbinary(MAX)")
     private byte[] profileImage;
     public User() {
+    }
+    public String getOrg_name() {
+        return org_name;
+    }
 
+    public void setOrg_name(String org_name) {
+        this.org_name = org_name;
     }
 
     public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location, AuthToken authToken) {

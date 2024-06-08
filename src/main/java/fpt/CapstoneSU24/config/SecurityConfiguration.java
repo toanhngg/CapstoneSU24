@@ -61,7 +61,11 @@ public class SecurityConfiguration {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",
-                                "/api/location/**"
+                                "/api/location/**",
+                                "/webjars/**",
+                                "/api/itemlog/getItemLogDetail",
+                                "/api/item/viewOrigin",
+                                "/api/item/viewLineItem"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
