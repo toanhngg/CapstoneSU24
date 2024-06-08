@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -99,9 +100,10 @@ public class ItemController {
     @PostMapping("/addItem")
     public ResponseEntity addItem(@RequestBody ItemLogDTO itemLogDTO) {
         try {
-            // Lay ra thong tin cua User
+            // Lấy thông tin của User
             User user = userRepository.getReferenceById(itemLogDTO.getUserId());
-            // Luu dia chi
+
+            // Lưu địa chỉ
             Location location = new Location();
             location.setAddress(itemLogDTO.getAddress());
             location.setCity(itemLogDTO.getCity());
@@ -114,49 +116,63 @@ public class ItemController {
             Origin origin = new Origin();
             origin.setCreatedAt(scoreTime);
             // generateProductDescription
-            //origin.setDescription();
+            origin.setDescription(itemLogDTO.getDescriptionOrigin());
+            origin.setSupportingDocuments(qrCodeGenerator.generateProductDescription(itemLogDTO.getProductId(), itemLogDTO.getAddress(), scoreTime));
             origin.setEmail(user.getEmail());
             origin.setFullNameManufacturer(user.getFirstName() + " " + user.getLastName());
             origin.setOrg_name(user.getOrg_name());
             origin.setPhone(user.getPhone());
-            //  origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments());
             origin.setLocation(savedLocation);
             Origin saveOrigin = originRepository.save(origin);
-            for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
 
+            List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
+            List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
+            List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
+
+            for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
+                // Create Item
                 Item item = new Item();
                 item.setCreatedAt(scoreTime);
                 item.setCurrentOwner(user.getEmail());
-                item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId(), itemLogDTO.getQuantity()));
+                item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId()));
                 item.setStatus(1);
                 item.setOrigin(saveOrigin);
                 item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-                Item saveItem = itemRepository.save(item);
+                items.add(item);
 
+                // Create Party
                 Party party = new Party();
                 party.setDescription(itemLogDTO.getDescriptionOrigin());
                 party.setEmail(user.getEmail());
                 party.setPartyFullName(user.getFirstName() + " " + user.getLastName());
                 party.setPhoneNumber(user.getPhone());
-                // party.setSignature(itemLogDTO.getSignature());
-                Party saveParty = partyRepository.save(party);
+                parties.add(party);
+
+                // Create ItemLog
                 ItemLog itemLog = new ItemLog();
                 itemLog.setAddress(itemLogDTO.getAddress());
                 itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
-                itemLog.setEvent_id(1); // tao moi
+                itemLog.setEvent_id(1); // tạo mới
                 itemLog.setStatus(1);
                 itemLog.setTimeStamp(scoreTime);
-                itemLog.setItem(saveItem);
+                itemLog.setItem(item);
                 itemLog.setLocation(savedLocation);
-                itemLog.setParty(saveParty);
-                itemLogRepository.save(itemLog);
-                return ResponseEntity.ok("ok");
+                itemLog.setParty(party);
+                itemLogs.add(itemLog);
             }
+
+            // Save all entities in batch
+            itemRepository.saveAll(items);
+            partyRepository.saveAll(parties);
+            itemLogRepository.saveAll(itemLogs);
+
+            return ResponseEntity.ok("ok");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return null;
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
     }
+
 
 //    @PostMapping("/addItemByQuantity")
 //    public ResponseEntity addItemByQuantity(@RequestBody ItemLogDTO itemLogDTO, @RequestParam int quantity) {

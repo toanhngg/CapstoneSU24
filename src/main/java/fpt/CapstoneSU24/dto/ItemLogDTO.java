@@ -13,7 +13,7 @@ public class ItemLogDTO {
         private String country;
         private String coordinateX;
         private String coordinateY;
-        private long createdAt;
+      //  private long createdAt;
 
      //   private String phone;
        // private String orgName;
@@ -29,8 +29,8 @@ public class ItemLogDTO {
      //   private String email;
 
        // private String descriptionItemLog;
-        private int eventId;
-        private int statusItemLog;
+       // private int eventId;
+       // private int statusItemLog;
 
         public int getUserId() {
                 return userId;
@@ -96,13 +96,13 @@ public class ItemLogDTO {
                 this.coordinateY = coordinateY;
         }
 
-        public long getCreatedAt() {
-                return createdAt;
-        }
-
-        public void setCreatedAt(long createdAt) {
-                this.createdAt = createdAt;
-        }
+//        public long getCreatedAt() {
+//                return createdAt;
+//        }
+//
+//        public void setCreatedAt(long createdAt) {
+//                this.createdAt = createdAt;
+//        }
 
 //        public String getPhone() {
 //                return phone;
@@ -200,21 +200,21 @@ public class ItemLogDTO {
 //                this.descriptionItemLog = descriptionItemLog;
 //        }
 
-        public int getEventId() {
-                return eventId;
-        }
+//        public int getEventId() {
+//                return eventId;
+//        }
+//
+//        public void setEventId(int eventId) {
+//                this.eventId = eventId;
+//        }
 
-        public void setEventId(int eventId) {
-                this.eventId = eventId;
-        }
-
-        public int getStatusItemLog() {
-                return statusItemLog;
-        }
-
-        public void setStatusItemLog(int statusItemLog) {
-                this.statusItemLog = statusItemLog;
-        }
+//        public int getStatusItemLog() {
+//                return statusItemLog;
+//        }
+//
+//        public void setStatusItemLog(int statusItemLog) {
+//                this.statusItemLog = statusItemLog;
+//        }
 
 //        public Object getImageItemLog() {
 //                return imageItemLog;

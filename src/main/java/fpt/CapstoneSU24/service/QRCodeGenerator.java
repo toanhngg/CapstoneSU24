@@ -18,42 +18,35 @@ public class QRCodeGenerator {
     @Autowired
 public ProductRepository productRepository;
     private static final Random random = new Random();
-    public String generateProductCode(int productId, int quantity) throws NoSuchAlgorithmException {
+//    public String generateProductCode(int productId, int quantity) throws NoSuchAlgorithmException {
+//
+//        Product product = productRepository.findOneByProductId(productId);
+//        if (product == null) {
+//            throw new IllegalArgumentException("Product not found with ID: " + productId);
+//        }
+//
+//        // Generate a random number between 0 and quantity - 1
+//        int randomNumber = random.nextInt(quantity);
+//
+//        // Get current time in milliseconds
+//        long currentTimeMillis = System.currentTimeMillis();
+//
+//        // Create raw code string
+//        String rawCode = product.getProductName() + "-" + product.getCategory().getName()  + currentTimeMillis;
+//
+//        // Hash the raw code using SHA-256
+//        String hashedCode = hashString(rawCode);
+//
+//        return hashedCode;
+//    }
+    public String generateProductDescription(int productId,String address,long currentTimeMillis) throws NoSuchAlgorithmException {
 
         Product product = productRepository.findOneByProductId(productId);
         if (product == null) {
             throw new IllegalArgumentException("Product not found with ID: " + productId);
         }
-
-        // Generate a random number between 0 and quantity - 1
-        int randomNumber = random.nextInt(quantity);
-
-        // Get current time in milliseconds
-        long currentTimeMillis = System.currentTimeMillis();
-
         // Create raw code string
-        String rawCode = product.getProductName() + "-" + product.getCategory().getName()  + currentTimeMillis;
-
-        // Hash the raw code using SHA-256
-        String hashedCode = hashString(rawCode);
-
-        return hashedCode;
-    }
-    public String generateProductDescription(int productId) throws NoSuchAlgorithmException {
-
-        Product product = productRepository.findOneByProductId(productId);
-        if (product == null) {
-            throw new IllegalArgumentException("Product not found with ID: " + productId);
-        }
-
-        // Generate a random number between 0 and quantity - 1
-      //  int randomNumber = random.nextInt(quantity);
-
-        // Get current time in milliseconds
-        long currentTimeMillis = System.currentTimeMillis();
-
-        // Create raw code string
-        String rawCode = product.getProductName() + "-" + product.getCategory().getName()  + currentTimeMillis;
+        String rawCode = product.getProductName() + "-" + product.getCategory().getName()  + "-" + address + "-" + currentTimeMillis;
 
         // Hash the raw code using SHA-256
         String hashedCode = hashString(rawCode);
@@ -74,21 +67,22 @@ public ProductRepository productRepository;
         }
         return hexString.toString();
     }
-//    public String generateProductCode(int productId, int quantity) {
-//        Product product = productRepository.findOneByProductId(productId);
-//        // Lấy UUID ngẫu nhiên
-//        UUID uuid = UUID.randomUUID();
-//
-//        // Lấy thời gian hiện tại dưới dạng milliseconds
-//        long currentTimeMillis = System.currentTimeMillis();
-//
-//        // Tạo chuỗi mã sản phẩm dựa trên các thông tin
-//        String rawCode = product.getProductName() + "-" + product.getCategory().getName() + "-" + uuid.toString() + "-" + currentTimeMillis;
-//
-//        // Mã hóa chuỗi thành Base64 để dễ đọc hơn
-//        String encodedCode = Base64.getUrlEncoder().encodeToString(rawCode.getBytes(StandardCharsets.UTF_8));
-//
-//        return encodedCode;
-//    }
+    public String generateProductCode(int productId) {
+        Product product = productRepository.findOneByProductId(productId);
+        // Lấy UUID ngẫu nhiên
+        UUID uuid = UUID.randomUUID();
+
+        // Lấy thời gian hiện tại dưới dạng milliseconds
+        long currentTimeMillis = System.currentTimeMillis();
+
+        // Tạo chuỗi mã sản phẩm dựa trên các thông tin
+        String rawCode = product.getProductName()+ uuid.toString();
+
+        // Mã hóa chuỗi thành Base64 để dễ đọc hơn
+        String encodedCode = Base64.getUrlEncoder().encodeToString(rawCode.getBytes(StandardCharsets.UTF_8));
+        System.out.println(encodedCode);
+        return (encodedCode.substring(encodedCode.length() - 10, encodedCode.length()));
+    }
+
 
 }
