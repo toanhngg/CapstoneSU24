@@ -111,7 +111,6 @@ public class JwtService {
                 .getBody();
 
         String c = claims.getSubject();
-        System.out.println(c+ " hehe");
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())

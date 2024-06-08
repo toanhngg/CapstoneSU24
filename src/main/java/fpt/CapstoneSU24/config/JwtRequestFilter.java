@@ -88,9 +88,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT Token has expired");
                 String email = JwtService.getSubFromExpiredJWT(jwtToken);
-                authToken = authTokenRepository.findOneById(userRepository.findOneByEmail(email).getUserId());
-                authToken.setJwtHash(null);
-                authTokenRepository.save(authToken);
+                try {
+                    authToken = authTokenRepository.findOneById(userRepository.findOneByEmail(email).getUserId());
+                    authToken.setJwtHash(null);
+                    authTokenRepository.save(authToken);
+                }catch (Exception ex){
+                    ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
+                            .secure(true).httpOnly(true)
+                            .path("/")
+                            .sameSite("None")
+                            .domain(null)
+                            .maxAge(0)
+                            .build();
+                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                }
+
                 // set cookie í null
             }
             }else{
