@@ -3,16 +3,28 @@ package fpt.CapstoneSU24.controller;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.model.*;
+import fpt.CapstoneSU24.payload.FilterByTimeStampRequest;
+import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.service.ClientService;
+import fpt.CapstoneSU24.service.ExportExcelService;
 import fpt.CapstoneSU24.service.QRCodeGenerator;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -46,13 +58,45 @@ public class ItemController {
     @Autowired
     private EventTypeRepository eventTypeRepository;
     @Autowired
-    private UserRepository userRepository;
+    ExportExcelService exportExcelService;
+    /*
+     * type is sort type: "desc" or "asc"
+     * default data startDate and endDate equal 0 (need insert 2 data)
+     * */
+    @PostMapping("/search")
+    public ResponseEntity searchItem(@Valid @RequestBody FilterSearchRequest req) {
+        try {
+            Page<Item> items = null;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+//        Page<Item> items = jsonReq.getString("type") == null? itemRepository.findAll(pageable) : jsonReq.getString("type").equals("desc") ? itemRepository.sortItemsByCreatedAtDesc(pageable) :  itemRepository.sortItemsByCreatedAtAsc(pageable);
+            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate(), pageable);
+
+            } else {
+                items = itemRepository.findAllByCurrentOwnerContaining(req.getName(), pageable);
+            }
+            return ResponseEntity.status(200).body(items);
+        }catch (Exception e){
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
+
+    }
+
+    @PostMapping("/exportListItem")
+    public ResponseEntity<byte[]>  exportListItem(@Valid @RequestBody FilterByTimeStampRequest req) throws IOException {
+        JSONObject jsonReq = new JSONObject(req);
+        List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
+        byte[] excelBytes = exportExcelService.exportItemToExcel(items);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "exported_data.xlsx");
+        return new ResponseEntity<>(excelBytes, headers, 200);
+    }
     @PostMapping("/addItem")
     public ResponseEntity addItem(@RequestBody ItemLogDTO itemLogDTO) {
         try {
-            // Lay ra thong tin cua User
-            User user = userRepository.getReferenceById(itemLogDTO.getUserId());
-            // Luu dia chi
             Location location = new Location();
             location.setAddress(itemLogDTO.getAddress());
             location.setCity(itemLogDTO.getCity());
@@ -64,113 +108,112 @@ public class ItemController {
             long scoreTime = System.currentTimeMillis();
             Origin origin = new Origin();
             origin.setCreatedAt(scoreTime);
-           // generateProductDescription
-            //origin.setDescription();
-            origin.setEmail(user.getEmail());
-            origin.setFullNameManufacturer(user.getFirstName() + " " + user.getLastName());
-            origin.setOrg_name(user.getOrg_name());
-            origin.setPhone(user.getPhone());
+            origin.setDescription(itemLogDTO.getDescriptionOrigin());
+            origin.setEmail(itemLogDTO.getEmail());
+            origin.setFullNameManufacturer(itemLogDTO.getFullName());
+            origin.setOrg_name(itemLogDTO.getOrgName());
+            origin.setPhone(itemLogDTO.getPhone());
             //  origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments());
             origin.setLocation(savedLocation);
             Origin saveOrigin = originRepository.save(origin);
-            for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
 
-                Item item = new Item();
-                item.setCreatedAt(scoreTime);
-                item.setCurrentOwner(user.getEmail());
-                item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId(), itemLogDTO.getQuantity()));
-                item.setStatus(1);
-                item.setOrigin(saveOrigin);
-                item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-                Item saveItem = itemRepository.save(item);
+            Item item = new Item();
+            item.setCreatedAt(scoreTime);
+            item.setCurrentOwner(itemLogDTO.getEmail());
+            //item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId()));
+            item.setStatus(-1);
+            item.setOrigin(saveOrigin);
+            item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
+            Item saveItem = itemRepository.save(item);
 
-                Party party = new Party();
-                party.setDescription(itemLogDTO.getDescriptionOrigin());
-                party.setEmail(user.getEmail());
-                party.setPartyFullName(user.getFirstName() + " " + user.getLastName());
-                party.setPhoneNumber(user.getPhone());
-                // party.setSignature(itemLogDTO.getSignature());
-                Party saveParty = partyRepository.save(party);
-                ItemLog itemLog = new ItemLog();
-                itemLog.setAddress(itemLogDTO.getAddress());
-                itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
-                itemLog.setEvent_id(1); // tao moi
-                itemLog.setStatus(1);
-                itemLog.setTimeStamp(scoreTime);
-                itemLog.setItem(saveItem);
-                itemLog.setLocation(savedLocation);
-                itemLog.setParty(saveParty);
-                itemLogRepository.save(itemLog);
-                return ResponseEntity.ok("ok");
-            }
+            Party party = new Party();
+            party.setDescription(itemLogDTO.getDescriptionParty());
+            party.setEmail(itemLogDTO.getEmail());
+            party.setPartyFullName(itemLogDTO.getFullName());
+            party.setPhoneNumber(itemLogDTO.getPhone());
+            party.setSignature(itemLogDTO.getSignature());
+            Party saveParty = partyRepository.save(party);
+//[item_id],[location_id],[party_id])
+            ItemLog itemLog = new ItemLog();
+            itemLog.setAddress(itemLogDTO.getAddress());
+            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+            itemLog.setEvent_id(itemLogDTO.getEventId());
+            itemLog.setStatus(itemLogDTO.getStatusItemLog());
+            itemLog.setTimeStamp(scoreTime);
+            itemLog.setItem(saveItem);
+            itemLog.setLocation(savedLocation);
+            itemLog.setParty(saveParty);
+            itemLogRepository.save(itemLog);
+            return ResponseEntity.ok("ok");
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
     }
 
-//    @PostMapping("/addItemByQuantity")
-//    public ResponseEntity addItemByQuantity(@RequestBody ItemLogDTO itemLogDTO, @RequestParam int quantity) {
-//        try {
-////            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-////            User currentUser = (User) authentication.getPrincipal();
-////            currentUser.
-//            Location location = new Location();
-//            location.setAddress(itemLogDTO.getAddress());
-//            location.setCity(itemLogDTO.getCity());
-//            location.setCountry(itemLogDTO.getCountry());
-//            location.setCoordinateX(itemLogDTO.getCoordinateX());
-//            location.setCoordinateY(itemLogDTO.getCoordinateY());
-//            Location savedLocation = locationRepository.save(location);
-//
-//            long scoreTime = System.currentTimeMillis();
-//            Origin origin = new Origin();
-//            origin.setCreatedAt(scoreTime);
-//            origin.setDescription(itemLogDTO.getDescriptionOrigin());
-//            origin.setEmail(itemLogDTO.getEmail()); // mai lay tu User
-//            origin.setFullNameManufacturer(itemLogDTO.getFullName()); // mai lay tu User
-//            origin.setOrg_name(itemLogDTO.getOrgName());  // mai lay tu User
-//            origin.setPhone(itemLogDTO.getPhone()); // mai lay tu User
-//            // origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments()); // mai lay tu User
-//            origin.setLocation(savedLocation);
-//            Origin saveOrigin = originRepository.save(origin);
-//            for (int i = 0; i < quantity; i++) {
-//                Item item = new Item();
-//                item.setCreatedAt(scoreTime);
-//                item.setCurrentOwner(itemLogDTO.getEmail());
-//                String productRe = qrCodeGenerator.generateProductCode(itemLogDTO.getProductId(),quantity);
-//                item.setProductRecognition(productRe);
-//                item.setStatus(-1);
-//                item.setOrigin(saveOrigin);
-//                item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-//                Item saveItem = itemRepository.save(item);
-//
-//                Party party = new Party();
-//                party.setDescription(itemLogDTO.getDescriptionParty());
-//                party.setEmail(itemLogDTO.getEmail()); // mai lay tu User
-//                party.setPartyFullName(itemLogDTO.getFullName()); // mai lay tu User
-//                party.setPhoneNumber(itemLogDTO.getPhone()); // mai lay tu User
-//                party.setSignature(itemLogDTO.getSignature()); // mai lay tu User
-//                Party saveParty = partyRepository.save(party);
-//
-//                ItemLog itemLog = new ItemLog();
-//                itemLog.setAddress(itemLogDTO.getAddress());
-//                itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-//                itemLog.setEvent_id(itemLogDTO.getEventId());
-//                itemLog.setStatus(itemLogDTO.getStatusItemLog());
-//                itemLog.setTimeStamp(scoreTime);
-//                itemLog.setItem(saveItem);
-//                itemLog.setLocation(savedLocation);
-//                itemLog.setParty(saveParty);
-//                itemLogRepository.save(itemLog);
-//            }
-//            return ResponseEntity.ok("ok");
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//        return null;
-//    }
+    @PostMapping("/addItemByQuantity")
+    public ResponseEntity addItemByQuantity(@RequestBody ItemLogDTO itemLogDTO, @RequestParam int quantity) {
+        try {
+//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//            User currentUser = (User) authentication.getPrincipal();
+//            currentUser.
+            Location location = new Location();
+            location.setAddress(itemLogDTO.getAddress());
+            location.setCity(itemLogDTO.getCity());
+            location.setCountry(itemLogDTO.getCountry());
+            location.setCoordinateX(itemLogDTO.getCoordinateX());
+            location.setCoordinateY(itemLogDTO.getCoordinateY());
+            Location savedLocation = locationRepository.save(location);
+
+            long scoreTime = System.currentTimeMillis();
+            Origin origin = new Origin();
+            origin.setCreatedAt(scoreTime);
+            origin.setDescription(itemLogDTO.getDescriptionOrigin());
+            origin.setEmail(itemLogDTO.getEmail()); // mai lay tu User
+            origin.setFullNameManufacturer(itemLogDTO.getFullName()); // mai lay tu User
+            origin.setOrg_name(itemLogDTO.getOrgName());  // mai lay tu User
+            origin.setPhone(itemLogDTO.getPhone()); // mai lay tu User
+            // origin.setSupportingDocuments(itemLogDTO.getSupportingDocuments()); // mai lay tu User
+            origin.setLocation(savedLocation);
+            Origin saveOrigin = originRepository.save(origin);
+            for (int i = 0; i < quantity; i++) {
+                Item item = new Item();
+                item.setCreatedAt(scoreTime);
+                item.setCurrentOwner(itemLogDTO.getEmail());
+                String productRe = qrCodeGenerator.generateProductCode(itemLogDTO.getProductId(),quantity);
+                item.setProductRecognition(productRe);
+                item.setStatus(-1);
+                item.setOrigin(saveOrigin);
+                item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
+                Item saveItem = itemRepository.save(item);
+
+                Party party = new Party();
+                party.setDescription(itemLogDTO.getDescriptionParty());
+                party.setEmail(itemLogDTO.getEmail()); // mai lay tu User
+                party.setPartyFullName(itemLogDTO.getFullName()); // mai lay tu User
+                party.setPhoneNumber(itemLogDTO.getPhone()); // mai lay tu User
+                party.setSignature(itemLogDTO.getSignature()); // mai lay tu User
+                Party saveParty = partyRepository.save(party);
+
+                ItemLog itemLog = new ItemLog();
+                itemLog.setAddress(itemLogDTO.getAddress());
+                itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+                itemLog.setEvent_id(itemLogDTO.getEventId());
+                itemLog.setStatus(itemLogDTO.getStatusItemLog());
+                itemLog.setTimeStamp(scoreTime);
+                itemLog.setItem(saveItem);
+                itemLog.setLocation(savedLocation);
+                itemLog.setParty(saveParty);
+                itemLogRepository.save(itemLog);
+            }
+            return ResponseEntity.ok("ok");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
 
     @GetMapping("/findAllItemByProductId")
     public ResponseEntity findAllItemByProductId(@RequestParam int ProductId) {

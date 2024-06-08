@@ -1,8 +1,11 @@
 package fpt.CapstoneSU24.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.Length;
+
+import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -13,9 +16,11 @@ public class Product {
     private int productId;
     @Column(name = "product_name", columnDefinition = "nvarchar(255)")
     private String productName;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "manufacturer_id")
     private User manufacturer;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
@@ -33,10 +38,12 @@ public class Product {
     private float weight;
     @Column(name = "warranty")
     private int warranty;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "certificate_id")
     private Certificate certificate;
-
+//    @OneToMany(mappedBy = "product")
+//    private List<ImageProduct> imageProduct;
     public Product(){}
 
     public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String description, long createAt, float weight, int warranty, Certificate certificate) {

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 @Table(name = "certificate")
 public class Certificate {
     @Id
-    @Column(name = "category_id")
+    @Column(name = "certificate_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int certificateId;
     @Column(name = "certificate_name", columnDefinition = "nvarchar(50)")

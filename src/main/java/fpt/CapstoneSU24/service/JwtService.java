@@ -8,12 +8,16 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -83,8 +87,31 @@ public class JwtService {
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
+    public static String getSubFromExpiredJWT(String jwtToken) {
+        // Tách các phần của JWT
+        String[] jwtParts = jwtToken.split("\\.");
+        if (jwtParts.length != 3) {
+            throw new IllegalArgumentException("Invalid JWT format");
+        }
 
-    private Claims extractAllClaims(String token) {
+        // Giải mã phần payload
+        String payloadBase64 = jwtParts[1];
+        String payloadJson = new String(Base64.getDecoder().decode(payloadBase64), StandardCharsets.UTF_8);
+        JSONObject payloadObject = new JSONObject(payloadJson);
+
+        // Lấy giá trị "sub"
+        return payloadObject.getString("sub");
+    }
+    public Claims extractAllClaims(String token) {
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(getSignInKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String c = claims.getSubject();
+        System.out.println(c+ " hehe");
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())

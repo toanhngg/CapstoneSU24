@@ -1,0 +1,28 @@
+{
+  "reportComponents": [
+    {
+      "code": 1,
+      "name": "Mạng"
+    },
+    {
+      "code": 2,
+      "name": "Cơ sở dữ liệu"
+    },
+    {
+      "code": 3,
+      "name": "Máy chủ"
+    },
+    {
+      "code": 4,
+      "name": "Giao diện người dùng"
+    },
+    {
+      "code": 5,
+      "name": "Hiệu suất"
+    },
+    {
+      "code": 6,
+      "name": "Khác"
+    }
+  ]
+}

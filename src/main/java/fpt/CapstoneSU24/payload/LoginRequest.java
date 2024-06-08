@@ -1,14 +1,13 @@
-package fpt.CapstoneSU24.dto;
+package fpt.CapstoneSU24.payload;
 
-public class LoginUserDto {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
+public class LoginRequest {
+    @NotBlank(message = "The email is required")
     private String email;
-
+    @NotBlank(message = "The password is required")
     private String password;
-
-    public LoginUserDto(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
 
     public String getEmail() {
         return email;

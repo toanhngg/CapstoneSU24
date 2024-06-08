@@ -9,6 +9,7 @@ import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.util.JwtTokenUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -86,9 +87,23 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 System.out.println("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT Token has expired");
-                authToken = authTokenRepository.findOneByJwtHash(jwtToken);
-                authToken.setJwtHash(null);
-                authTokenRepository.save(authToken);
+                String email = JwtService.getSubFromExpiredJWT(jwtToken);
+                try {
+                    authToken = authTokenRepository.findOneById(userRepository.findOneByEmail(email).getUserId());
+                    authToken.setJwtHash(null);
+                    authTokenRepository.save(authToken);
+                }catch (Exception ex){
+                    ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
+                            .secure(true).httpOnly(true)
+                            .path("/")
+                            .sameSite("None")
+                            .domain(null)
+                            .maxAge(0)
+                            .build();
+                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                }
+
+                // set cookie í null
             }
             }else{
                 logger.warn("JWT Token does not exist");

@@ -12,4 +12,20 @@ public class Const {
         public final static String CLIENT_NOTIFICATION = "clientNoti";
 
     }
+
+    public final static class SEND_MAIL_SUBJECTLockUser {
+        public final static String SUBJECT_LOCKUSER = "THÔNG BÁO KHÓA TÀI KHOẢN NGƯỜI DÙNG";
+    }
+
+    public final static class TEMPLATE_FILE_NAME_LOCKUSER {
+        public final static String LOCKUSER_DETAIL = "lockUserMail";
+    }
+
+    public final static class SEND_MAIL_SUBJECTUnLockUser {
+        public final static String SUBJECT_UNLOCKUSER = "THÔNG BÁO MỞ KHÓA TÀI KHOẢN NGƯỜI DÙNG";
+    }
+
+    public final static class TEMPLATE_FILE_NAME_UNLOCKUSER {
+        public final static String UNLOCKUSER_DETAIL = "UnLockUserMail";
+    }
 }

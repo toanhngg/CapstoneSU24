@@ -1,6 +1,8 @@
 package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.model.Item;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +14,13 @@ import java.util.List;
 @Repository
 
 public interface ItemRepository extends JpaRepository<Item, Integer> {
+    @Override
+    Page<Item> findAll(Pageable pageable);
+    @Query("SELECT o FROM Item o WHERE o.product.productId = :id")
+    List<Item> findAllByProductId(@Param("id")  int id);
+    Page<Item> findAllByCurrentOwnerContaining(String currentOwner, Pageable pageable);
+    Page<Item> findByCreatedAtBetween(Long startDate, Long endDate, Pageable pageable);
+    List<Item> findByCreatedAtBetween(Long startDate, Long endDate);
     @Query("select i from Item i where i.product.productId = :id ")
     List<Item> findByProductId(@Param("id")  Integer id);
 
