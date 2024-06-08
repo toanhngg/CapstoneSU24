@@ -38,8 +38,7 @@ public class User implements UserDetails {
     private Location location;
     @Column(name = "org_name")
     private String org_name;
-    @Column(name = "profile_image")
-    private String profile_image;
+
     @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private AuthToken authToken;
@@ -47,23 +46,13 @@ public class User implements UserDetails {
     @Column(name = "profileImage", columnDefinition = "varbinary(MAX)")
     private byte[] profileImage;
     public User() {
-
     }
-
     public String getOrg_name() {
         return org_name;
     }
 
     public void setOrg_name(String org_name) {
         this.org_name = org_name;
-    }
-
-    public String getProfile_image() {
-        return profile_image;
-    }
-
-    public void setProfile_image(String profile_image) {
-        this.profile_image = profile_image;
     }
 
     public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location, AuthToken authToken) {
