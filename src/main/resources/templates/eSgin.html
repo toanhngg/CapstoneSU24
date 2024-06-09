@@ -31,11 +31,31 @@
             margin-top: 20px;
         }
         .signature {
-            margin-top: 40px;
+            margin-top: 20px;
             text-align: right;
         }
-        .signature div {
-            margin-bottom: 60px;
+        .signed-info {
+            color: blue;
+            font-weight: bold;
+        }
+         .signature .signed-icon {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            background-color: green;
+            border-radius: 50%;
+            margin-right: 10px;
+            position: relative;
+        }
+        .signature .signed-icon::after {
+            font-size: 75px;
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         .date-location {
             text-align: right;
@@ -50,7 +70,6 @@
     <p class="title">-----o0o-----</p>
     <p class="title">CÔNG TY PHÁT TRIỂN PHẦN MỀM TRACEORIGIN</p>
     <p class="contract-title">HỢP ĐỒNG XÁC THỰC DOANH NGHIỆP ĐĂNG KÝ</p>
-    <p>Số: <span th:text="${contractNumber}">[Số Hợp Đồng]</span></p>
 </div>
 
 <div class="content">
@@ -92,17 +111,27 @@
         <p>2. <strong>Giải quyết tranh chấp:</strong> Mọi tranh chấp phát sinh liên quan đến hợp đồng này sẽ được giải quyết thông qua thương lượng, nếu không thành công sẽ giải quyết tại Tòa án có thẩm quyền.</p>
     </div>
 
-    <div class="signature">
-        <div>
-            <p>Ký tên: _______________________</p>
-            <p>Họ và tên: <span th:text="${representativeName}">[Họ và tên]</span></p>
-            <p>Chức vụ: <span th:text="${representativePosition}">[Chức vụ]</span></p>
-        </div>
-    </div>
-
     <div class="date-location">
         <p>Hà Nội, ngày: <span th:text="${day}">[dd]</span> tháng: <span th:text="${month}">[MM]</span> năm: <span th:text="${year}">[yyyy]</span></p>
     </div>
+
+    <div class="signature">
+        <div>
+            <p> <strong>NGƯỜI KÝ CAM KẾT </strong> <br> (Ký và ghi rõ họ tên) </p>
+            <div th:if="${signed}">
+                <div>
+                    <div class="signed-icon"></div>
+                    <div class="signed-info">
+                        <p>Chữ ký số/ Digitally signed</span></p>
+                        <p>Ký bởi/ Signed by: <span th:text="${signerName}"></span></p>
+                        <p>Ngày ký/Sign date: <span th:text="${signDate}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
 </body>
 </html>

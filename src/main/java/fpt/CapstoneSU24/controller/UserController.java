@@ -8,6 +8,7 @@ import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
+import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.EmailService;
@@ -54,6 +55,9 @@ public class UserController {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private CertificateRepository certificateRepository;
 
     @Autowired
     private EmailService mailService;
@@ -114,7 +118,6 @@ public class UserController {
     }
 
 
-
     @PutMapping("/lockUser")
     public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -131,9 +134,9 @@ public class UserController {
 
     @PostMapping("/sendEmail")
     public Boolean sendEmail(@RequestParam Boolean isLock,
-                            @RequestParam int userId) {
+                             @RequestParam int userId) {
         try {
-            String subject = isLock ? Const.SEND_MAIL_SUBJECTLockUser.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECTUnLockUser.SUBJECT_UNLOCKUSER ;
+            String subject = isLock ? Const.SEND_MAIL_SUBJECTLockUser.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECTUnLockUser.SUBJECT_UNLOCKUSER;
 
             String template = isLock ? Const.TEMPLATE_FILE_NAME_LOCKUSER.LOCKUSER_DETAIL : Const.TEMPLATE_FILE_NAME_UNLOCKUSER.UNLOCKUSER_DETAIL;
 
@@ -160,7 +163,7 @@ public class UserController {
     }
 
 
-//Update Table
+    //Update Table
     @PutMapping("/updateUserDescriptions")
     public ResponseEntity<String> updateUserDescriptions(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
         for (B03_GetDataGridDTO updateRequest : userUpdateRequests) {
@@ -178,7 +181,7 @@ public class UserController {
 
     //get Role
     @GetMapping("/getRoleByUserId")
-    public ResponseEntity<Role>  getAllUser(@RequestParam int userId) {
+    public ResponseEntity<Role> getAllUser(@RequestParam int userId) {
         User user = userRepository.findOneByUserId(userId);
         if (user != null) {
             Role role = user.getRole();
@@ -206,11 +209,14 @@ public class UserController {
         return ResponseEntity.ok(currentUser);
     }
 
+
+
     @PostMapping("/getContract")
     public ResponseEntity<byte[]> generateDoc() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
-        if (userProfileDTO != null) {
+        //kiem tra user ton tai va da ky hop dong chua
+        if (userProfileDTO != null && userProfileDTO.getStatus() == 0) {
             String finalHtml;
 
             DataMailDTO dataMail = new DataMailDTO();
@@ -224,6 +230,7 @@ public class UserController {
             props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
             props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
             props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+            props.put("signed", false);
             dataMail.setProps(props);
 
             Context context = new Context();
@@ -241,13 +248,75 @@ public class UserController {
             headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
 
             return ResponseEntity.ok().headers(headers).body(pdfBytes);
+        } else if (userProfileDTO != null && userProfileDTO.getStatus() != 0) {
+            User currentUser = (User) authentication.getPrincipal();
+            Certificate certificate = certificateRepository.findOneByManufacturer_userId(currentUser.getUserId());
+            if (certificate != null) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificate.pdf");
+                headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+                return ResponseEntity.ok().headers(headers).body(certificate.getImage());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
         } else {
             return ResponseEntity.status(400).body(null);
         }
 
     }
 
+    @PostMapping("/updateCertification")
+    public ResponseEntity<String> updateCertification(String otp) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getStatus() != 0)
+        {
+            return ResponseEntity.ok("The commitment contract already singed");
+        }else{
+            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
+            String finalHtml;
 
+            DataMailDTO dataMail = new DataMailDTO();
+            LocalDate currentDate = LocalDate.now();
 
+            Map<String, Object> props = new HashMap<>();
+            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("companyAddress", userProfileDTO.getAddress());
+            props.put("phoneNumber", userProfileDTO.getPhone());
+            props.put("email", userProfileDTO.getEmail());
+            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+            props.put("signed", true);
+            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
+            dataMail.setProps(props);
+
+            Context context = new Context();
+            context.setVariables(dataMail.getProps());
+
+            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
+
+            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
+            if (pdfBytes != null) {
+                Certificate certificate = new Certificate();
+                certificate.setCertificateName("Test");
+                certificate.setIssuingAuthority("test");
+                certificate.setImage(pdfBytes);
+                certificate.setIssuanceDate(System.currentTimeMillis());
+                certificate.setManufacturer(currentUser);
+                certificateRepository.save(certificate);
+                currentUser.setStatus(1);
+                userRepository.save(currentUser);
+            }
+            return ResponseEntity.ok("Singed");
+        }
+
+    }
 }
+
+
+
+
+
