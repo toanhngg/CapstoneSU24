@@ -24,7 +24,7 @@ public class ItemLog {
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
     @ManyToOne
-    @JoinColumn(name = "strategy")
+    @JoinColumn(name = "authorized_id")
     private Authorized authorized;
     @ManyToOne
     @JoinColumn(name = "event_id", columnDefinition = "int default 0")

@@ -7,7 +7,7 @@ import lombok.Data;
 public class ItemLogDTO {
 
         private int quantity;
-        private int userId;
+      //  private int userId;
         private String address;
         private String city;
         private String country;
@@ -32,13 +32,13 @@ public class ItemLogDTO {
        // private int eventId;
        // private int statusItemLog;
 
-        public int getUserId() {
-                return userId;
-        }
-
-        public void setUserId(int userId) {
-                this.userId = userId;
-        }
+//        public int getUserId() {
+//                return userId;
+//        }
+//
+//        public void setUserId(int userId) {
+//                this.userId = userId;
+//        }
 
         public int getQuantity() {
                 return quantity;
