@@ -11,6 +11,8 @@ import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.payload.LoginRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -24,6 +26,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @RequestMapping("/api/auth")
 @RestController
 public class AuthenticationController {
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
+
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -60,6 +64,7 @@ public class AuthenticationController {
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         System.out.println("jwt: " + jwtToken);
+        log.info("User {} is attempting to log in.", loginRequest.getEmail());
         return ResponseEntity.status(200).body("login successfully");
     }
     @PostMapping("/logout")

@@ -84,9 +84,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     authTokenRepository.save(authToken);
                 }
             } catch (IllegalArgumentException e) {
+                //delete jwt in browser
                 System.out.println("Unable to get JWT Token");
+                ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
+                        .secure(true).httpOnly(true)
+                        .path("/")
+                        .sameSite("None")
+                        .domain(null)
+                        .maxAge(0)
+                        .build();
+                response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT Token has expired");
+                //delete jwt in browser
                 String email = JwtService.getSubFromExpiredJWT(jwtToken);
                 try {
                     authToken = authTokenRepository.findOneById(userRepository.findOneByEmail(email).getUserId());
