@@ -4,23 +4,30 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public class ChangePasswordDto {
+    @NotBlank(message = "The email is required")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$", message = "Invalid email format")
+    private String email;
     @NotBlank(message = "The password is required")
-    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*()]).{8,}$", message = "Password must be 8 characters long and a combination of uppercase letters, lowercase letters, numbers, and special characters.")
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*()]).{8,}$", message = "Password must be 8 characters long and combination of uppercase letters, lowercase letters, numbers, special characters.")
     private String password;
 
-    @NotBlank(message = "The confirm password is required")
-    private String confirmPassword;
-
-    @NotBlank(message = "The old password is required")
     private String oldPassword;
 
     public ChangePasswordDto() {
     }
 
-    public ChangePasswordDto(String password, String confirmPassword, String oldPassword) {
+    public ChangePasswordDto(String email, String password, String oldPassword) {
+        this.email = email;
         this.password = password;
-        this.confirmPassword = confirmPassword;
         this.oldPassword = oldPassword;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -29,14 +36,6 @@ public class ChangePasswordDto {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
     }
 
     public String getOldPassword() {
