@@ -63,7 +63,7 @@ public class ClientService implements ClientRepository {
 
             dataMail.setTo(sdi.getEmail());
             //đoc ở file const
-            dataMail.setSubject(Const.SEND_MAIL_SUBJECT.CLIENT_REGISTER);
+            dataMail.setSubject(Const.SEND_MAIL_SUBJECT.CLIENT_SENDOTP);
 
             Map<String, Object> props = new HashMap<>();
             props.put("name", sdi.getName());
@@ -75,14 +75,14 @@ public class ClientService implements ClientRepository {
             Date expiryTime = otpService.calculateExpiryTime(2); // OTP sẽ hết hạn sau 2 phút
 
             OTP otpCheck = otpResponsitory.findOTPByEmail(sdi.getEmail());
-           if(otpCheck == null) {
+           if(otpCheck == null) { // neu chua tung xac thuc bao h thi tao moi khong thi update
                otpCheck = new OTP(sdi.getEmail(), codeOTP, expiryTime);
                otpResponsitory.save(otpCheck);
            }else{
-               otpService.updateOTPCode(sdi.getEmail(), codeOTP);
+               otpService.updateOTPCode(sdi.getEmail(), codeOTP,expiryTime);
            }
             // tam cmt de test cho do bi spam
-            //mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_REGISTER);
+         // mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_SENDOTP);
             return true;
         } catch (Exception exp) {
             exp.printStackTrace();

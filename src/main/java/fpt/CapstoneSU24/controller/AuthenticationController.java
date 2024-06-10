@@ -101,22 +101,28 @@ public class AuthenticationController {
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
         try {
-            if (userRepository.findOneByEmail(changePasswordDto.getEmail()) == null) {
-                return ResponseEntity.status(500).body("Your email does not exist");
-            } else {
-                try {
-                    User user = authenticationService.authenticate(changePasswordDto.getEmail(), changePasswordDto.getOldPassword());
-                    user.setPassword(changePasswordDto.getPassword());
-                    authenticationService.ChangePassword(user);
-                    return ResponseEntity.status(200).body("Change password successfully");
-                } catch (BadCredentialsException e) {
-                    return ResponseEntity.status(401).body("Invalid Password");
-                }
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
+                return ResponseEntity.status(401).body("User not authenticated");
             }
+
+            User user = (User) authentication.getPrincipal();
+
+            // Check if the new password and confirm password match
+            if (!changePasswordDto.getPassword().equals(changePasswordDto.getConfirmPassword())) {
+                return ResponseEntity.status(400).body("New password and confirm password do not match");
+            }
+
+            // Change password for the authenticated user
+            user.setPassword(changePasswordDto.getPassword());
+            authenticationService.ChangePassword(user);
+
+            return ResponseEntity.status(200).body("Password changed successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
         }
     }
+
 
 
 }

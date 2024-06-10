@@ -8,12 +8,15 @@ import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
+import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.JwtService;
+import fpt.CapstoneSU24.service.UserService;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DataUtils;
+import fpt.CapstoneSU24.util.DocumentGenerator;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -34,8 +38,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,10 +57,22 @@ public class UserController {
     private JavaMailSender mailSender;
 
     @Autowired
+    private CertificateRepository certificateRepository;
+
+    @Autowired
     private EmailService mailService;
 
     @Autowired
     private AuthTokenRepository authTokenRepository;
+
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+
+    @Autowired
+    private DocumentGenerator documentGenerator;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser() {
@@ -60,8 +80,7 @@ public class UserController {
         return ResponseEntity.ok(userList);
     }
 
-
-    @GetMapping("/getDataToTable")
+    @PostMapping("/getDataToTable")
     public ResponseEntity<Page<B03_GetDataGridDTO>> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
@@ -98,6 +117,7 @@ public class UserController {
         return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
 
+
     @PutMapping("/lockUser")
     public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -114,9 +134,9 @@ public class UserController {
 
     @PostMapping("/sendEmail")
     public Boolean sendEmail(@RequestParam Boolean isLock,
-                            @RequestParam int userId) {
+                             @RequestParam int userId) {
         try {
-            String subject = isLock ? Const.SEND_MAIL_SUBJECTLockUser.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECTUnLockUser.SUBJECT_UNLOCKUSER ;
+            String subject = isLock ? Const.SEND_MAIL_SUBJECTLockUser.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECTUnLockUser.SUBJECT_UNLOCKUSER;
 
             String template = isLock ? Const.TEMPLATE_FILE_NAME_LOCKUSER.LOCKUSER_DETAIL : Const.TEMPLATE_FILE_NAME_UNLOCKUSER.UNLOCKUSER_DETAIL;
 
@@ -143,7 +163,7 @@ public class UserController {
     }
 
 
-//Update Table
+    //Update Table
     @PutMapping("/updateUserDescriptions")
     public ResponseEntity<String> updateUserDescriptions(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
         for (B03_GetDataGridDTO updateRequest : userUpdateRequests) {
@@ -161,7 +181,7 @@ public class UserController {
 
     //get Role
     @GetMapping("/getRoleByUserId")
-    public ResponseEntity<Role>  getAllUser(@RequestParam int userId) {
+    public ResponseEntity<Role> getAllUser(@RequestParam int userId) {
         User user = userRepository.findOneByUserId(userId);
         if (user != null) {
             Role role = user.getRole();
@@ -172,58 +192,14 @@ public class UserController {
     }
 
     @GetMapping("/getUserById")
-    public ResponseEntity<UserProfileDTO> getUserByUserID(HttpServletResponse response) {
+    public ResponseEntity<UserProfileDTO> getUserByUserID() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        try {
-            User currentUser = (User) authentication.getPrincipal();
-            if (currentUser != null) {
-                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
-                if (authToken != null) {
-                    UserProfileDTO userProfileDTO = new UserProfileDTO();
-                    userProfileDTO.setEmail(currentUser.getEmail());
-                    userProfileDTO.setRole(currentUser.getRole().getRoleName());
-                    userProfileDTO.setFirstName(currentUser.getFirstName());
-                    userProfileDTO.setLastName(currentUser.getLastName());
-                    userProfileDTO.setDescription(currentUser.getDescription());
-                    userProfileDTO.setPhone(currentUser.getPhone());
-                    userProfileDTO.setStatus(currentUser.getStatus());
-                    userProfileDTO.setAddress(currentUser.getLocation().getAddress());
-                    userProfileDTO.setCity(currentUser.getLocation().getCity());
-                    userProfileDTO.setCountry(currentUser.getLocation().getCountry());
-                    return  ResponseEntity.ok(userProfileDTO);
-                }
-            }
-        } catch (Exception e) {
+        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
+        if (userProfileDTO != null) {
+            return ResponseEntity.ok(userProfileDTO);
+        } else {
             return ResponseEntity.status(400).body(null);
         }
-        return ResponseEntity.notFound().build();
-       /* String jwt = null;
-        if (request.getCookies() != null) {
-            Optional<Cookie> jwtCookie = Arrays.stream(request.getCookies())
-                    .filter(cookie -> "jwt".equals(cookie.getName()))
-                    .findFirst();
-            if (jwtCookie.isPresent()) {
-                jwt = jwtCookie.get().getValue();
-            }
-        }
-
-        // If JWT is found in the cookies, proceed to find the AuthToken
-        if (jwt != null) {
-            Optional<AuthToken> authTokenOptional = Optional.ofNullable(authTokenRepository.findOneByJwtHash(jwt));
-            if (authTokenOptional.isPresent()) {
-                AuthToken authToken = authTokenOptional.get();
-                Optional<User> userOptional = Optional.ofNullable(userRepository.findOneByUserId(authToken.getId()));
-                if (userOptional.isPresent()) {
-                    return ResponseEntity.ok(userOptional.get());
-                } else {
-                    return ResponseEntity.notFound().build();
-                }
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } else {
-            return ResponseEntity.status(400).body(null); // Bad Request if JWT is not present
-        }*/
     }
 
     @GetMapping("/me")
@@ -232,4 +208,115 @@ public class UserController {
         User currentUser = (User) authentication.getPrincipal();
         return ResponseEntity.ok(currentUser);
     }
+
+
+
+    @PostMapping("/getContract")
+    public ResponseEntity<byte[]> generateDoc() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
+        //kiem tra user ton tai va da ky hop dong chua
+        if (userProfileDTO != null && userProfileDTO.getStatus() == 0) {
+            String finalHtml;
+
+            DataMailDTO dataMail = new DataMailDTO();
+            LocalDate currentDate = LocalDate.now();
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("companyAddress", userProfileDTO.getAddress());
+            props.put("phoneNumber", userProfileDTO.getPhone());
+            props.put("email", userProfileDTO.getEmail());
+            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+            props.put("signed", false);
+            dataMail.setProps(props);
+
+            Context context = new Context();
+            context.setVariables(dataMail.getProps());
+
+            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
+
+            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
+            if (pdfBytes == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generated.pdf");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+
+            return ResponseEntity.ok().headers(headers).body(pdfBytes);
+        } else if (userProfileDTO != null && userProfileDTO.getStatus() != 0) {
+            User currentUser = (User) authentication.getPrincipal();
+            Certificate certificate = certificateRepository.findOneByManufacturer_userId(currentUser.getUserId());
+            if (certificate != null) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificate.pdf");
+                headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+                return ResponseEntity.ok().headers(headers).body(certificate.getImage());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } else {
+            return ResponseEntity.status(400).body(null);
+        }
+
+    }
+
+    @PostMapping("/updateCertification")
+    public ResponseEntity<String> updateCertification(String otp) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getStatus() != 0)
+        {
+            return ResponseEntity.ok("The commitment contract already singed");
+        }else{
+            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
+            String finalHtml;
+
+            DataMailDTO dataMail = new DataMailDTO();
+            LocalDate currentDate = LocalDate.now();
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("companyAddress", userProfileDTO.getAddress());
+            props.put("phoneNumber", userProfileDTO.getPhone());
+            props.put("email", userProfileDTO.getEmail());
+            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+            props.put("signed", true);
+            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+            dataMail.setProps(props);
+
+            Context context = new Context();
+            context.setVariables(dataMail.getProps());
+
+            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
+
+            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
+            if (pdfBytes != null) {
+                Certificate certificate = new Certificate();
+                certificate.setCertificateName("Test");
+                certificate.setIssuingAuthority("test");
+                certificate.setImage(pdfBytes);
+                certificate.setIssuanceDate(System.currentTimeMillis());
+                certificate.setManufacturer(currentUser);
+                certificateRepository.save(certificate);
+                currentUser.setStatus(1);
+                userRepository.save(currentUser);
+            }
+            return ResponseEntity.ok("Singed");
+        }
+
+    }
 }
+
+
+
+
+

@@ -17,18 +17,18 @@ public class OTPService {
     private OTPRepository otpRepository;
 
     @Transactional
-    public void updateOTPCode(String email, String codeOTP) {
-        Date expiryTime = calculateExpiryTime(2); // OTP sẽ hết hạn sau 2 phút
-        OTP otp = otpRepository.findOTPByEmail(email);
-        if (otp == null) {
-            otp = new OTP();
-            otp.setEmail(email);
-            otp.setCodeOTP(codeOTP);
-            otp.setExpiryTime(expiryTime);
-            otpRepository.save(otp);
-        } else {
-            otpRepository.updateOtpByEmail(email, codeOTP, expiryTime);
-        }
+    public void updateOTPCode(String email, String codeOTP,Date expiryTime) {
+        //Date expiryTime = calculateExpiryTime(2); // OTP sẽ hết hạn sau 2 phút
+//        OTP otp = otpRepository.findOTPByEmail(email);
+//        if (otp == null) {
+//            otp = new OTP();
+//            otp.setEmail(email);
+//            otp.setCodeOTP(codeOTP);
+//            otp.setExpiryTime(expiryTime);
+            //otpRepository.save(otp);
+//        } else {
+           otpRepository.updateOtpByEmail(email, codeOTP, expiryTime);
+//        }
     }
 
     public Date calculateExpiryTime(int expiryTimeInMinutes) {
@@ -38,6 +38,7 @@ public class OTPService {
     }
     public boolean verifyOTP(String email, String codeOTP) {
         OTP otp = otpRepository.findOTPByEmail(email);
+
         if (otp == null) {
             return false;
         }
@@ -45,7 +46,7 @@ public class OTPService {
             // OTP đã hết hạn
             return false;
         }
-        return otp.getCodeOTP().equals(codeOTP);
+        return (otp.getCodeOTP().trim()).equals(codeOTP);
     }
 
 }

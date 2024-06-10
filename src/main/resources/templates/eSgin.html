@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Hợp đồng xác thực doanh nghiệp đăng ký</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header .title {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .header .contract-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .signature {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .signed-info {
+            color: blue;
+            font-weight: bold;
+        }
+         .signature .signed-icon {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            background-color: green;
+            border-radius: 50%;
+            margin-right: 10px;
+            position: relative;
+        }
+        .signature .signed-icon::after {
+            font-size: 75px;
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .date-location {
+            text-align: right;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <p class="title">CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+    <p class="title">Độc lập - Tự do - Hạnh phúc</p>
+    <p class="title">-----o0o-----</p>
+    <p class="title">CÔNG TY PHÁT TRIỂN PHẦN MỀM TRACEORIGIN</p>
+    <p class="contract-title">HỢP ĐỒNG XÁC THỰC DOANH NGHIỆP ĐĂNG KÝ</p>
+</div>
+
+<div class="content">
+    <div class="section">
+        <p class="section-title">I. THÔNG TIN DOANH NGHIỆP</p>
+        <p>Tên công ty: <span th:text="${companyName}">[Tên công ty đăng ký]</span></p>
+        <p>Địa chỉ trụ sở chính: <span th:text="${companyAddress}">[Địa chỉ công ty]</span></p>
+        <p>Điện thoại liên hệ: <span th:text="${phoneNumber}">[Số điện thoại]</span></p>
+        <p>Email: <span th:text="${email}">[Email liên hệ]</span></p>
+    </div>
+
+    <div class="section">
+        <p class="section-title">II. MỤC ĐÍCH VÀ PHẠM VI</p>
+        <p>Doanh nghiệp đăng ký cam kết rằng các sản phẩm cung cấp thông qua hệ thống của công ty TraceOrigin là những sản phẩm có nguồn gốc xuất xứ rõ ràng, không vi phạm pháp luật và các quy định hiện hành của Nhà nước Việt Nam.</p>
+    </div>
+
+    <div class="section">
+        <p class="section-title">III. CAM KẾT CỦA DOANH NGHIỆP</p>
+        <p>1. <strong>Xác thực doanh nghiệp:</strong> Doanh nghiệp cam kết cung cấp đầy đủ và chính xác thông tin liên quan đến công ty và sản phẩm của mình.</p>
+        <p>2. <strong>Đảm bảo nguồn gốc sản phẩm:</strong></p>
+        <ul>
+            <li>Tất cả các sản phẩm được cung cấp bởi doanh nghiệp đều có nguồn gốc rõ ràng, không phải hàng giả, hàng nhái hay hàng không rõ nguồn gốc.</li>
+            <li>Doanh nghiệp cam kết chịu trách nhiệm pháp lý nếu sản phẩm của mình vi phạm các quy định pháp luật về nguồn gốc xuất xứ.</li>
+        </ul>
+        <p>3. <strong>Cung cấp thông tin:</strong> Doanh nghiệp sẵn sàng cung cấp các chứng từ, tài liệu liên quan đến nguồn gốc sản phẩm khi được yêu cầu bởi công ty TraceOrigin hoặc các cơ quan chức năng.</p>
+        <p>4. <strong>Tuân thủ quy định:</strong> Doanh nghiệp cam kết tuân thủ các quy định của công ty TraceOrigin và các quy định pháp luật hiện hành liên quan đến hoạt động kinh doanh và cung cấp sản phẩm.</p>
+    </div>
+
+    <div class="section">
+        <p class="section-title">IV. QUYỀN LỢI VÀ NGHĨA VỤ CỦA CÔNG TY TRACEORIGIN</p>
+        <p>1. <strong>Xác thực thông tin:</strong> Công ty TraceOrigin có quyền kiểm tra, xác thực thông tin doanh nghiệp và nguồn gốc sản phẩm khi cần thiết.</p>
+        <p>2. <strong>Bảo mật thông tin:</strong> Công ty TraceOrigin cam kết bảo mật thông tin doanh nghiệp theo đúng quy định pháp luật và chính sách bảo mật của công ty.</p>
+        <p>3. <strong>Hỗ trợ doanh nghiệp:</strong> Công ty TraceOrigin sẽ hỗ trợ doanh nghiệp trong việc cung cấp thông tin và giải quyết các vấn đề liên quan đến xác thực nguồn gốc sản phẩm.</p>
+    </div>
+
+    <div class="section">
+        <p class="section-title">V. ĐIỀU KHOẢN CHUNG</p>
+        <p>1. <strong>Hiệu lực hợp đồng:</strong> Hợp đồng này có hiệu lực từ ngày <span th:text="${effectiveDate}">[Ngày hiệu lực]</span> đến khi có thông báo chấm dứt từ một trong hai bên.</p>
+        <p>2. <strong>Giải quyết tranh chấp:</strong> Mọi tranh chấp phát sinh liên quan đến hợp đồng này sẽ được giải quyết thông qua thương lượng, nếu không thành công sẽ giải quyết tại Tòa án có thẩm quyền.</p>
+    </div>
+
+    <div class="date-location">
+        <p>Hà Nội, ngày: <span th:text="${day}">[dd]</span> tháng: <span th:text="${month}">[MM]</span> năm: <span th:text="${year}">[yyyy]</span></p>
+    </div>
+
+    <div class="signature">
+        <div>
+            <p> <strong>NGƯỜI KÝ CAM KẾT </strong> <br> (Ký và ghi rõ họ tên) </p>
+            <div th:if="${signed}">
+                <div>
+                    <div class="signed-icon"></div>
+                    <div class="signed-info">
+                        <p>Chữ ký số/ Digitally signed</span></p>
+                        <p>Ký bởi/ Signed by: <span th:text="${signerName}"></span></p>
+                        <p>Ngày ký/Sign date: <span th:text="${signDate}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>

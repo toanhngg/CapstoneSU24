@@ -29,6 +29,8 @@ public class User implements UserDetails {
     private String description;
     @Column(name = "phone")
     private String phone;
+    @Column(name = "org_name", columnDefinition = "nvarchar(255)")
+    private String org_name;
     @Column(name = "create_at")
     private long createAt;
     @Column(name = "status")
@@ -36,8 +38,6 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
-    @Column(name = "org_name")
-    private String org_name;
 
     @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
