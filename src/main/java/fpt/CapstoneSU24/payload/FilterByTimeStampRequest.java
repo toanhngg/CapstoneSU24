@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public class FilterByTimeStampRequest {
+    @Digits(integer = 10, fraction = 0, message = "Invalid digit format")
     @Pattern(regexp = "\\d{10}", message = "Invalid digit format")
     @NotNull(message = "The startDate is required")
     private long startDate;
+    @Digits(integer = 10, fraction = 0, message = "Invalid digit format")
     @Pattern(regexp = "\\d{10}", message = "Invalid digit format")
     @NotNull(message = "The endDate is required")
     private long endDate;
@@ -20,6 +22,7 @@ public class FilterByTimeStampRequest {
     public long getEndDate() {
         return endDate;
     }
+
     public boolean isValidDates() {
         return startDate < endDate;
     }
