@@ -70,7 +70,12 @@ public class SecurityConfiguration {
                                 "/api/item/checkAuthorized",
                                 "/api/item/checkCurrentOwner",
                                 "/api/item/sendOTP",
-                                "/api/item/confirmOTP"
+                                "/api/item/confirmOTP",
+                                "api/itemlog/additemlogTransport",
+                                "api/transport/getAllTransport",
+                                "api/item/sendCurrentOwnerOTP",
+                                "api/item/confirmCurrentOwner"
+
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
