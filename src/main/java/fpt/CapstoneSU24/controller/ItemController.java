@@ -288,66 +288,27 @@ public class ItemController {
         }
     }
 
-//    @PostMapping(value = "/confirmCurrentOwner")
-//    public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String ProductRecognition) {
-//        // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
-//        // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
-//        // - Insert bảng party => Sau khi nhận mới trở thành party
-//
-//        Item item = itemRepository.findByProductRecognition(ProductRecognition); // B1
-//
-//        if (item == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
-//        }
-//
-//        if (item.getStatus() == 0) {
-//            boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
-//
-//            if (check) {
-//                itemRepository.updateStatus(item.getItemId());
-//                List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-//
-//                if (list.isEmpty() || list.size() <= 1) {
-//                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu không có log hoặc log không đủ
-//                }
-//
-//                ItemLog itemIndex = list.get(1);
-//                Optional<Authorized> authorizedOpt = authorizedResponsitory.findById(itemIndex.getAuthorized().getAuthorized_id());
-//
-//                if (!authorizedOpt.isPresent()) {
-//                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu authorized không tồn tại
-//                }
-//
-//                Authorized authorized = authorizedOpt.get();
-//                Party party = partyRepository.save(new Party(
-//                        authorized.getDescription(),
-//                        authorized.getAuthorized_email(),
-//                        authorized.getAuthorized_name(),
-//                        authorized.getPhoneNumber()
-//                ));
-//
-//                ItemLog itemLog = new ItemLog();
-//                itemLog.setAddress(authorized.getLocation().getAddress());
-//                itemLog.setDescription(authorized.getDescription());
-//                itemLog.setAuthorized(null);
-//                itemLog.setStatus(1);
-//                itemLog.setTimeStamp(System.currentTimeMillis());
-//                itemLog.setItem(item);
-//                itemLog.setLocation(authorized.getLocation());
-//                itemLog.setParty(party);
-//                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
-//                itemLog.setImageItemLog(null);
-//
-//                itemLogRepository.save(itemLog);
-//
-//                return ResponseEntity.ok(true); // Thành công, trả về true
-//            } else {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
-//            }
-//        } else {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // Status không phù hợp
-//        }
-//    }
+    @PostMapping(value = "/confirmCurrentOwner")
+    public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
+        // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
+        // - Chính xác => Buoc tiep theo
+
+        Item item = itemRepository.findByProductRecognition(productRecognition); // B1
+        if (item == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
+        }
+        if (item.getStatus() == 1 && item.getCurrentOwner().equals(otp.getEmail())) {
+            boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
+            if (check) {
+
+                return ResponseEntity.ok(true); // Thành công, trả về true
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // Status không phù hợp
+        }
+    }
 
     // API uy quyen checkCurrentOwner => authorized
     @PostMapping(value = "/authorized")
@@ -423,9 +384,9 @@ public class ItemController {
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
         }
-        if (item.getStatus() == 0) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
-        } else if (item.getStatus() == 1) {
+//        if (item.getStatus() == 0) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
+       // } else if (item.getStatus() == 1) {
             if (email != null && !email.isEmpty()) {
                 if (item.getCurrentOwner().equals(email)) {
                     return ResponseEntity.ok(true);
@@ -435,9 +396,33 @@ public class ItemController {
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
             }
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+       // }
+   //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
+    @PostMapping(value = "/sendCurrentOwnerOTP")
+    public ResponseEntity<String> sendCurrentOwnerOTP(@RequestBody String req) {
+        try {
+            JSONObject jsonReq = new JSONObject(req);
+            String email = jsonReq.getString("email");
+
+            // Tạo đối tượng ClientSdi và gửi email OTP
+            ClientSdi sdi = new ClientSdi();
+            sdi.setEmail(email);
+
+            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
+
+            if (emailSent) {
+                return ResponseEntity.ok("OTP has been sent successfully.");
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
+            }
+        } catch (JSONException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
+    }
+
 
     //API send OTP  nhap mail => sendOTP chua check
     @PostMapping(value = "/sendOTP")
@@ -462,10 +447,10 @@ public class ItemController {
 
             // Lấy danh sách item logs và kiểm tra kích thước danh sách
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-            if (list.size() < 2) {
+            if (list.size() < 1) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
             }
-            ItemLog itemIndex = list.get(1);
+            ItemLog itemIndex = list.get(0);
 
             // Tạo đối tượng ClientSdi và gửi email OTP
             ClientSdi sdi = new ClientSdi();
@@ -513,7 +498,7 @@ public class ItemController {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu không có log hoặc log không đủ
                 }
 
-                ItemLog itemIndex = list.get(1);
+                ItemLog itemIndex = list.get(0);
                 Optional<Authorized> authorizedOpt = authorizedResponsitory.findById(itemIndex.getAuthorized().getAuthorized_id());
 
                 if (!authorizedOpt.isPresent()) {
@@ -537,9 +522,9 @@ public class ItemController {
                 itemLog.setItem(item);
                 itemLog.setLocation(authorized.getLocation());
                 itemLog.setParty(party);
-                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
+                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2)); // Event nay la nhan hang
                 itemLog.setImageItemLog(null);
-
+                itemLogRepository.updateStatus(1,list.get(1).getItemLogId());
                 itemLogRepository.save(itemLog);
 
                 return ResponseEntity.ok(true); // Thành công, trả về true
