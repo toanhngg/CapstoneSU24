@@ -1,9 +1,11 @@
 package fpt.CapstoneSU24.dto;
 
+import fpt.CapstoneSU24.model.Role;
+
 public class UserProfileDTO {
     private String email;
 
-    private String role;
+    private Role role;
 
     private String firstName;
 
@@ -29,11 +31,11 @@ public class UserProfileDTO {
         this.email = email;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

@@ -19,20 +19,32 @@ public class Location {
     private String coordinateX;
     @Column(name = "coordinateY", columnDefinition = "nvarchar(50)")
     private String coordinateY;
+    //manhdt
+    //them quan huyen phuong xa
+    @Column(name = "district", columnDefinition = "nvarchar(100)")
+    private String district;
+    @Column(name = "street", columnDefinition = "nvarchar(100)")
+    private String street;
+
+
 //    @Column(name = "coordinates", columnDefinition = "nvarchar(50)")
 //    private String coordinates;
 
     public Location() {
 
     }
-    public Location(int locationId, String address, String city, String country, String coordinateX,String coordinateY) {
+    public Location(int locationId, String address, String city, String country, String coordinateX,String coordinateY, String district, String street) {
         this.locationId = locationId;
         this.address = address;
         this.city = city;
         this.country = country;
         this.coordinateX = coordinateX;
         this.coordinateY = coordinateY;
+        this.district = district;
+        this.street = street;
     }
+
+
 
 
 
@@ -93,7 +105,23 @@ public class Location {
         this.country = country;
     }
 
-//    public String getCoordinates() {
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    //    public String getCoordinates() {
 //        return coordinates;
 //    }
 //

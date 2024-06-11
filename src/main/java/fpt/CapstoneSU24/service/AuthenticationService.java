@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.Optional;
 
 @Service
@@ -48,7 +49,7 @@ public class AuthenticationService {
         user.setRole(roleRepository.findOneByRoleId(2));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setCreateAt(System.currentTimeMillis());
-        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),"","");
+        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),"","","",""); //manhDT sua bang
         locationRepository.save(location);
         user.setLocation(location);
         return userRepository.save(user);
@@ -68,6 +69,41 @@ public class AuthenticationService {
     {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    public String generateRandomPassword() {
+        String lowercase = "abcdefghijklmnopqrstuvwxyz";
+        String uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String digits = "0123456789";
+        String specialCharacters = "@#$%^&+=!*()";
+        String allCharacters = lowercase + uppercase + digits + specialCharacters;
+        SecureRandom random = new SecureRandom();
+
+        int length = 8 + random.nextInt(9);
+        StringBuilder password = new StringBuilder(length);
+
+        password.append(lowercase.charAt(random.nextInt(lowercase.length())));
+        password.append(uppercase.charAt(random.nextInt(uppercase.length())));
+        password.append(digits.charAt(random.nextInt(digits.length())));
+        password.append(specialCharacters.charAt(random.nextInt(specialCharacters.length())));
+
+        for (int i = 4; i < length; i++) {
+            password.append(allCharacters.charAt(random.nextInt(allCharacters.length())));
+        }
+
+        return shuffleString(password.toString());
+    }
+
+    private static String shuffleString(String string) {
+        SecureRandom random = new SecureRandom();
+        char[] characters = string.toCharArray();
+        for (int i = 0; i < characters.length; i++) {
+            int randomIndex = random.nextInt(characters.length);
+            char temp = characters[i];
+            characters[i] = characters[randomIndex];
+            characters[randomIndex] = temp;
+        }
+        return new String(characters);
     }
 
 }

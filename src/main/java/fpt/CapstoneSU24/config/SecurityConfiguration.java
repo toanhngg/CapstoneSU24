@@ -74,7 +74,8 @@ public class SecurityConfiguration {
                                 "api/itemlog/additemlogTransport",
                                 "api/transport/getAllTransport",
                                 "api/item/sendCurrentOwnerOTP",
-                                "api/item/confirmCurrentOwner"
+                                "api/item/confirmCurrentOwner",
+                                "api/user/getUserById"
 
                         ).permitAll()
                         .anyRequest().authenticated())
