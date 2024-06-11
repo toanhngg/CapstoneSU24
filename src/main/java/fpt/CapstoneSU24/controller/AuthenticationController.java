@@ -17,6 +17,7 @@ import fpt.CapstoneSU24.util.Const;
 import io.swagger.v3.core.util.Json;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -132,9 +133,8 @@ public class AuthenticationController {
     @PostMapping("/forgotPassword")
     public ResponseEntity<String> forgetPassword(@RequestBody String req) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(req);
-            String email = jsonNode.get("email").asText();
+            JSONObject jsonNode = new JSONObject(req);
+            String email = jsonNode.getString("email");
             User user = userRepository.findOneByEmail(email);
             if (user == null) {
                 return ResponseEntity.status(401).body("Email incorrect !!!");

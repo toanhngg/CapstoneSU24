@@ -1,5 +1,8 @@
 package fpt.CapstoneSU24.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_MailSend;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
@@ -191,12 +194,29 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getUserById")
-    public ResponseEntity<UserProfileDTO> getUserByUserID() {
+    @PostMapping("/getUserById")
+    public ResponseEntity<UserProfileDTO> getUserByUserID(@RequestBody String req)  {
+        JSONObject jsonReq = new JSONObject(req);
+        int userId = jsonReq.has("userId") ? jsonReq.getInt("userId") : -1;
+        UserProfileDTO currentUser;
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
-        if (userProfileDTO != null) {
+
+
+
+        if (userId > -1 || !(authentication.getPrincipal() instanceof User) ) {
+            currentUser = userService.getUserProfile(authentication, userId);
+            return ResponseEntity.ok(currentUser);
+        }
+
+        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+
+        if ( userProfileDTO.getRole().getRoleId() != 1) {
             return ResponseEntity.ok(userProfileDTO);
+        }
+        else if (userProfileDTO.getRole().getRoleId() == 1) {
+            currentUser = userService.getUserProfile(authentication, userId);
+            return ResponseEntity.ok(currentUser);
         } else {
             return ResponseEntity.status(400).body(null);
         }
@@ -214,7 +234,7 @@ public class UserController {
     @PostMapping("/getContract")
     public ResponseEntity<byte[]> generateDoc() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
+        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication,-1);
         //kiem tra user ton tai va da ky hop dong chua
         if (userProfileDTO != null && userProfileDTO.getStatus() == 0) {
             String finalHtml;
@@ -273,7 +293,7 @@ public class UserController {
         {
             return ResponseEntity.ok("The commitment contract already singed");
         }else{
-            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication);
+            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
             String finalHtml;
 
             DataMailDTO dataMail = new DataMailDTO();
@@ -314,6 +334,8 @@ public class UserController {
         }
 
     }
+
+
 }
 
 
