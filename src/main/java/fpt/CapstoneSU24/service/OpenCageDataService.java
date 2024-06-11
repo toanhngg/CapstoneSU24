@@ -25,7 +25,7 @@ public class OpenCageDataService {
     private String urlVerify;
     public JSONArray verifyLocation(String address) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            String url = String.format("%s/geocode/v1/json?q=%s&key=%s", urlVerify, URLEncoder.encode(address, "UTF-8"), apiKey);
+            String url = String.format("%s/geocode/v1/json?q=%s&key=%s&limit=1", urlVerify, URLEncoder.encode(address, "UTF-8"), apiKey);
             HttpGet httpGet = new HttpGet(url);
             System.out.println(url + " hehe");
             httpGet.addHeader("Content-Type", "application/json");
@@ -55,7 +55,7 @@ public class OpenCageDataService {
     }
     public JSONArray verifyCoordinates(double lat, double lng) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            String url = String.format("%s/geocode/v1/json?key=%s&q=%s+%s&prety=1", urlVerify, apiKey,lat, lng);
+            String url = String.format("%s/geocode/v1/json?key=%s&q=%s+%s&prety=1&limit=1", urlVerify, apiKey,lat, lng);
             HttpGet httpGet = new HttpGet(url);
             httpGet.addHeader("Content-Type", "application/json");
             HttpResponse response = httpClient.execute(httpGet);
