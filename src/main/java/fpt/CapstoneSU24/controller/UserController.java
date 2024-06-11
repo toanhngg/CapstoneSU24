@@ -136,9 +136,9 @@ public class UserController {
     public Boolean sendEmail(@RequestParam Boolean isLock,
                              @RequestParam int userId) {
         try {
-            String subject = isLock ? Const.SEND_MAIL_SUBJECTLockUser.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECTUnLockUser.SUBJECT_UNLOCKUSER;
+            String subject = isLock ? Const.SEND_MAIL_SUBJECT.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECT.SUBJECT_UNLOCKUSER;
 
-            String template = isLock ? Const.TEMPLATE_FILE_NAME_LOCKUSER.LOCKUSER_DETAIL : Const.TEMPLATE_FILE_NAME_UNLOCKUSER.UNLOCKUSER_DETAIL;
+            String template = isLock ? Const.TEMPLATE_FILE_NAME.LOCKUSER_DETAIL : Const.TEMPLATE_FILE_NAME.UNLOCKUSER_DETAIL;
 
             User user = new User();
             user = userRepository.findOneByUserId(userId);

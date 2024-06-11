@@ -1,14 +1,20 @@
 package fpt.CapstoneSU24.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
+import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.service.AuthenticationService;
+import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.payload.LoginRequest;
+import fpt.CapstoneSU24.util.Const;
+import io.swagger.v3.core.util.Json;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +26,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RequestMapping("/api/auth")
 @RestController
@@ -34,6 +43,8 @@ public class AuthenticationController {
     private UserRepository userRepository;
     @Autowired
     private AuthTokenRepository authTokenRepository;
+    @Autowired
+    private EmailService mailService;
     @PostMapping("/signup")
     public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
         if(userRepository.findOneByEmail(registerRequest.getEmail()) == null){
@@ -112,6 +123,39 @@ public class AuthenticationController {
             user.setPassword(changePasswordDto.getPassword());
             authenticationService.ChangePassword(user);
 
+            return ResponseEntity.status(200).body("Password changed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgetPassword(@RequestBody String req) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(req);
+            String email = jsonNode.get("email").asText();
+            User user = userRepository.findOneByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(401).body("Email incorrect !!!");
+            }else{
+                String rndPass = authenticationService.generateRandomPassword();
+                user.setPassword(rndPass);
+                authenticationService.ChangePassword(user);
+                DataMailDTO dataMail = new DataMailDTO();
+
+                dataMail.setTo(user.getEmail());
+
+                dataMail.setSubject(Const.SEND_MAIL_SUBJECT.SUBJECT_CHANGEPASS);
+
+                Map<String, Object> props = new HashMap<>();
+                props.put("name", user.getFirstName() + user.getLastName());
+                props.put("newPassword", rndPass);
+
+                dataMail.setProps(props);
+
+                mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CHANGEPASSWORD);
+            }
             return ResponseEntity.status(200).body("Password changed successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
