@@ -84,12 +84,12 @@ public class UserController {
     }
 
     @PostMapping("/getDataToTable")
-    public ResponseEntity<Page<B03_GetDataGridDTO>> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
+    public ResponseEntity<?> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
 
         if ( userProfileDTO.getRole().getRoleId() != 1) {
-            return ResponseEntity.ok(null);
+            return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
@@ -129,6 +129,11 @@ public class UserController {
 
     @PutMapping("/lockUser")
     public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+        if ( userProfileDTO.getRole().getRoleId() != 1) {
+            return ResponseEntity.ok(null);
+        }
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();

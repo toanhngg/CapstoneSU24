@@ -5,6 +5,7 @@ import fpt.CapstoneSU24.dto.B02.B02_RequestFilterTable;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.dto.ReportDetailDto;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.ReportRepository;
@@ -13,6 +14,7 @@ import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.ReportService;
 import fpt.CapstoneSU24.util.Const;
 import jakarta.mail.MessagingException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -75,4 +77,17 @@ public class ReportController {
         return  ResponseEntity.ok(b02GetListReports);
 
     }
+
+
+    @PostMapping("/getReportById")
+    public ResponseEntity<?> getDetailReport(@RequestBody String req)
+    {
+        ReportDetailDto reportDetail = new ReportDetailDto();
+        JSONObject jsonObject = new JSONObject(req);
+        int reportId = jsonObject.has("reportId") ? jsonObject.getInt("reportId") : -1;
+        reportDetail = reportService.getDetailReport(reportId);
+        return ResponseEntity.ok(reportDetail);
+    }
+
+
 }

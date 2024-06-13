@@ -9,4 +9,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, Intege
 
     Certificate findOneByCertificateId(int id);
 
+    Certificate findOneByManufacturer_userId(int id);
+
 }
