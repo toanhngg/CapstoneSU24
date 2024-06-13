@@ -41,7 +41,10 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="stash"/>
     </root>
-    <logger name="com.microsoft.sqlserver" level="DEBUG"/>
+<!--    <logger name="com.microsoft.sqlserver" level="DEBUG"/>-->
 <!--    <logger name="org.springframework" level="INFO"/>-->
 <!--    <logger name="com.mesadhan" level="DEBUG"/>-->
+    <logger name="fpt.CapstoneSU24.controller.AuthenticationController" level="info" additivity="false">
+    <appender-ref ref="stash"/>
+    </logger>
 </configuration>

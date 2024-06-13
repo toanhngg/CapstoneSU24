@@ -89,16 +89,20 @@ public class ItemController {
     }
 
     @PostMapping("/exportListItem")
-    public ResponseEntity<byte[]> exportListItem(@Valid @RequestBody FilterByTimeStampRequest req) throws IOException {
-        JSONObject jsonReq = new JSONObject(req);
-        List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
-        byte[] excelBytes = exportExcelService.exportItemToExcel(items);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "exported_data.xlsx");
-        return new ResponseEntity<>(excelBytes, headers, 200);
-    }
+    public ResponseEntity  exportListItem(@Valid @RequestBody FilterByTimeStampRequest req) throws IOException {
+        if(req.isValidDates()){
+            JSONObject jsonReq = new JSONObject(req);
+            List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
+            byte[] excelBytes = exportExcelService.exportItemToExcel(items);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "exported_data.xlsx");
+            return new ResponseEntity<>(excelBytes, headers, 200);
+        }else{
+            return ResponseEntity.status(500).body("startTime need less than endTime");
+        }
 
+    }
     @PostMapping("/addItem")
     public ResponseEntity addItem(@RequestBody ItemLogDTO itemLogDTO) {
         try {

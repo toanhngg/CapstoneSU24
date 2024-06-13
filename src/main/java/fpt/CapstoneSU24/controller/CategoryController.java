@@ -43,7 +43,7 @@ public class CategoryController {
     public ResponseEntity addCategory(@Valid @RequestBody CreateCategoryRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if(currentUser.getRole().getRoleId() == 2){
+        if(currentUser.getRole().getRoleId() == 1){
            Category category = new Category(0,req.getName(), req.getDescription(), userRepository.findOneByUserId(currentUser.getUserId()));
            categoryRepository.save(category);
            return ResponseEntity.status(200).body("successfully");

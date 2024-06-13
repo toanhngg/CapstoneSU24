@@ -1,7 +1,5 @@
 package fpt.CapstoneSU24.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.model.AuthToken;
@@ -18,6 +16,8 @@ import io.swagger.v3.core.util.Json;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -34,6 +34,8 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RestController
 public class AuthenticationController {
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
+
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -72,6 +74,7 @@ public class AuthenticationController {
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         System.out.println("jwt: " + jwtToken);
+        log.info("User {} is attempting to log in.", loginRequest.getEmail());
         return ResponseEntity.status(200).body("login successfully");
     }
     @PostMapping("/logout")
