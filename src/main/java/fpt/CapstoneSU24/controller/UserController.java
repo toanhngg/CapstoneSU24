@@ -85,6 +85,12 @@ public class UserController {
 
     @PostMapping("/getDataToTable")
     public ResponseEntity<Page<B03_GetDataGridDTO>> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+
+        if ( userProfileDTO.getRole().getRoleId() != 1) {
+            return ResponseEntity.ok(null);
+        }
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
 
