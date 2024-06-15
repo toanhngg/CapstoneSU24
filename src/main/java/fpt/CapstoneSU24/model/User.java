@@ -43,8 +43,9 @@ public class User implements UserDetails {
     @PrimaryKeyJoinColumn
     private AuthToken authToken;
 
-    @Column(name = "profileImage", columnDefinition = "varbinary(MAX)")
-    private byte[] profileImage;
+    @Column(name = "profileImage", columnDefinition = "nvarchar(255)")
+    private String profileImage;
+
     public User() {
     }
     public String getOrg_name() {
@@ -196,11 +197,11 @@ public class User implements UserDetails {
         this.authToken = authToken;
     }
 
-    public byte[] getProfileImage() {
+    public String getProfileImage() {
         return profileImage;
     }
 
-    public void setProfileImage(byte[] profileImage) {
+    public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
 }

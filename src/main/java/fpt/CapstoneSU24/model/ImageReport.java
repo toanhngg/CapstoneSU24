@@ -12,8 +12,8 @@ public class ImageReport {
     @Column(name = "image_name")
     private String imageName;
 
-    @Column(name = "image", columnDefinition = "varbinary(MAX)")
-    private byte[] image;
+    @Column(name = "imagePath", columnDefinition = "nvarchar(255)")
+    private String imagePath;
 
     @ManyToOne
     @JoinColumn(name = "report_id", nullable = false)
@@ -22,10 +22,10 @@ public class ImageReport {
     public ImageReport() {
     }
 
-    public ImageReport(int id, String imageName, byte[] image, Report report) {
+    public ImageReport(int id, String imageName, String imagePath, Report report) {
         this.id = id;
         this.imageName = imageName;
-        this.image = image;
+        this.imagePath = imagePath;
         this.report = report;
     }
 
@@ -45,12 +45,12 @@ public class ImageReport {
         this.imageName = imageName;
     }
 
-    public byte[] getImage() {
-        return image;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public Report getReport() {
