@@ -26,10 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +55,7 @@ public class ItemController {
     @Autowired
     private ClientService clientService;
     @Autowired
-    private AuthorizedRepository authorizedResponsitory;
+    private AuthorizedRepository authorizedRepository;
     @Autowired
     private EventTypeRepository eventTypeRepository;
     @Autowired
@@ -176,8 +173,7 @@ public class ItemController {
                 itemRepository.saveAll(items);
                 partyRepository.saveAll(parties);
                 itemLogRepository.saveAll(itemLogs);
-
-                return ResponseEntity.ok("ok");
+                return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -190,9 +186,10 @@ public class ItemController {
     public ResponseEntity findAllItemByProductId(@RequestParam int ProductId) {
         List<Item> itemList = itemRepository.findByProductId(ProductId);
         if (itemList == null) {
-            return ResponseEntity.badRequest().body("Lỗi: Yêu cầu không hợp lệ");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not foumd!");
         } else {
-            return ResponseEntity.ok(itemList);
+            return ResponseEntity.status(HttpStatus.OK).body(itemList);
+
         }
     }
 
@@ -202,13 +199,16 @@ public class ItemController {
     public ResponseEntity viewLineItem(@RequestParam String productRecognition) {
         try {
             Item item = itemRepository.findByProductRecognition(productRecognition);
-            //  System.out.println(item.getItemId());
+            if (item == null) {
+                return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
+            }
             List<ItemLog> itemList = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
             if (itemList.isEmpty()) {
                 // Trả về chỉ thông tin của Item nếu không có ItemLog nào
                 //  ItemDTO itemDTO = convertToItemDTO(item);
-                return ResponseEntity.ok(new ItemLogDTOResponse(/*itemDTO, */Collections.emptyList()));
+                return ResponseEntity.status(HttpStatus.OK).body(new ItemLogDTOResponse(/*itemDTO, */Collections.emptyList()));
+
             } else {
                 //  ItemDTO itemDTO = convertToItemDTO(item);
                 List<ItemLogDTOResponse> itemLogDTOs = itemList.stream()
@@ -216,12 +216,11 @@ public class ItemController {
                         .collect(Collectors.toList());
                 // Tạo đối tượng ItemLogResponse và trả về
                 ItemLogResponse itemLogResponse = new ItemLogResponse(/*itemDTO,*/ itemLogDTOs);
-                return ResponseEntity.ok(itemLogResponse);
+                return ResponseEntity.status(HttpStatus.OK).body(itemLogResponse);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while processing viewLineItem:: " + ex.getMessage());
         }
-        return null;
     }
 
     private ItemLogDTOResponse convertToItemLogDTO(ItemLog itemLog) {
@@ -229,11 +228,11 @@ public class ItemController {
         dto.setItemLogId(itemLog.getItemLogId());
         dto.setAddress(itemLog.getAddress());
         long timestamp = itemLog.getTimeStamp();
-        Date date = new Date(timestamp);
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        String formattedDate = formatter.format(date);
+//        Date date = new Date(timestamp);
+//        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+//        String formattedDate = formatter.format(date);
 
-        dto.setCreatedAt(formattedDate);
+        dto.setCreatedAt(String.valueOf(timestamp));
         //EventType eventType = eventTypeRepository.getReferenceById(itemLog.getEvent_id());
         dto.setEventType(itemLog.getEvent_id().getEvent_type());
         dto.setPartyName(itemLog.getParty().getPartyFullName());
@@ -251,40 +250,44 @@ public class ItemController {
     }
     @GetMapping("/viewOrigin")
     public ResponseEntity getOrigin(@RequestParam int itemLogId) {
+        try {
+            ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
+            if(itemLog == null)  return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
 
-        ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
-
-        OriginDTO originDTO = new OriginDTO();
-        originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
-        originDTO.setProductName(itemLog.getItem().getProduct().getProductName());
-        originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
-        originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
-        originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
-        originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-        originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-        originDTO.setAddress(itemLog.getItem().getOrigin().getLocation().getAddress());
-        originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
-        originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
-        originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
-        originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
-        Integer productId = itemLog.getItem().getProduct().getProductId();
-        if (productId == null) {
-            originDTO.setImage(null);
-        } else {
-            ImageProduct imageProduct = imageProductRepository.findByproductId(itemLog.getItem().getProduct().getProductId());
-            if (imageProduct == null) {
+            OriginDTO originDTO = new OriginDTO();
+            originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
+            originDTO.setProductName(itemLog.getItem().getProduct().getProductName());
+            originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
+            originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
+            originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
+            originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
+            originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
+            originDTO.setAddress(itemLog.getItem().getOrigin().getLocation().getAddress());
+            originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
+            originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
+            originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
+            originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
+            Integer productId = itemLog.getItem().getProduct().getProductId();
+            if (productId == null) {
                 originDTO.setImage(null);
-
             } else {
-                byte[] img = imageProduct.getImage();
-                originDTO.setImage(img);
+                ImageProduct imageProduct = imageProductRepository.findByproductId(itemLog.getItem().getProduct().getProductId());
+                if (imageProduct == null) {
+                    originDTO.setImage(null);
+                } else {
+                    byte[] img = imageProduct.getImage();
+                    originDTO.setImage(img);
+                }
             }
+            if (originDTO != null) {
+                return new ResponseEntity<>(originDTO, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception ex) {
+            System.err.println("Error occurred while processing viewLineItem: " + ex.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
-        }
-        if (originDTO != null) {
-            return new ResponseEntity<>(originDTO, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -300,7 +303,6 @@ public class ItemController {
         if (item.getStatus() == 1 && item.getCurrentOwner().equals(otp.getEmail())) {
             boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
             if (check) {
-
                 return ResponseEntity.ok(true); // Thành công, trả về true
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
@@ -311,8 +313,6 @@ public class ItemController {
     }
 
     // API uy quyen checkCurrentOwner => authorized
-    @PostMapping(value = "/authorized")
-    public ResponseEntity authorized(@RequestBody Authorized authorized, @RequestParam int itemLogId) throws MessagingException {
 // Cai nay la uy quyen nguoi nhan
         // B1. Kiem tra xem san pham nay da duoc uy quyen chua bang cach check currentOwner voi status la 0
         // - Neu ma co currentOwner roi va co status la 1 thi co nghia la chua uy quyen
@@ -321,47 +321,74 @@ public class ItemController {
         // - Update currentOwner voi email cua nguoi duoc uy quyen va status la 0
         // - Update bang itemLog voi id dai nhat voi authorized_id va bang authorized nhung thong tin cua nguoi duoc uy quyen
         // - Gui mail thong bao cho nguoi dung la bạn da duoc uy quyen
-        ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
-        Item item = itemRepository.findByProductRecognition(itemLog.getItem().getProductRecognition()); //B1
-        if (item.getStatus() == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized !");
-        } else if (item.getStatus() == 1) {
-            if (authorized.getAuthorized_email() != null) {
-                // Add nguoi ngay vao bang nguoi duoc uy quyen authorized
+    @PostMapping(value = "/authorized")
+    public ResponseEntity<?> authorize(@RequestBody Authorized authorized, @RequestParam int itemLogId) {
+        try {
+            // B1: Kiểm tra trạng thái ủy quyền của sản phẩm
+            ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
+            if (itemLog == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item log not found!");
+            }
+
+            Item item = itemRepository.findByProductRecognition(itemLog.getItem().getProductRecognition());
+            if (item == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found!");
+            }
+
+            if (item.getStatus() == 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized!");
+            }
+
+            if (authorized.getAuthorized_email() == null || authorized.getAuthorized_email().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter authorized person's email!");
+            }
+
+            // B2: Tiến hành ủy quyền nếu chưa ủy quyền
                 Location location = new Location();
                 location.setAddress(authorized.getLocation().getAddress());
                 location.setCity(authorized.getLocation().getCity());
                 location.setCountry(authorized.getLocation().getCountry());
                 location.setCoordinateX(authorized.getLocation().getCoordinateX());
                 location.setCoordinateY(authorized.getLocation().getCoordinateY());
+
                 Location savedLocation = locationRepository.save(location);
-                locationRepository.save(new Location());
-                Authorized authorizedSaved = authorizedResponsitory.save(new Authorized(authorized.getAuthorized_name(),
-                        authorized.getAuthorized_email(), itemLog.getParty().getPartyFullName(), item.getCurrentOwner(),
-                        savedLocation, authorized.getPhoneNumber(), authorized.getDescription()
+
+            Authorized authorizedSaved = authorizedRepository.save(new Authorized(
+                    authorized.getAuthorized_name(),
+                    authorized.getAuthorized_email(),
+                    itemLog.getParty().getPartyFullName(),
+                    item.getCurrentOwner(),
+                    savedLocation,
+                    authorized.getPhoneNumber(),
+                    authorized.getDescription()
                 ));
-                // Uy quyen thi update vao bang item voi currentOwner voi status la 0
+
+            // Cập nhật trạng thái sản phẩm
                 itemRepository.updateStatusAndCurrent(item.getItemId(), authorized.getAuthorized_email());
-                // add authorized_id vao bang itemlog
+
+            // Cập nhật authorized_id vào bảng itemLog
                 itemLogRepository.updateAuthorized(authorizedSaved.getAuthorized_id(), itemLogId);
+
+            // Gửi thông báo email
                 ClientSdi sdi = new ClientSdi();
                 sdi.setEmail(authorized.getAuthorized_email());
                 sdi.setUsername(authorized.getAuthorized_name());
                 sdi.setName(authorized.getAuthorized_name());
-                //Gui mail thong bao da duoc uy quyen
-                return ResponseEntity.ok(clientService.notification(sdi));
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Please enter authorized person's email!");
-        }
-        return null;
-    }
 
+            clientService.notification(sdi);
+
+            return  ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
+
+        } catch (Exception ex) {
+            // Ghi log lỗi
+            System.err.println("Error occurred while processing authorization: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+            }
+        }
     @PostMapping(value = "/checkAuthorized")
     public ResponseEntity<Boolean> checkAuthorized(@RequestParam String productRecognition) throws MessagingException {
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
-        System.out.println();
         Item item = itemRepository.findByProductRecognition(productRecognition); // B1
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
@@ -476,64 +503,71 @@ public class ItemController {
     // API verify OTP
     @PostMapping(value = "/confirmOTP")
     public ResponseEntity<Boolean> confirmOTP(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
-        // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
-        // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
-        // - Insert bảng party => Sau khi nhận mới trở thành party
+        try {
+            // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
+            // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
+            // - Insert bảng party => Sau khi nhận mới trở thành party
 
-        Item item = itemRepository.findByProductRecognition(productRecognition); // B1
+            Item item = itemRepository.findByProductRecognition(productRecognition); // B1
 
-        if (item == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
-        }
-
-        if (item.getStatus() == 0) {
-            boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
-
-            if (check) {
-                Integer status = 1;
-                itemRepository.updateItemStatus(Long.valueOf(item.getItemId()),status);
-                List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-
-                if (list.isEmpty() || list.size() <= 1) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu không có log hoặc log không đủ
-                }
-
-                ItemLog itemIndex = list.get(0);
-                Optional<Authorized> authorizedOpt = authorizedResponsitory.findById(itemIndex.getAuthorized().getAuthorized_id());
-
-                if (!authorizedOpt.isPresent()) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu authorized không tồn tại
-                }
-
-                Authorized authorized = authorizedOpt.get();
-                Party party = partyRepository.save(new Party(
-                        authorized.getDescription(),
-                        authorized.getAuthorized_email(),
-                        authorized.getAuthorized_name(),
-                        authorized.getPhoneNumber()
-                ));
-
-                ItemLog itemLog = new ItemLog();
-                itemLog.setAddress(authorized.getLocation().getAddress());
-                itemLog.setDescription(authorized.getDescription());
-                itemLog.setAuthorized(null);
-                itemLog.setStatus(1);
-                itemLog.setTimeStamp(System.currentTimeMillis());
-                itemLog.setItem(item);
-                itemLog.setLocation(authorized.getLocation());
-                itemLog.setParty(party);
-                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2)); // Event nay la nhan hang
-                itemLog.setImageItemLog(null);
-                itemLogRepository.updateStatus(1,list.get(1).getItemLogId());
-                itemLogRepository.save(itemLog);
-
-                return ResponseEntity.ok(true); // Thành công, trả về true
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
+            if (item == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
             }
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // Status không phù hợp
+
+            if (item.getStatus() == 0) {
+                boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
+
+                if (check) {
+                    Integer status = 1;
+                    itemRepository.updateItemStatus(Long.valueOf(item.getItemId()), status);
+                    List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+
+                    if (list.isEmpty() || list.size() <= 1) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu không có log hoặc log không đủ
+                    }
+
+                    ItemLog itemIndex = list.get(0);
+                    Optional<Authorized> authorizedOpt = authorizedRepository.findById(itemIndex.getAuthorized().getAuthorized_id());
+
+                    if (!authorizedOpt.isPresent()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu authorized không tồn tại
+                    }
+
+                    Authorized authorized = authorizedOpt.get();
+                    Party party = partyRepository.save(new Party(
+                            authorized.getDescription(),
+                            authorized.getAuthorized_email(),
+                            authorized.getAuthorized_name(),
+                            authorized.getPhoneNumber()
+                    ));
+
+                    ItemLog itemLog = new ItemLog();
+                    itemLog.setAddress(authorized.getLocation().getAddress());
+                    itemLog.setDescription(authorized.getDescription());
+                    itemLog.setAuthorized(null);
+                    itemLog.setStatus(1);
+                    itemLog.setTimeStamp(System.currentTimeMillis());
+                    itemLog.setItem(item);
+                    itemLog.setLocation(authorized.getLocation());
+                    itemLog.setParty(party);
+                    itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2)); // Event này là nhận hàng
+                    itemLog.setImageItemLog(null);
+                    itemLogRepository.updateStatus(1, list.get(1).getItemLogId());
+                    itemLogRepository.save(itemLog);
+
+                    return ResponseEntity.ok(true); // Thành công, trả về true
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // Status không phù hợp
+            }
+        } catch (Exception ex) {
+            // Log the error
+            System.err.println("Error occurred while confirming OTP: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false); // Xảy ra lỗi, trả về lỗi server
         }
     }
+
 
 }

@@ -56,6 +56,7 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/test/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -74,7 +75,8 @@ public class SecurityConfiguration {
                                 "api/itemlog/additemlogTransport",
                                 "api/transport/getAllTransport",
                                 "api/item/sendCurrentOwnerOTP",
-                                "api/item/confirmCurrentOwner"
+                                "api/item/confirmCurrentOwner",
+                                "api/user/getUserById"
 
                         ).permitAll()
                         .anyRequest().authenticated())

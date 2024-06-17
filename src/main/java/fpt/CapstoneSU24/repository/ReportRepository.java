@@ -26,9 +26,6 @@ public interface ReportRepository extends JpaRepository<Report, Integer> {
                              @Param("status") Integer status,
                              Pageable pageable);
 
-    @Query("SELECT r FROM Report r " +
-            "WHERE (:code IS NULL OR :code = '' OR r.code = :code) ")
-    Page<Report> test(@Param("code") String code,
-                             Pageable pageable);
+    Report getOneByreportId(int id);
 
 }

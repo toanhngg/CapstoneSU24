@@ -6,6 +6,7 @@ import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,18 +41,18 @@ public class ItemLogController {
             // Retrieve item by product recognition
             Item item = itemResponsitory.findByProductRecognition(itemLogDTO.getProductRecognition());
             if (item == null) {
-                return ResponseEntity.status(404).body("Item not found.");
+                return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
 
             // Get item logs by item ID
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
-                return ResponseEntity.status(400).body("Item log list does not have enough elements.");
+                return new ResponseEntity<>("Item log list does not have enough elements.", HttpStatus.BAD_REQUEST);
             }
 
             ItemLog itemLogToCheck = list.get(0);
             if (itemLogToCheck.getStatus() != 0) {
-                return ResponseEntity.status(400).body("Item log status is not valid.");
+                return new ResponseEntity<>("Item log status is not valid.", HttpStatus.BAD_REQUEST);
             }
 
             // Create and save Location
@@ -66,7 +67,7 @@ public class ItemLogController {
             // Retrieve authorized entity
             Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorized_id());
             if (authorized == null) {
-                return ResponseEntity.status(404).body("Authorized entity not found.");
+                return new ResponseEntity<>("Authorized entity not found.", HttpStatus.NOT_FOUND);
             }
 
             // Create Party if eventId is 2
@@ -74,7 +75,7 @@ public class ItemLogController {
             if (itemLogDTO.getEventId() == 2) {
                 Transport transport = transportRepository.getReferenceById(itemLogDTO.getTransportId());
                 if (transport == null) {
-                    return ResponseEntity.status(404).body("Transport entity not found.");
+                    return new ResponseEntity<>("Transport entity not found.", HttpStatus.NOT_FOUND);
                 }
                 party.setEmail(transport.getTransportEmail());
                 party.setPartyFullName(transport.getTransportName());
@@ -101,14 +102,12 @@ public class ItemLogController {
             itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
 
             itemLogRepository.save(itemLog);
-
-            return ResponseEntity.status(200).body("Add successfully");
+            return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
-            return ResponseEntity.status(500).body(ex.toString());
+            return new ResponseEntity<>("An error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
 
 //    @PostMapping(value = "/additemlogAuthor")
@@ -158,7 +157,9 @@ public class ItemLogController {
     @GetMapping(value = "/getItemLogDetail")
     public ResponseEntity getItemLogDetail(@RequestParam int itemLogId) {
         try {
-          ItemLog itemlogDetail =  itemLogRepository.getItemLogsById(itemLogId);
+            ItemLog itemlogDetail = itemLogRepository.getItemLogsById(itemLogId);
+            if(itemlogDetail == null)
+                return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
             ItemLogDetailResponse detailResponse = new ItemLogDetailResponse();
             detailResponse.setItemLogId(itemlogDetail.getItemLogId());
             detailResponse.setEventType(itemlogDetail.getEvent_id().getEvent_type());
@@ -171,14 +172,9 @@ public class ItemLogController {
             detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
             detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
             detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
-
-            return ResponseEntity.ok().body(detailResponse);
+            return new ResponseEntity<>(detailResponse, HttpStatus.OK);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
         }
-        return null;
     }
-
-
-
 }

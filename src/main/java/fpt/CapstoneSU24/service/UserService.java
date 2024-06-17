@@ -22,16 +22,33 @@ public class UserService {
     @Autowired
     private AuthTokenRepository authTokenRepository;
 
-    public UserProfileDTO getUserProfile(Authentication authentication) {
+    @Autowired
+    private UserRepository userRepository;
+
+    public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
         UserProfileDTO userProfileDTO = null;
+        boolean isAdmin =false;
         try {
-            User currentUser = (User) authentication.getPrincipal();
+            User currentUser;
+            User checkUser = null;
+
+            if (authentication.getPrincipal() instanceof User){
+                checkUser = (User) authentication.getPrincipal();
+                isAdmin = checkUser.getRole().getRoleId() == 1;
+            }
+
+            if (userId == -1) {
+                currentUser = (User) authentication.getPrincipal();
+            } else {
+                currentUser = userRepository.findOneByUserId(userId);
+            }
+
             if (currentUser != null) {
-                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
-                if (authToken != null) {
+/*                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
+                if (authToken != null) {*/
                     userProfileDTO = new UserProfileDTO();
                     userProfileDTO.setEmail(currentUser.getEmail());
-                    userProfileDTO.setRole(currentUser.getRole().getRoleName());
+                    userProfileDTO.setRole(currentUser.getRole());
                     userProfileDTO.setFirstName(currentUser.getFirstName());
                     userProfileDTO.setLastName(currentUser.getLastName());
                     userProfileDTO.setDescription(currentUser.getDescription());
@@ -40,7 +57,15 @@ public class UserService {
                     userProfileDTO.setAddress(currentUser.getLocation().getAddress());
                     userProfileDTO.setCity(currentUser.getLocation().getCity());
                     userProfileDTO.setCountry(currentUser.getLocation().getCountry());
+
+                if (userId > 0 && !isAdmin) {
+                    if (checkUser == null || (checkUser.getUserId() != userId)) {
+                        userProfileDTO.setEmail("");
+                        userProfileDTO.setPhone("");
+                    }
                 }
+
+
             }
         } catch (Exception e) {
             System.out.println("loi: " + e.getMessage());

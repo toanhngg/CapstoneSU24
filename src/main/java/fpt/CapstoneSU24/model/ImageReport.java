@@ -12,10 +12,52 @@ public class ImageReport {
     @Column(name = "image_name")
     private String imageName;
 
-    @Column(name = "image", columnDefinition = "varbinary(MAX)")
-    private byte[] image;
+    @Column(name = "imagePath", columnDefinition = "nvarchar(255)")
+    private String imagePath;
 
     @ManyToOne
     @JoinColumn(name = "report_id", nullable = false)
     private Report report;
+
+    public ImageReport() {
+    }
+
+    public ImageReport(int id, String imageName, String imagePath, Report report) {
+        this.id = id;
+        this.imageName = imageName;
+        this.imagePath = imagePath;
+        this.report = report;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public Report getReport() {
+        return report;
+    }
+
+    public void setReport(Report report) {
+        this.report = report;
+    }
 }
