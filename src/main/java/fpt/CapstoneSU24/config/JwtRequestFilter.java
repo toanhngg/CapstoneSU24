@@ -70,7 +70,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     String newJwtToken = jwtService.generateToken(currentUser, currentUser);
                     //save in cookie
                     ResponseCookie cookie = ResponseCookie.from("jwt", newJwtToken) // key & value
-                            .secure(false).httpOnly(true)
+                            .secure(true).httpOnly(true)
                             .path("/")
                             .sameSite("None")
                             .domain(null)
@@ -87,7 +87,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 //delete jwt in browser
                 System.out.println("Unable to get JWT Token");
                 ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
-                        .secure(false).httpOnly(true)
+                        .secure(true).httpOnly(true)
                         .path("/")
                         .sameSite("None")
                         .domain(null)
@@ -105,7 +105,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     authTokenRepository.save(authToken);
                 }catch (Exception ex){
                     ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
-                            .secure(false).httpOnly(true)
+                            .secure(true).httpOnly(true)
                             .path("/")
                             .sameSite("None")
                             .domain(null)

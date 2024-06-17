@@ -66,7 +66,7 @@ public class AuthenticationController {
         User authenticatedUser = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);
         ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken) // key & value
-                .secure(false).httpOnly(true)
+                .secure(true).httpOnly(true)
                 .path("/")
                 .sameSite("None")
                 .domain(null)
@@ -90,7 +90,7 @@ public class AuthenticationController {
                 }
                 try {
                     ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
-                            .secure(false).httpOnly(true)
+                            .secure(true).httpOnly(true)
                             .path("/")
                             .sameSite("None")
                             .domain(null)
