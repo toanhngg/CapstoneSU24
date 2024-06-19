@@ -17,6 +17,7 @@ import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.service.UserService;
+import fpt.CapstoneSU24.util.CloudinaryService;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DataUtils;
 import fpt.CapstoneSU24.util.DocumentGenerator;
@@ -41,9 +42,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -76,6 +79,15 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private final CloudinaryService cloudinaryService;
+
+    @Autowired
+    public UserController(CloudinaryService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
+
 
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser() {
@@ -345,6 +357,30 @@ public class UserController {
         }
 
     }
+
+    @PutMapping("/updateAvatar")
+    public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {
+        try {
+
+            //input vào 1 file
+            //gọi service upload: In: file | Out: Key của ảnh
+            String url = cloudinaryService.uploadImageAndGetPublicId(file);
+
+            User user = new User();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if ((authentication.getPrincipal() instanceof User) ) {
+                user = (User) authentication.getPrincipal();
+                //save key cua ảnh vào database
+                user.setProfileImage(url);
+                userRepository.save(user);
+            }
+            return ResponseEntity.status(200).body("Avatar update success");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Failed to upload image");
+        }
+    }
+
+
 
 
 }

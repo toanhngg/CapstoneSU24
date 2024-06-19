@@ -23,6 +23,8 @@ public class UserProfileDTO {
 
     private String country;
 
+    private String profileIMG;
+
     public String getEmail() {
         return email;
     }
@@ -101,5 +103,13 @@ public class UserProfileDTO {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public String getProfileIMG() {
+        return profileIMG;
+    }
+
+    public void setProfileIMG(String profileIMG) {
+        this.profileIMG = profileIMG;
     }
 }

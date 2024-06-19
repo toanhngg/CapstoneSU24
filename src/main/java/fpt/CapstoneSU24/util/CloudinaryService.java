@@ -14,8 +14,8 @@ import java.util.Map;
 
 @Service
 public class CloudinaryService {
-
-    private  Cloudinary cloudinary;
+    @Autowired
+    private final   Cloudinary cloudinary;
 
     @Autowired
     public CloudinaryService(Cloudinary cloudinary) {
@@ -42,4 +42,11 @@ public class CloudinaryService {
         InputStream inputStream = connection.getInputStream();
         return inputStream.readAllBytes();
     }
+
+    public String uploadImageAndGetPublicId(@org.jetbrains.annotations.NotNull MultipartFile file) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+        String publicId = uploadResult.get("public_id").toString();
+        return publicId;
+    }
+
 }
