@@ -10,11 +10,9 @@ public class FilterSearchRequest {
     @NotNull(message = "The pageNumber is required")
     private int pageNumber;
     @Digits(integer = 10, fraction = 0, message = "Invalid digit format")
-    @Pattern(regexp = "\\d{10}", message = "Invalid digit format")
     @NotNull(message = "The startDate is required")
     private long startDate;
     @Digits(integer = 10, fraction = 0, message = "Invalid digit format")
-    @Pattern(regexp = "\\d{10}", message = "Invalid digit format")
     @NotNull(message = "The endDate is required")
     private long endDate;
     @NotNull(message = "The name is not null")

@@ -19,6 +19,14 @@ public class RegisterRequest {
     private String city;
     @NotBlank(message = "The country is required")
     private String country;
+    @NotBlank(message = "The ward is required")
+    private String ward;
+    @NotBlank(message = "The district is required")
+    private String district;
+    @NotBlank(message = "The coordinateX is required")
+    private String coordinateX;
+    @NotBlank(message = "The coordinateY is required")
+    private String coordinateY;
     @Pattern(regexp = "\\d{10}", message = "Invalid phone number format")
     @NotBlank(message = "The phone is required")
     private String phone;
@@ -49,6 +57,22 @@ public class RegisterRequest {
 
     public String getCountry() {
         return country;
+    }
+
+    public String getWard() {
+        return ward;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public String getCoordinateX() {
+        return coordinateX;
+    }
+
+    public String getCoordinateY() {
+        return coordinateY;
     }
 
     public String getPhone() {

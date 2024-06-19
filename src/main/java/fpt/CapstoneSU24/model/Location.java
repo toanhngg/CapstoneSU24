@@ -23,8 +23,8 @@ public class Location {
     //them quan huyen phuong xa
     @Column(name = "district", columnDefinition = "nvarchar(100)")
     private String district;
-    @Column(name = "street", columnDefinition = "nvarchar(100)")
-    private String street;
+    @Column(name = "ward", columnDefinition = "nvarchar(100)")
+    private String ward;
 
 
 //    @Column(name = "coordinates", columnDefinition = "nvarchar(50)")
@@ -33,7 +33,8 @@ public class Location {
     public Location() {
 
     }
-    public Location(int locationId, String address, String city, String country, String coordinateX,String coordinateY, String district, String street) {
+
+    public Location(int locationId, String address, String city, String country, String coordinateX, String coordinateY, String district, String ward) {
         this.locationId = locationId;
         this.address = address;
         this.city = city;
@@ -41,36 +42,7 @@ public class Location {
         this.coordinateX = coordinateX;
         this.coordinateY = coordinateY;
         this.district = district;
-        this.street = street;
-    }
-
-
-
-
-
-
-//    public Location(int locationId, String address, String city, String country, String coordinates) {
-//        this.locationId = locationId;
-//        this.address = address;
-//        this.city = city;
-//        this.country = country;
-//        this.coordinates = coordinates;
-//    }
-
-    public String getCoordinateX() {
-        return coordinateX;
-    }
-
-    public void setCoordinateX(String coordinateX) {
-        this.coordinateX = coordinateX;
-    }
-
-    public String getCoordinateY() {
-        return coordinateY;
-    }
-
-    public void setCoordinateY(String coordinateY) {
-        this.coordinateY = coordinateY;
+        this.ward = ward;
     }
 
     public int getLocationId() {
@@ -105,6 +77,22 @@ public class Location {
         this.country = country;
     }
 
+    public String getCoordinateX() {
+        return coordinateX;
+    }
+
+    public void setCoordinateX(String coordinateX) {
+        this.coordinateX = coordinateX;
+    }
+
+    public String getCoordinateY() {
+        return coordinateY;
+    }
+
+    public void setCoordinateY(String coordinateY) {
+        this.coordinateY = coordinateY;
+    }
+
     public String getDistrict() {
         return district;
     }
@@ -113,19 +101,13 @@ public class Location {
         this.district = district;
     }
 
-    public String getStreet() {
-        return street;
+    public String getWard() {
+        return ward;
     }
 
-    public void setStreet(String street) {
-        this.street = street;
+    public void setWard(String ward) {
+        this.ward = ward;
     }
 
-    //    public String getCoordinates() {
-//        return coordinates;
-//    }
-//
-//    public void setCoordinates(String coordinates) {
-//        this.coordinates = coordinates;
-//    }
+    //    }
 }
