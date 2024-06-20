@@ -22,10 +22,23 @@ public class CloudinaryService {
         this.cloudinary = cloudinary;
     }
 
-    public String uploadImage(@org.jetbrains.annotations.NotNull MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                ObjectUtils.asMap("resource_type", "auto"));
-        return uploadResult.get("url").toString();
+    public String uploadImage(@org.jetbrains.annotations.NotNull MultipartFile file, String customKey) throws IOException {
+        /*
+        ---------------In: File, customkey để rỗ hoặc null nếu không cần customkey)
+        */
+        if (customKey == null || customKey.isEmpty())
+        {
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap("resource_type", "auto"));
+            return uploadResult.get("url").toString();
+        }else{
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap(
+                            "resource_type", "auto",
+                            "public_id", customKey
+                    ));
+            return uploadResult.get("url").toString();
+        }
     }
 
     public String getImageUrl(String publicId) {
