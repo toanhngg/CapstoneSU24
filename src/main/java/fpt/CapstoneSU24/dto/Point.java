@@ -1,8 +1,5 @@
 package fpt.CapstoneSU24.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 // Lớp biểu diễn một điểm với tọa độ x và y
 public class Point {
