@@ -10,6 +10,7 @@ import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.LocationRepository;
 import fpt.CapstoneSU24.repository.RoleRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.util.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
         UserProfileDTO userProfileDTO = null;
@@ -57,6 +61,8 @@ public class UserService {
                     userProfileDTO.setAddress(currentUser.getLocation().getAddress());
                     userProfileDTO.setCity(currentUser.getLocation().getCity());
                     userProfileDTO.setCountry(currentUser.getLocation().getCountry());
+                    //cloudinaryService.getImageUrl: In: Key của ảnh(đã upload len, xem trong db), Out: Đuong dan cua anh
+                    userProfileDTO.setProfileIMG(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
 
                 if (userId > 0 && !isAdmin) {
                     if (checkUser == null || (checkUser.getUserId() != userId)) {
