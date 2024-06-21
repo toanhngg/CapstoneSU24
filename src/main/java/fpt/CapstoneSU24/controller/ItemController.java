@@ -27,10 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("/api/item")
@@ -103,8 +100,24 @@ public class ItemController {
         }
 
     }
+    private List<Double> xData = new ArrayList<>();
+    private List<Double> yData = new ArrayList<>();
+
+    // Endpoint để tạo các điểm dữ liệu ban đầu
+   // @GetMapping("/initialize")
+    public List<Point>  initializeData() {
+        Random random = new Random();
+        List<Point> points = new ArrayList<>();
+
+        // Tạo hai điểm ngẫu nhiên
+        points.add(new Point(random.nextInt(), random.nextInt()));
+        points.add(new Point(random.nextInt(), random.nextInt()));
+
+        return points;
+    }
+
     @PostMapping("/addItem")
-    public ResponseEntity addItem(@RequestBody ItemLogDTO itemLogDTO) {
+    public ResponseEntity addItem(@Valid @RequestBody ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -116,6 +129,9 @@ public class ItemController {
                 location.setAddress(itemLogDTO.getAddress());
                 location.setCity(itemLogDTO.getCity());
                 location.setCountry(itemLogDTO.getCountry());
+                location.setDistrict(itemLogDTO.getDistrict());
+                location.setStreet(itemLogDTO.getStreet()
+                );
                 location.setCoordinateX(itemLogDTO.getCoordinateX());
                 location.setCoordinateY(itemLogDTO.getCoordinateY());
                 Location savedLocation = locationRepository.save(location);
