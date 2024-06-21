@@ -46,7 +46,7 @@ public class AuthenticationService {
         user.setFirstName(input.getFirstName());
         user.setLastName(input.getLastName());
         user.setPhone(input.getPhone());
-        user.setRole(roleRepository.findOneByRoleId(2));
+        user.setRole(roleRepository.findOneByRoleId(1));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setCreateAt(System.currentTimeMillis());
         Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),input.getCoordinateX(),input.getCoordinateY(), input.getDistrict(),input.getWard()); //manhDT sua bang

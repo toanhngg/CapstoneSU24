@@ -43,32 +43,35 @@ public class ProductController {
     public ResponseEntity addProduct(@Valid @RequestBody AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2) {
-            //add product
-            Product product = new Product();
-            product.setProductName(req.getProductName());
-            product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
-            product.setUnitPrice(req.getUnitPrice());
-            product.setDimensions(req.getDimensions());
-            product.setMaterial(req.getMaterial());
-            product.setWeight(req.getWeight());
-            product.setDescription(req.getDescription());
-            product.setWarranty(req.getWarranty());
-            product.setCreateAt(System.currentTimeMillis());
-            product.setManufacturer(currentUser);
-            product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
-            productRepository.save(product);
-            //save image
-            for (String obj : req.getImages()) {
-                String element = obj;
-                byte[] bytes = element.getBytes();
-                imageProductRepository.save(new ImageProduct(0, req.getProductName(), bytes, product));
+        if(currentUser.getUserId() == 2){
+            try {
+                Product product = new Product();
+                product.setProductName(req.getProductName());
+                product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
+//            product.setUnitPrice(req.getUnitPrice());
+                product.setDimensions(req.getDimensions());
+                product.setMaterial(req.getMaterial());
+                product.setWeight(req.getWeight());
+                product.setDescription(req.getDescription());
+                product.setWarranty(req.getWarranty());
+                product.setCreateAt(System.currentTimeMillis());
+                product.setManufacturer(currentUser);
+                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
+                productRepository.save(product);
+                //save image
+                for (String obj : req.getImages()) {
+                    String element = obj;
+                    byte[] bytes = element.getBytes();
+                    imageProductRepository.save(new ImageProduct(0, req.getProductName(), bytes, product));
+                }
+                //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
+                return ResponseEntity.status(200).body("successfully");
+            }catch (Exception e){
+                return ResponseEntity.status(500).body("error add new product");
             }
-
-//            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
-            return ResponseEntity.status(200).body("successfully");
-        } else {
-            throw new AccessDeniedException("");
+            //add product
+        }else {
+            return ResponseEntity.status(404).body("your account is not allowed for this action");
         }
     }
 
