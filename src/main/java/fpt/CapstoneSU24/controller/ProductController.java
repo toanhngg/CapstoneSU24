@@ -56,7 +56,7 @@ public class ProductController {
                 product.setWarranty(req.getWarranty());
                 product.setCreateAt(System.currentTimeMillis());
                 product.setManufacturer(currentUser);
-                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
+//                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
                 productRepository.save(product);
                 //save image
                 for (String obj : req.getImages()) {

@@ -24,9 +24,9 @@ public class AddProductRequest {
     @Min(value = 0, message = "Value must be positive")
     @NotNull(message = "The warranty is required")
     private int warranty;
-    @NotNull(message = "The certificateId is required")
-    @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
-    private int certificateId;
+//    @NotNull(message = "The certificateId is required")
+//    @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
+//    private int certificateId;
     @NotEmpty(message = "The images is required")
     private List<String> images;
     @NotEmpty(message = "The images is required")
@@ -66,9 +66,9 @@ public class AddProductRequest {
         return warranty;
     }
 
-    public int getCertificateId() {
-        return certificateId;
-    }
+//    public int getCertificateId() {
+//        return certificateId;
+//    }
 
     public List<String> getImages() {
         return images;

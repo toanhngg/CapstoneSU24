@@ -38,15 +38,12 @@ public class Product {
     private float weight;
     @Column(name = "warranty")
     private int warranty;
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "certificate_id")
-    private Certificate certificate;
+
 //    @OneToMany(mappedBy = "product")
 //    private List<ImageProduct> imageProduct;
     public Product(){}
 
-    public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String description, long createAt, float weight, int warranty, Certificate certificate) {
+    public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String description, long createAt, float weight, int warranty) {
         this.productId = productId;
         this.productName = productName;
         this.manufacturer = manufacturer;
@@ -58,7 +55,6 @@ public class Product {
         this.createAt = createAt;
         this.weight = weight;
         this.warranty = warranty;
-        this.certificate = certificate;
     }
 
     public int getProductId() {
@@ -149,11 +145,4 @@ public class Product {
         this.warranty = warranty;
     }
 
-    public Certificate getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(Certificate certificate) {
-        this.certificate = certificate;
-    }
 }
