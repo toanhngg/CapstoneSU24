@@ -3,16 +3,16 @@ version: '3'
 
 services:
 
-#  elasticsearch-app:
-#    build: .
-#    container_name: elasticsearch-app
-#    ports:
-#      - "18080:8080"
-#      - "18089:8089"
-#    depends_on:
-#      - elasticsearch
-#    networks:
-#      - elknet
+  #  elasticsearch-app:
+  #    build: .
+  #    container_name: elasticsearch-app
+  #    ports:
+  #      - "18080:8080"
+  #      - "18089:8089"
+  #    depends_on:
+  #      - elasticsearch
+  #    networks:
+  #      - elknet
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
@@ -33,7 +33,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - esdata1:/usr/share/elasticsearch/data 
+      - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9300:9300
       - 9200:9200

@@ -38,7 +38,7 @@ public class OriginDTO {
     }
 
     private String address;
-     private byte[] image;
+     private String image;
 
     public OriginDTO() {
     }
@@ -117,11 +117,11 @@ public class OriginDTO {
         Warranty = warranty;
     }
 
-    public byte[] getImage() {
+    public String getImage() {
         return image;
     }
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
 }

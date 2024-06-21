@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,6 +14,7 @@ public class Category {
     private String name;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

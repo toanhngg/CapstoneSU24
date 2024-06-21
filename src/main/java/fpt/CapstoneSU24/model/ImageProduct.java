@@ -10,11 +10,9 @@ public class ImageProduct {
     @Column(name = "image_product_id")
     private int imageProductId;
 
-    @Column(name = "image_name")
-    private String imageName;
+    @Column(name = "file_path")
+    private String filePath;
 
-    @Column(name = "image", columnDefinition = "varbinary(MAX)")
-    private byte[] image;
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
@@ -22,10 +20,9 @@ public class ImageProduct {
 
     }
 
-    public ImageProduct(int imageProductId, String imageName, byte[] image, Product product) {
+    public ImageProduct(int imageProductId, String filePath, Product product) {
         this.imageProductId = imageProductId;
-        this.imageName = imageName;
-        this.image = image;
+        this.filePath = filePath;
         this.product = product;
     }
 
@@ -37,20 +34,12 @@ public class ImageProduct {
         this.imageProductId = imageProductId;
     }
 
-    public String getImageName() {
-        return imageName;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setImageName(String imageName) {
-        this.imageName = imageName;
-    }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public Product getProduct() {

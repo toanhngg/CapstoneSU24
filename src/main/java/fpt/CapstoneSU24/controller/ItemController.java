@@ -142,7 +142,7 @@ public class ItemController {
                 location.setCity(itemLogDTO.getCity());
                 location.setCountry(itemLogDTO.getCountry());
                 location.setDistrict(itemLogDTO.getDistrict());
-                location.setStreet(itemLogDTO.getStreet());
+                location.setWard(itemLogDTO.getStreet());
 
                 try {
                     double corX = parseCoordinate(itemLogDTO.getCoordinateX());
@@ -331,7 +331,7 @@ public class ItemController {
                 if (imageProduct == null) {
                     originDTO.setImage(null);
                 } else {
-                    byte[] img = imageProduct.getImage();
+                    String img = imageProduct.getFilePath();
                     originDTO.setImage(img);
                 }
             }
