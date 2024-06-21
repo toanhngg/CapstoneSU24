@@ -56,10 +56,24 @@ public class CloudinaryService {
         return inputStream.readAllBytes();
     }
 
-    public String uploadImageAndGetPublicId(@org.jetbrains.annotations.NotNull MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-        String publicId = uploadResult.get("public_id").toString();
-        return publicId;
+    public String uploadImageAndGetPublicId(@org.jetbrains.annotations.NotNull MultipartFile file, String customKey) throws IOException {
+        String publicId;
+        Map uploadResult;
+        if (customKey.isEmpty() || customKey == null)
+        {
+             uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+            publicId = uploadResult.get("public_id").toString();
+            return publicId;
+        }else {
+             uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap(
+                            "resource_type", "auto",
+                            "public_id", customKey
+                    ));
+            publicId = uploadResult.get("public_id").toString();
+            return publicId;
+        }
+
     }
 
 }
