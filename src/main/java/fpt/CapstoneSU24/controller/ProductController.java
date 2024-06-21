@@ -5,6 +5,7 @@ import fpt.CapstoneSU24.payload.AddProductRequest;
 import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
+import fpt.CapstoneSU24.util.CloudinaryService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.json.JSONArray;
@@ -39,6 +40,8 @@ public class ProductController {
     ImageProductRepository imageProductRepository;
     @Autowired
     ItemRepository itemRepository;
+    @Autowired
+    CloudinaryService cloudinaryService;
     @PostMapping("/addProduct")
     public ResponseEntity addProduct(@Valid @RequestBody AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -60,10 +63,12 @@ public class ProductController {
                 productRepository.save(product);
                 //save image
                 for (String obj : req.getImages()) {
-                    String element = obj;
-                    byte[] bytes = element.getBytes();
-                    imageProductRepository.save(new ImageProduct(0, req.getProductName(), bytes, product));
+                    String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj),"");
+                    imageProductRepository.save(new ImageProduct(0,filePath, product));
                 }
+                //save ava
+                String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/"+product.getProductId());
+                imageProductRepository.save(new ImageProduct(0,filePathAvatar, product));
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(200).body("successfully");
             }catch (Exception e){
@@ -102,7 +107,7 @@ public class ProductController {
             List<ImageProduct> imageProductList = imageProductRepository.findAllByProductId(req.getId());
             List<String> listImg = new ArrayList<String>();
             for (ImageProduct i : imageProductList) {
-                listImg.add(new String(i.getImage(), StandardCharsets.UTF_8));
+                listImg.add(i.getFilePath());
             }
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("data", listImg);

@@ -275,7 +275,7 @@ public class ItemController {
                 if (imageProduct == null) {
                     originDTO.setImage(null);
                 } else {
-                    byte[] img = imageProduct.getImage();
+                    String img = imageProduct.getFilePath();
                     originDTO.setImage(img);
                 }
             }

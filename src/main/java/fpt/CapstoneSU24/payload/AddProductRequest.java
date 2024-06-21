@@ -29,9 +29,9 @@ public class AddProductRequest {
 //    private int certificateId;
     @NotEmpty(message = "The images is required")
     private List<String> images;
-    @NotEmpty(message = "The images is required")
+    @NotNull(message = "The avatar is required")
     private String avatar;
-    @NotEmpty(message = "The images is required")
+    @NotNull(message = "The file3D is required")
     private String file3D;
 
     public String getDimensions() {
