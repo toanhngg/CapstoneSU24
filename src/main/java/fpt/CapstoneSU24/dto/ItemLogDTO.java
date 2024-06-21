@@ -1,13 +1,13 @@
 package fpt.CapstoneSU24.dto;
 
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class ItemLogDTO {
     @NotNull(message = "The quantity is required")
+    @Min(value = 1, message = "The quantity must be at least 1")
+    @Max(value = 10000, message = "The quantity must not exceed 10,000")
     private int quantity;
     @NotNull(message = "The adress is required")
     private String address;
@@ -20,8 +20,14 @@ public class ItemLogDTO {
     @NotNull(message = "The street is required")
     private String street;
     @NotNull(message = "The coordinateX is required")
+  //  @DecimalMin(value = "-90.0", message = "Latitude must be greater than or equal to -90.0")
+    //@DecimalMax(value = "90.0", message = "Latitude must be less than or equal to 90.0")
+
     private String coordinateX;
     @NotNull(message = "The coordinateY is required")
+   // @DecimalMin(value = "-180.0", message = "Longitude must be greater than or equal to -180.0")
+   // @DecimalMax(value = "180.0", message = "Longitude must be less than or equal to 180.0")
+
     private String coordinateY;
 
     private String descriptionOrigin;
