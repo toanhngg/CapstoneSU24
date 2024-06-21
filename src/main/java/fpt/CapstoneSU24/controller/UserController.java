@@ -364,7 +364,7 @@ public class UserController {
 
             //input vào 1 file
             //gọi service upload: In: file | Out: Key của ảnh
-            String url = cloudinaryService.uploadImageAndGetPublicId(file);
+            String url = cloudinaryService.uploadImageAndGetPublicId(file, "");
 
             User user = new User();
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

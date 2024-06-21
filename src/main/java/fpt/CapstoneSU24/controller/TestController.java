@@ -32,7 +32,7 @@ public class TestController {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            String url = cloudinaryService.uploadImage(file);
+            String url = cloudinaryService.uploadImage(file, "");
             return ResponseEntity.ok(url);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Failed to upload image");
