@@ -115,7 +115,7 @@ public class UserController {
 
         //Chia Page
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
-        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), userRequestDTO.getRoleId(), userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
+        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
 
         //mapping DTO
         Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
@@ -132,6 +132,10 @@ public class UserController {
             B03_GetDataGridDTO.setUsername(user.getUsername());
             B03_GetDataGridDTO.setAddress(user.getLocation().getAddress());
             B03_GetDataGridDTO.setCountry(user.getLocation().getCountry());
+            B03_GetDataGridDTO.setDistrict(user.getLocation().getDistrict());
+            B03_GetDataGridDTO.setWard(user.getLocation().getWard());
+            B03_GetDataGridDTO.setCity(user.getLocation().getCity());
+
             return B03_GetDataGridDTO;
         });
 

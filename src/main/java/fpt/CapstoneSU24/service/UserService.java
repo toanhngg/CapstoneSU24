@@ -63,6 +63,8 @@ public class UserService {
                     userProfileDTO.setCountry(currentUser.getLocation().getCountry());
                     //cloudinaryService.getImageUrl: In: Key của ảnh(đã upload len, xem trong db), Out: Đuong dan cua anh
                     userProfileDTO.setProfileIMG(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
+                    userProfileDTO.setWard(currentUser.getLocation().getWard());
+                    userProfileDTO.setDistrict(currentUser.getLocation().getDistrict());
 
                 if (userId > 0 && !isAdmin) {
                     if (checkUser == null || (checkUser.getUserId() != userId)) {

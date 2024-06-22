@@ -21,6 +21,10 @@ public class UserProfileDTO {
 
     private String city;
 
+    private String district;
+
+    private String ward;
+
     private String country;
 
     private String profileIMG;
@@ -107,6 +111,22 @@ public class UserProfileDTO {
 
     public String getProfileIMG() {
         return profileIMG;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getWard() {
+        return ward;
+    }
+
+    public void setWard(String ward) {
+        this.ward = ward;
     }
 
     public void setProfileIMG(String profileIMG) {
