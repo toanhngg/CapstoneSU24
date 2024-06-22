@@ -27,10 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("/api/item")
@@ -103,11 +100,39 @@ public class ItemController {
         }
 
     }
+    private List<Double> xData = new ArrayList<>();
+    private List<Double> yData = new ArrayList<>();
+
+    // Endpoint để tạo các điểm dữ liệu ban đầu
+   // @GetMapping("/initialize")
+    public List<Point>  initializeData() {
+        Random random = new Random();
+        List<Point> points = new ArrayList<>();
+
+        // Tạo hai điểm ngẫu nhiên
+        points.add(new Point(random.nextInt(), random.nextInt()));
+        points.add(new Point(random.nextInt(), random.nextInt()));
+
+        return points;
+    }
+    public double parseCoordinate(String coordinate) throws InvalidCoordinateException {
+        if (coordinate == null || coordinate.isEmpty()) {
+            throw new InvalidCoordinateException("Coordinate is null or empty");
+        }
+        try {
+            return Double.parseDouble(coordinate);
+        } catch (NumberFormatException e) {
+            throw new InvalidCoordinateException("Coordinate format is invalid: " + coordinate);
+        }
+    }
+
+
     @PostMapping("/addItem")
-    public ResponseEntity addItem(@RequestBody ItemLogDTO itemLogDTO) {
+    public ResponseEntity<String> addItem(@Valid @RequestBody ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
+
             if (currentUser.getRole().getRoleId() == 2) {
                 User user = userRepository.getReferenceById(currentUser.getUserId());
 
@@ -116,8 +141,25 @@ public class ItemController {
                 location.setAddress(itemLogDTO.getAddress());
                 location.setCity(itemLogDTO.getCity());
                 location.setCountry(itemLogDTO.getCountry());
-                location.setCoordinateX(itemLogDTO.getCoordinateX());
-                location.setCoordinateY(itemLogDTO.getCoordinateY());
+                location.setDistrict(itemLogDTO.getDistrict());
+                location.setWard(itemLogDTO.getStreet());
+
+                try {
+                    double corX = parseCoordinate(itemLogDTO.getCoordinateX());
+                    double corY = parseCoordinate(itemLogDTO.getCoordinateY());
+
+                    // Check if corX and corY are within their valid ranges
+                    if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
+                        location.setCoordinateX(itemLogDTO.getCoordinateX());
+                        location.setCoordinateY(itemLogDTO.getCoordinateY());
+                        System.out.println("Coordinates set successfully.");
+                    } else {
+                        throw new CoordinateOutOfRangeException("Coordinates are out of valid range.");
+                    }
+                } catch (InvalidCoordinateException | CoordinateOutOfRangeException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
+
                 Location savedLocation = locationRepository.save(location);
 
                 long scoreTime = System.currentTimeMillis();
@@ -174,11 +216,25 @@ public class ItemController {
                 partyRepository.saveAll(parties);
                 itemLogRepository.saveAll(itemLogs);
                 return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+    }
+
+    public class InvalidCoordinateException extends Exception {
+        public InvalidCoordinateException(String message) {
+            super(message);
+        }
+    }
+
+    public class CoordinateOutOfRangeException extends Exception {
+        public CoordinateOutOfRangeException(String message) {
+            super(message);
+        }
     }
 
 
@@ -275,7 +331,7 @@ public class ItemController {
                 if (imageProduct == null) {
                     originDTO.setImage(null);
                 } else {
-                    byte[] img = imageProduct.getImage();
+                    String img = imageProduct.getFilePath();
                     originDTO.setImage(img);
                 }
             }

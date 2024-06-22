@@ -4,7 +4,9 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-public class AddProductRequest {
+public class EditProductRequest {
+    @NotNull(message = "The product Id is required")
+    private int productId;
     @NotBlank(message = "The productName is required")
     private String productName;
     @NotNull(message = "The certificateId is required")
@@ -33,6 +35,10 @@ public class AddProductRequest {
     private String avatar;
     @NotNull(message = "The file3D is required")
     private String file3D;
+
+    public int getProductId() {
+        return productId;
+    }
 
     public String getDimensions() {
         return dimensions;

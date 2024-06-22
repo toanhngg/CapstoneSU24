@@ -2,9 +2,11 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.payload.AddProductRequest;
+import fpt.CapstoneSU24.payload.EditProductRequest;
 import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
+import fpt.CapstoneSU24.util.CloudinaryService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.json.JSONArray;
@@ -39,38 +41,92 @@ public class ProductController {
     ImageProductRepository imageProductRepository;
     @Autowired
     ItemRepository itemRepository;
+    @Autowired
+    CloudinaryService cloudinaryService;
     @PostMapping("/addProduct")
     public ResponseEntity addProduct(@Valid @RequestBody AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2) {
-            //add product
-            Product product = new Product();
-            product.setProductName(req.getProductName());
-            product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
-            product.setUnitPrice(req.getUnitPrice());
-            product.setDimensions(req.getDimensions());
-            product.setMaterial(req.getMaterial());
-            product.setWeight(req.getWeight());
-            product.setDescription(req.getDescription());
-            product.setWarranty(req.getWarranty());
-            product.setCreateAt(System.currentTimeMillis());
-            product.setManufacturer(currentUser);
-            product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
-            productRepository.save(product);
-            //save image
-            for (String obj : req.getImages()) {
-                String element = obj;
-                byte[] bytes = element.getBytes();
-                imageProductRepository.save(new ImageProduct(0, req.getProductName(), bytes, product));
+        if(currentUser.getRole().getRoleId() == 2){
+            try {
+                Product product = new Product();
+                product.setProductName(req.getProductName());
+                product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
+//            product.setUnitPrice(req.getUnitPrice());
+                product.setDimensions(req.getDimensions());
+                product.setMaterial(req.getMaterial());
+                product.setWeight(req.getWeight());
+                product.setDescription(req.getDescription());
+                product.setWarranty(req.getWarranty());
+                product.setCreateAt(System.currentTimeMillis());
+                product.setManufacturer(currentUser);
+//                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
+                productRepository.save(product);
+                //save image
+                for (String obj : req.getImages()) {
+                    String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj),"");
+                    imageProductRepository.save(new ImageProduct(0,filePath, product));
+                }
+                //save ava
+                String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/"+product.getProductId());
+                imageProductRepository.save(new ImageProduct(0,filePathAvatar, product));
+                //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
+                return ResponseEntity.status(200).body("successfully");
+            }catch (Exception e){
+                return ResponseEntity.status(500).body("error add new product");
             }
-
-//            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
-            return ResponseEntity.status(200).body("successfully");
-        } else {
-            throw new AccessDeniedException("");
+            //add product
+        }else {
+            return ResponseEntity.status(404).body("your account is not allowed for this action");
         }
     }
+
+
+//    - có thêm trường product Id
+//    - nếu không ko edit image (images, avatar) thì để là ""
+    @PostMapping("/editProduct")
+    public ResponseEntity editProduct(@Valid @RequestBody EditProductRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if(currentUser.getRole().getRoleId() == 2){
+            try {
+                Product product = productRepository.findOneByProductId(req.getProductId());
+                product.setProductName(req.getProductName());
+                product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
+//            product.setUnitPrice(req.getUnitPrice());
+                product.setDimensions(req.getDimensions());
+                product.setMaterial(req.getMaterial());
+                product.setWeight(req.getWeight());
+                product.setDescription(req.getDescription());
+                product.setWarranty(req.getWarranty());
+                product.setCreateAt(System.currentTimeMillis());
+                product.setManufacturer(currentUser);
+//                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
+                productRepository.save(product);
+                //save image
+                if(!req.getImages().isEmpty()){
+                    for (String obj : req.getImages()) {
+                        String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj),"");
+                        imageProductRepository.save(new ImageProduct(0,filePath, product));
+                    }
+                }
+                //save ava
+                if(!req.getAvatar().isEmpty()){
+                    String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/"+product.getProductId());
+                    imageProductRepository.save(new ImageProduct(0,filePathAvatar, product));
+                }
+
+                //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
+                return ResponseEntity.status(200).body("successfully");
+            }catch (Exception e){
+                return ResponseEntity.status(500).body("error edit new product");
+            }
+            //add product
+        }else {
+            return ResponseEntity.status(404).body("your account is not allowed for this action");
+        }
+    }
+
 
     @PostMapping("/findAllProductByManufacturerId")
     public ResponseEntity findAllProductByManufacturerId(@Valid @RequestBody FilterSearchRequest req) {
@@ -99,7 +155,7 @@ public class ProductController {
             List<ImageProduct> imageProductList = imageProductRepository.findAllByProductId(req.getId());
             List<String> listImg = new ArrayList<String>();
             for (ImageProduct i : imageProductList) {
-                listImg.add(new String(i.getImage(), StandardCharsets.UTF_8));
+                listImg.add(i.getFilePath());
             }
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("data", listImg);
