@@ -8,7 +8,10 @@ import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.service.ClientService;
 import fpt.CapstoneSU24.service.ExportExcelService;
+import fpt.CapstoneSU24.service.PointService;
 import fpt.CapstoneSU24.service.QRCodeGenerator;
+import fpt.CapstoneSU24.util.CloudinaryService;
+import fpt.CapstoneSU24.util.DocumentGenerator;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.json.JSONException;
@@ -56,10 +59,11 @@ public class ItemController {
     @Autowired
     private EventTypeRepository eventTypeRepository;
     @Autowired
-    ExportExcelService exportExcelService;
+    private ExportExcelService exportExcelService;
     @Autowired
-    UserRepository userRepository;
-
+    private UserRepository userRepository;
+    private PointService pointService;
+    private DocumentGenerator documentGenerator;
     /*
      * type is sort type: "desc" or "asc"
      * default data startDate and endDate equal 0 (need insert 2 data)
@@ -67,7 +71,7 @@ public class ItemController {
     @PostMapping("/search")
     public ResponseEntity searchItem(@Valid @RequestBody FilterSearchRequest req) {
         try {
-            Page<Item> items = null;
+            Page<Item> items;
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
@@ -100,21 +104,9 @@ public class ItemController {
         }
 
     }
-    private List<Double> xData = new ArrayList<>();
-    private List<Double> yData = new ArrayList<>();
 
-    // Endpoint để tạo các điểm dữ liệu ban đầu
-   // @GetMapping("/initialize")
-    public List<Point>  initializeData() {
-        Random random = new Random();
-        List<Point> points = new ArrayList<>();
 
-        // Tạo hai điểm ngẫu nhiên
-        points.add(new Point(random.nextInt(), random.nextInt()));
-        points.add(new Point(random.nextInt(), random.nextInt()));
 
-        return points;
-    }
     public double parseCoordinate(String coordinate) throws InvalidCoordinateException {
         if (coordinate == null || coordinate.isEmpty()) {
             throw new InvalidCoordinateException("Coordinate is null or empty");
@@ -188,6 +180,8 @@ public class ItemController {
                     item.setStatus(1);
                     item.setOrigin(saveOrigin);
                     item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
+                   // item.setCertificate_link(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
+                    item.setCertificate_link(documentGenerator.generatePdfFromHtml("meomeo.html"));
                     items.add(item);
 
                     // Create Party
@@ -208,6 +202,8 @@ public class ItemController {
                     itemLog.setItem(item);
                     itemLog.setLocation(savedLocation);
                     itemLog.setParty(party);
+                    Point point = pointService.randomPoint();
+                    itemLog.setPoint(point.toString());
                     itemLogs.add(itemLog);
                 }
 
@@ -346,7 +342,52 @@ public class ItemController {
 
         }
     }
+    @GetMapping("/getCertificate")
+    public ResponseEntity getCertificate(@RequestBody String req,@RequestParam String productRecognition){
+        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
+        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
+        JSONObject jsonReq = new JSONObject(req);
+        String email = jsonReq.getString("email");
+        Item item = itemRepository.findByProductRecognition(productRecognition); // B1
+        if (item == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+        }
+        if (email != null && !email.isEmpty()) {
+            if (item.getCurrentOwner().equals(email)) {
+                //// day check co du so su kien khong
+                ////
+                List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+                int countItem = list.size();
 
+                if (countItem < 1) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
+                }
+                // check xem point co du khong ngoai tru point null
+                List<ItemLog> listPoint = itemLogRepository.getPointItemId(item.getItemId());
+                int countPoint = listPoint.size();
+
+                if(countPoint != countItem){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                }else {
+                    ////
+                //    public byte[] getCertificate(byte[] pdfData) {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+                        headers.setContentDispositionFormData("attachment", "certificate.pdf");
+                    //    return pdfData;
+                //    }
+                    byte[] pdfData = item.getCertificate_link();
+                    return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
+                }
+
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
+
+    }
     @PostMapping(value = "/confirmCurrentOwner")
     public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
         // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
@@ -606,6 +647,8 @@ public class ItemController {
                     itemLog.setItem(item);
                     itemLog.setLocation(authorized.getLocation());
                     itemLog.setParty(party);
+                    Point point = pointService.randomPoint();
+                    itemLog.setPoint(point.toString());
                     itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2)); // Event này là nhận hàng
                     itemLog.setImageItemLog(null);
                     itemLogRepository.updateStatus(1, list.get(1).getItemLogId());

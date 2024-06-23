@@ -36,6 +36,10 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
 
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId")
     List<ItemLog> getItemLogsByItemId(@Param("itemId") Integer itemId);
+    @Query("SELECT il FROM ItemLog il LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.point IS NOT NULL")
+    List<ItemLog> getPointItemId(@Param("itemId") Integer itemId);
+
+
 
     @Modifying
     @Transactional
@@ -46,6 +50,7 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Transactional
     @Query("UPDATE ItemLog i SET i.status = :status  WHERE i.itemLogId = :itemLogId")
     void updateStatus(@Param("status") int status, @Param("itemLogId") int itemLogId);
+
 
 
     //   List<Item> findAllById(int itemId);

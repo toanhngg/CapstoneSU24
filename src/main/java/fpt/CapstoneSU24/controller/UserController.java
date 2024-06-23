@@ -173,7 +173,6 @@ public class UserController {
             dataMail.setTo(user.getEmail());
 
             dataMail.setSubject(subject);
-
             Map<String, Object> props = new HashMap<>();
             props.put("name", user.getFirstName() + user.getLastName());
             props.put("username", user.getUsername());

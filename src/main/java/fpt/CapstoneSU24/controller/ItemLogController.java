@@ -2,9 +2,11 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.EventItemLogDTO;
 import fpt.CapstoneSU24.dto.ItemLogDetailResponse;
+import fpt.CapstoneSU24.dto.Point;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.service.ClientService;
+import fpt.CapstoneSU24.service.PointService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +36,7 @@ public class ItemLogController {
     public TransportRepository transportRepository;
     @Autowired
     public AuthorizedRepository authorizedRepository;
+    public PointService pointService;
 
     @PostMapping(value = "/additemlogTransport")
     public ResponseEntity<String> addItemLog(@RequestBody EventItemLogDTO itemLogDTO) {
@@ -100,7 +103,8 @@ public class ItemLogController {
             itemLog.setLocation(savedLocation);
             itemLog.setParty(savedParty);
             itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
-
+            Point point = pointService.randomPoint();
+            itemLog.setPoint(point.toString());
             itemLogRepository.save(itemLog);
             return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
         } catch (Exception ex) {
@@ -109,50 +113,6 @@ public class ItemLogController {
         }
     }
 
-
-//    @PostMapping(value = "/additemlogAuthor")
-//    public ResponseEntity additemlogAuthor(@RequestBody ItemLogDTO itemLogDTO) {
-//        try {
-//            Location location = new Location();
-//            location.setAddress(itemLogDTO.getAddress());
-//            location.setCity(itemLogDTO.getCity());
-//            location.setCountry(itemLogDTO.getCountry());
-//            location.setCoordinateX(itemLogDTO.getCoordinateX());
-//            location.setCoordinateY(itemLogDTO.getCoordinateY());
-//
-//            Location locationId = locationRepository.save(location);
-//
-//            Party party = new Party();
-//            party.setDescription(itemLogDTO.getDescriptionParty());
-//            party.setEmail(itemLogDTO.getEmail());
-//            party.setPartyFullName(itemLogDTO.getFullName());
-//            party.setSignature(itemLogDTO.getSignature());
-//
-//            Party partyId = partyRepository.save(party);
-//
-//            ItemLog itemLog = new ItemLog();
-//            itemLog.setAddress(itemLogDTO.getAddress());
-//            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-//            itemLog.setEventType(itemLogDTO.getEventType());
-//            itemLog.setStatus(itemLogDTO.getStatusItemLog());
-//            itemLog.setTimeStamp(System.currentTimeMillis());
-//            itemLog.setLocation(locationId);
-//            itemLog.setParty(partyId);
-//
-//            itemLogRepository.save(itemLog);
-//            ClientSdi sdi = new ClientSdi();
-//            sdi.setName(itemLogDTO.getFullName());
-//            sdi.setEmail(itemLogDTO.getEmail());
-//
-//            //send mail
-//            clientService.notification(sdi);
-//            // add bảng location, item_log and party
-//            return ResponseEntity.status(200).body("Uy quyen thanh cong!");
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//        return null;
-//    }
 
     @GetMapping(value = "/getItemLogDetail")
     public ResponseEntity getItemLogDetail(@RequestParam int itemLogId) {

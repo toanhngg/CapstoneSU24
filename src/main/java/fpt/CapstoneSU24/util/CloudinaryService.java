@@ -1,12 +1,13 @@
 package fpt.CapstoneSU24.util;
 
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.itextpdf.html2pdf.HtmlConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -17,7 +18,7 @@ import java.util.Map;
 @Service
 public class CloudinaryService {
     @Autowired
-    private final Cloudinary cloudinary;
+    private final   Cloudinary cloudinary;
 
     @Autowired
     public CloudinaryService(Cloudinary cloudinary) {
@@ -75,6 +76,7 @@ public class CloudinaryService {
             publicId = uploadResult.get("public_id").toString();
             return publicId;
         }
+
     }
     public MultipartFile convertBase64ToImgFile(String base64String) throws IOException {
         try {
@@ -84,16 +86,18 @@ public class CloudinaryService {
             return null;
         }
     }
-        public static MultipartFile convertBase64ToMultipartFile(String base64String, String fileName) throws IOException {
-            // Decode Base64 string to byte array
-            byte[] decodedBytes = Base64.getDecoder().decode(base64String);
 
-            // Create MultipartFile
-            return new MockMultipartFile(
-                    fileName,          // Filename
-                    fileName,          // Original filename
-                    "image/png",       // Content type
-                    new ByteArrayInputStream(decodedBytes)  // InputStream
-            );
-        }
+    public static MultipartFile convertBase64ToMultipartFile(String base64String, String fileName) throws IOException {
+        // Decode Base64 string to byte array
+        byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+
+        // Create MultipartFile
+        return new MockMultipartFile(
+                fileName,          // Filename
+                fileName,          // Original filename
+                "image/png",       // Content type
+                new ByteArrayInputStream(decodedBytes)  // InputStream
+        );
+    }
+
 }

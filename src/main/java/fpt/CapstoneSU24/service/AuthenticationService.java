@@ -49,7 +49,7 @@ public class AuthenticationService {
         user.setRole(roleRepository.findOneByRoleId(2));
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setCreateAt(System.currentTimeMillis());
-        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),"","");
+        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),input.getCoordinateX(),input.getCoordinateY(), input.getDistrict(),input.getWard()); //manhDT sua bang
         locationRepository.save(location);
         user.setLocation(location);
         return userRepository.save(user);
