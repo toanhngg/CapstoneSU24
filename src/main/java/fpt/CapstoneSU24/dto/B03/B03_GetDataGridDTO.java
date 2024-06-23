@@ -13,27 +13,19 @@ public class B03_GetDataGridDTO {
     private String roleName;
     private String description;
     private String address;
+    private String district;
+    private String ward;
     private String country;
     private String phone;
+    private String city;
     private Integer status;
 
-
-    public B03_GetDataGridDTO() {
+    public String getCity() {
+        return city;
     }
 
-    public B03_GetDataGridDTO(Integer status, String phone, String country, String address, String description, String roleName, int roleId, String email, String name, String username, Date createOn, int userId) {
-        this.status = status;
-        this.phone = phone;
-        this.country = country;
-        this.address = address;
-        this.description = description;
-        this.roleName = roleName;
-        this.roleId = roleId;
-        this.email = email;
-        this.name = name;
-        this.username = username;
-        this.createOn = createOn;
-        this.userId = userId;
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public int getUserId() {
@@ -108,6 +100,22 @@ public class B03_GetDataGridDTO {
         this.address = address;
     }
 
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getWard() {
+        return ward;
+    }
+
+    public void setWard(String ward) {
+        this.ward = ward;
+    }
+
     public String getCountry() {
         return country;
     }
@@ -123,7 +131,6 @@ public class B03_GetDataGridDTO {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-
 
     public Integer getStatus() {
         return status;

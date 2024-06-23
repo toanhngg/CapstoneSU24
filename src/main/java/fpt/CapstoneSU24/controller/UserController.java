@@ -25,6 +25,7 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -115,7 +116,7 @@ public class UserController {
 
         //Chia Page
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
-        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), userRequestDTO.getRoleId(), userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
+        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
 
         //mapping DTO
         Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
@@ -132,6 +133,10 @@ public class UserController {
             B03_GetDataGridDTO.setUsername(user.getUsername());
             B03_GetDataGridDTO.setAddress(user.getLocation().getAddress());
             B03_GetDataGridDTO.setCountry(user.getLocation().getCountry());
+            B03_GetDataGridDTO.setDistrict(user.getLocation().getDistrict());
+            B03_GetDataGridDTO.setWard(user.getLocation().getWard());
+            B03_GetDataGridDTO.setCity(user.getLocation().getCity());
+
             return B03_GetDataGridDTO;
         });
 
@@ -140,7 +145,10 @@ public class UserController {
 
 
     @PutMapping("/lockUser")
-    public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
+    public ResponseEntity<String> updateStatus(@RequestBody String req) {
+        JSONObject jsonObject = new JSONObject();
+        int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
+        int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
         if ( userProfileDTO.getRole().getRoleId() != 1) {
@@ -158,35 +166,56 @@ public class UserController {
     }
 
 
-    @PostMapping("/sendEmail")
-    public Boolean sendEmail(@RequestParam Boolean isLock,
-                             @RequestParam int userId) {
+    @PostMapping("/lockUser")
+    public Boolean lockUser(@RequestBody String req) {
         try {
-            String subject = isLock ? Const.SEND_MAIL_SUBJECT.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECT.SUBJECT_UNLOCKUSER;
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
 
+            if (userProfileDTO == null || userProfileDTO.getRole().getRoleId() != 1) {
+                return false;
+            }
+
+            JSONObject jsonObject = new JSONObject(req);
+            int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
+            int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
+
+            if(status !=1 & status != 2)
+            {
+                return false;
+            }
+
+            boolean isLock = (status == 1);
+            String subject = isLock ? Const.SEND_MAIL_SUBJECT.SUBJECT_LOCKUSER : Const.SEND_MAIL_SUBJECT.SUBJECT_UNLOCKUSER;
             String template = isLock ? Const.TEMPLATE_FILE_NAME.LOCKUSER_DETAIL : Const.TEMPLATE_FILE_NAME.UNLOCKUSER_DETAIL;
 
-            User user = new User();
-            user = userRepository.findOneByUserId(userId);
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty()) {
+                return false;
+            }
+            User user = userOptional.get();
+
             DataMailDTO dataMail = new DataMailDTO();
-
             dataMail.setTo(user.getEmail());
-
             dataMail.setSubject(subject);
 
             Map<String, Object> props = new HashMap<>();
-            props.put("name", user.getFirstName() + user.getLastName());
+            props.put("name", user.getFirstName() + " " + user.getLastName());
             props.put("username", user.getUsername());
-
             dataMail.setProps(props);
 
             mailService.sendHtmlMail(dataMail, template);
+
+            // Update user status
+            user.setStatus(status);
+            userRepository.save(user);
+
             return true;
-        } catch (MessagingException exp) {
-            exp.printStackTrace();
+        } catch (JSONException | MessagingException | NullPointerException | NumberFormatException e) {
             return false;
         }
     }
+
 
 
     //Update Table
