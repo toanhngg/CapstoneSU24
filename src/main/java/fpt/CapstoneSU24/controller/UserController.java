@@ -284,7 +284,7 @@ public class UserController {
 
 
     @PostMapping("/getContract")
-    public ResponseEntity<byte[]> generateDoc() {
+    public ResponseEntity generateDoc() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication,-1);
         //kiem tra user ton tai va da ky hop dong chua
@@ -327,7 +327,7 @@ public class UserController {
                 HttpHeaders headers = new HttpHeaders();
                 headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificate.pdf");
                 headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
-                return ResponseEntity.ok().headers(headers).body(certificate.getImage());
+                return ResponseEntity.ok().headers(headers).body(certificate.getImages());
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
@@ -337,55 +337,55 @@ public class UserController {
 
     }
 
-    @PostMapping("/updateCertification")
-    public ResponseEntity<String> updateCertification(String otp) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getStatus() != 0)
-        {
-            return ResponseEntity.ok("The commitment contract already singed");
-        }else{
-            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
-            String finalHtml;
-
-            DataMailDTO dataMail = new DataMailDTO();
-            LocalDate currentDate = LocalDate.now();
-
-            Map<String, Object> props = new HashMap<>();
-            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
-            props.put("companyAddress", userProfileDTO.getAddress());
-            props.put("phoneNumber", userProfileDTO.getPhone());
-            props.put("email", userProfileDTO.getEmail());
-            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
-            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
-            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
-            props.put("signed", true);
-            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
-            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-
-            dataMail.setProps(props);
-
-            Context context = new Context();
-            context.setVariables(dataMail.getProps());
-
-            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
-
-            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
-            if (pdfBytes != null) {
-                Certificate certificate = new Certificate();
-                certificate.setCertificateName("Test");
-                certificate.setIssuingAuthority("test");
-                certificate.setImage(pdfBytes);
-                certificate.setIssuanceDate(System.currentTimeMillis());
-                certificate.setManufacturer(currentUser);
-                certificateRepository.save(certificate);
-                currentUser.setStatus(1);
-                userRepository.save(currentUser);
-            }
-            return ResponseEntity.ok("Singed");
-        }
-
-    }
+//    @PostMapping("/updateCertification")
+//    public ResponseEntity<String> updateCertification(String otp) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User currentUser = (User) authentication.getPrincipal();
+//        if (currentUser.getStatus() != 0)
+//        {
+//            return ResponseEntity.ok("The commitment contract already singed");
+//        }else{
+//            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+//            String finalHtml;
+//
+//            DataMailDTO dataMail = new DataMailDTO();
+//            LocalDate currentDate = LocalDate.now();
+//
+//            Map<String, Object> props = new HashMap<>();
+//            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+//            props.put("companyAddress", userProfileDTO.getAddress());
+//            props.put("phoneNumber", userProfileDTO.getPhone());
+//            props.put("email", userProfileDTO.getEmail());
+//            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+//            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+//            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+//            props.put("signed", true);
+//            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+//            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+//
+//            dataMail.setProps(props);
+//
+//            Context context = new Context();
+//            context.setVariables(dataMail.getProps());
+//
+//            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
+//
+//            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
+//            if (pdfBytes != null) {
+//                Certificate certificate = new Certificate();
+//                certificate.setCertificateName("Test");
+//                certificate.setIssuingAuthority("test");
+//                certificate.setImages(pdfBytes);
+//                certificate.setIssuanceDate(System.currentTimeMillis());
+//                certificate.setManufacturer(currentUser);
+//                certificateRepository.save(certificate);
+//                currentUser.setStatus(1);
+//                userRepository.save(currentUser);
+//            }
+//            return ResponseEntity.ok("Singed");
+//        }
+//
+//    }
 
     @PutMapping("/updateAvatar")
     public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {
