@@ -101,26 +101,28 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
 
-        if ( userProfileDTO.getRole().getRoleId() != 1) {
+        if (userProfileDTO.getRole().getRoleId() != 1) {
             return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
 
-        //Convert Date
+        // Convert Date
         Long timestampFrom = userRequestDTO.getDateFrom() != null ?
                 userRequestDTO.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
         Long timestampTo = userRequestDTO.getDateTo() != null ?
                 userRequestDTO.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
 
-
-        //Chia Page
+        // Paginate
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
         Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
 
-        //mapping DTO
+
+        // Map to DTO with record number
         Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
             B03_GetDataGridDTO B03_GetDataGridDTO = new B03_GetDataGridDTO();
+            int recordNumber = userPage.getNumber() * userPage.getSize() + userPage.getContent().indexOf(user) + 1;
+            B03_GetDataGridDTO.setRecordNumber(recordNumber);
             B03_GetDataGridDTO.setUserId(user.getUserId());
             B03_GetDataGridDTO.setEmail(user.getEmail());
             B03_GetDataGridDTO.setRoleId(user.getRole().getRoleId());
@@ -136,7 +138,6 @@ public class UserController {
             B03_GetDataGridDTO.setDistrict(user.getLocation().getDistrict());
             B03_GetDataGridDTO.setWard(user.getLocation().getWard());
             B03_GetDataGridDTO.setCity(user.getLocation().getCity());
-
             return B03_GetDataGridDTO;
         });
 
