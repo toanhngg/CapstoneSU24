@@ -82,6 +82,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     //set all session is null
                     authToken.setJwtHash(null);
                     authTokenRepository.save(authToken);
+                    ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
+                            .secure(true).httpOnly(true)
+                            .path("/")
+                            .sameSite("None")
+                            .domain(null)
+                            .maxAge(0)
+                            .build();
+                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 }
             } catch (IllegalArgumentException e) {
                 //delete jwt in browser
