@@ -14,20 +14,15 @@ public class Category {
     private String name;
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 
     public Category() {
 
     }
 
-    public Category(int categoryId, String name, String description, User user) {
+    public Category(int categoryId, String name, String description) {
         this.categoryId = categoryId;
         this.name = name;
         this.description = description;
-        this.user = user;
     }
 
 //    public Category(int i, String bát, String phầnMôTả) {
@@ -57,11 +52,4 @@ public class Category {
         this.description = description;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 }

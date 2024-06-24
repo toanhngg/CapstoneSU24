@@ -5,6 +5,7 @@ import fpt.CapstoneSU24.model.Origin;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.CreateCategoryRequest;
+import fpt.CapstoneSU24.payload.EditCategoryRequest;
 import fpt.CapstoneSU24.payload.IdRequest;
 import fpt.CapstoneSU24.repository.CategoryRepository;
 import fpt.CapstoneSU24.repository.OriginRepository;
@@ -44,9 +45,24 @@ public class CategoryController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 2){
-           Category category = new Category(0,req.getName(), req.getDescription(), userRepository.findOneByUserId(currentUser.getUserId()));
+           Category category = new Category(0,req.getName(), req.getDescription());
            categoryRepository.save(category);
            return ResponseEntity.status(200).body("successfully");
+        }else {
+            return ResponseEntity.status(500).body("Your account not permitted to handle this action");
+        }
+    }
+    @PostMapping("/editCategory")
+    public ResponseEntity editCategory(@Valid @RequestBody EditCategoryRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if(currentUser.getRole().getRoleId() == 2){
+            Category category = categoryRepository.findOneByCategoryId(req.getCategoryId());
+            category.setName(req.getName());
+            category.setDescription(req.getDescription());
+            category.setName(req.getName());
+            categoryRepository.save(category);
+            return ResponseEntity.status(200).body("successfully");
         }else {
             return ResponseEntity.status(500).body("Your account not permitted to handle this action");
         }
@@ -55,17 +71,18 @@ public class CategoryController {
     public ResponseEntity deleteById(@Valid @RequestBody IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getRole().getRoleId() == 1) {
         try {
             Category category = categoryRepository.findOneByCategoryId(req.getId());
-            if (category.getUser().getUserId() == currentUser.getUserId()) {
+
                     categoryRepository.deleteById(req.getId());
                 return ResponseEntity.status(200).body("Successfully");
-            }else{
-                return ResponseEntity.status(500).body("Your account not permitted to handle this action");
-            }
+
         }catch (Exception e){
             return ResponseEntity.status(500).body("Can't find category by userId");
         }
-
+        }else{
+            return ResponseEntity.status(500).body("Your account not permitted to handle this action");
+        }
     }
 }
