@@ -140,7 +140,7 @@ public class AuthenticationController {
             String email = jsonNode.getString("email");
             User user = userRepository.findOneByEmail(email);
             if (user == null) {
-                return ResponseEntity.status(401).body("Email incorrect !!!");
+                return ResponseEntity.status(500).body("Email incorrect !!!");
             }else{
                 String rndPass = authenticationService.generateRandomPassword();
                 user.setPassword(rndPass);
