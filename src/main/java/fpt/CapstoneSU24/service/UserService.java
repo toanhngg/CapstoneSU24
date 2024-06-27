@@ -2,32 +2,29 @@ package fpt.CapstoneSU24.service;
 
 
 import fpt.CapstoneSU24.dto.UserProfileDTO;
-import fpt.CapstoneSU24.model.AuthToken;
-import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
-import fpt.CapstoneSU24.repository.LocationRepository;
-import fpt.CapstoneSU24.repository.RoleRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.util.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    @Autowired
-    private AuthTokenRepository authTokenRepository;
+    private final AuthTokenRepository authTokenRepository;
+
+    private final UserRepository userRepository;
+
+    private final CloudinaryService cloudinaryService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CloudinaryService cloudinaryService;
+    public UserService(AuthTokenRepository authTokenRepository,UserRepository userRepository,
+                       CloudinaryService cloudinaryService){
+        this.authTokenRepository = authTokenRepository;
+        this.cloudinaryService = cloudinaryService;
+        this.userRepository = userRepository;
+    }
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
         UserProfileDTO userProfileDTO = null;

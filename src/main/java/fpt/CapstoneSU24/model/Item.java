@@ -27,8 +27,10 @@ public class Item {
     @Column(name = "status")
     private int status;
 
-    @Column(name = "certificate_link", columnDefinition = "varbinary(MAX)")
-    private byte[] certificate_link;
+    //@Column(name = "certificate_link", columnDefinition = "varbinary(MAX)")
+//    private byte[] certificateLink;
+    @Column(name = "certificate_link", columnDefinition = "varchar(MAX)")
+    private String certificateLink;
 
     public Item(int itemId, Product product, String currentOwner, Origin origin, long createdAt, String productRecognition, int status) {
         this.itemId = itemId;
@@ -44,13 +46,20 @@ public class Item {
 
     }
 
-    public byte[] getCertificate_link() {
-        return certificate_link;
+    public String getCertificateLink() {
+        return certificateLink;
     }
 
-    public void setCertificate_link(byte[] certificate_link) {
-        this.certificate_link = certificate_link;
+    public void setCertificateLink(String certificateLink) {
+        this.certificateLink = certificateLink;
     }
+//    public byte[] getCertificateLink() {
+//        return certificateLink;
+//    }
+//
+//    public void setCertificateLink(byte[] certificateLink) {
+//        this.certificateLink = certificateLink;
+//    }
 
     public int getItemId() {
         return itemId;

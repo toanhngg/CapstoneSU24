@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
+import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.payload.FilterSearchRequest;
@@ -11,11 +12,14 @@ import fpt.CapstoneSU24.service.ExportExcelService;
 import fpt.CapstoneSU24.service.PointService;
 import fpt.CapstoneSU24.service.QRCodeGenerator;
 import fpt.CapstoneSU24.util.CloudinaryService;
+import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,48 +32,75 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 import java.io.IOException;
-import java.util.*;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequestMapping("/api/item")
 @RestController
 public class ItemController {
+
+    //private static final Logger log = LoggerFactory.getLogger(ItemController.class);
+    private final LocationRepository locationRepository;
+    private final ItemRepository itemRepository;
+    private final PartyRepository partyRepository;
+    private final ItemLogRepository itemLogRepository;
+    private final QRCodeGenerator qrCodeGenerator;
+    private final ProductRepository productRepository;
+    private final ImageProductRepository imageProductRepository;
+    private final ClientService clientService;
+    private final AuthorizedRepository authorizedRepository;
+    private final EventTypeRepository eventTypeRepository;
+    private final ExportExcelService exportExcelService;
+    private final UserRepository userRepository;
+    private final PointService pointService;
+    private final SpringTemplateEngine templateEngine;
+    private final DocumentGenerator documentGenerator;
+    private final OriginRepository originRepository;
+    private final CloudinaryService cloudinaryService;
+    private final LogService logService;
+
     @Autowired
-    public LocationRepository locationRepository;
-    @Autowired
-    public OriginRepository originRepository;
-    @Autowired
-    public ItemRepository itemRepository;
-    @Autowired
-    public PartyRepository partyRepository;
-    @Autowired
-    public ItemLogRepository itemLogRepository;
-    @Autowired
-    public QRCodeGenerator qrCodeGenerator;
-    @Autowired
-    public ProductRepository productRepository;
-    @Autowired
-    private ImageProductRepository imageProductRepository;
-    @Autowired
-    private ClientService clientService;
-    @Autowired
-    private AuthorizedRepository authorizedRepository;
-    @Autowired
-    private EventTypeRepository eventTypeRepository;
-    @Autowired
-    private ExportExcelService exportExcelService;
-    @Autowired
-    private UserRepository userRepository;
-    private PointService pointService;
-    private DocumentGenerator documentGenerator;
+    public ItemController(LocationRepository locationRepository, ProductRepository productRepository,
+                          OriginRepository originRepository, ItemRepository itemRepository,
+                          PartyRepository partyRepository, ItemLogRepository itemLogRepository,
+                          QRCodeGenerator qrCodeGenerator, ImageProductRepository imageProductRepository,
+                          ClientService clientService, AuthorizedRepository authorizedRepository,
+                          EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
+                          UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
+                          DocumentGenerator documentGenerator,CloudinaryService cloudinaryService,LogService logService) {
+        this.locationRepository = locationRepository;
+        this.itemRepository = itemRepository;
+        this.partyRepository = partyRepository;
+        this.itemLogRepository = itemLogRepository;
+        this.qrCodeGenerator = qrCodeGenerator;
+        this.imageProductRepository = imageProductRepository;
+        this.clientService = clientService;
+        this.authorizedRepository = authorizedRepository;
+        this.eventTypeRepository = eventTypeRepository;
+        this.exportExcelService = exportExcelService;
+        this.userRepository = userRepository;
+        this.templateEngine = templateEngine;
+        this.documentGenerator = documentGenerator;
+        this.pointService = pointService;
+        this.productRepository = productRepository;
+        this.originRepository = originRepository;
+        this.cloudinaryService =cloudinaryService;
+        this.logService = logService;
+    }
+
     /*
      * type is sort type: "desc" or "asc"
      * default data startDate and endDate equal 0 (need insert 2 data)
      * */
     @PostMapping("/search")
-    public ResponseEntity searchItem(@Valid @RequestBody FilterSearchRequest req) {
+    public ResponseEntity<?> searchItem(@Valid @RequestBody FilterSearchRequest req) {
         try {
             Page<Item> items;
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
@@ -90,21 +121,20 @@ public class ItemController {
     }
 
     @PostMapping("/exportListItem")
-    public ResponseEntity  exportListItem(@Valid @RequestBody FilterByTimeStampRequest req) throws IOException {
-        if(req.isValidDates()){
-            JSONObject jsonReq = new JSONObject(req);
+    public ResponseEntity<?> exportListItem(@Valid @RequestBody FilterByTimeStampRequest req) throws IOException {
+        if (req.isValidDates()) {
+          //  JSONObject jsonReq = new JSONObject(req);
             List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
             byte[] excelBytes = exportExcelService.exportItemToExcel(items);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachment", "exported_data.xlsx");
             return new ResponseEntity<>(excelBytes, headers, 200);
-        }else{
+        } else {
             return ResponseEntity.status(500).body("startTime need less than endTime");
         }
 
     }
-
 
 
     public double parseCoordinate(String coordinate) throws InvalidCoordinateException {
@@ -120,114 +150,161 @@ public class ItemController {
 
 
     @PostMapping("/addItem")
-    public ResponseEntity<String> addItem(@Valid @RequestBody ItemLogDTO itemLogDTO) {
+    public ResponseEntity<?> addItem(@Valid @RequestBody ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
 
             if (currentUser.getRole().getRoleId() == 2) {
-                User user = userRepository.getReferenceById(currentUser.getUserId());
-
-                // Lưu địa chỉ
-                Location location = new Location();
-                location.setAddress(itemLogDTO.getAddress());
-                location.setCity(itemLogDTO.getCity());
-                location.setCountry(itemLogDTO.getCountry());
-                location.setDistrict(itemLogDTO.getDistrict());
-                location.setWard(itemLogDTO.getStreet());
-
-                try {
-                    double corX = parseCoordinate(itemLogDTO.getCoordinateX());
-                    double corY = parseCoordinate(itemLogDTO.getCoordinateY());
-
-                    // Check if corX and corY are within their valid ranges
-                    if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
-                        location.setCoordinateX(itemLogDTO.getCoordinateX());
-                        location.setCoordinateY(itemLogDTO.getCoordinateY());
-                        System.out.println("Coordinates set successfully.");
-                    } else {
-                        throw new CoordinateOutOfRangeException("Coordinates are out of valid range.");
-                    }
-                } catch (InvalidCoordinateException | CoordinateOutOfRangeException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-                }
-
-                Location savedLocation = locationRepository.save(location);
-
-                long scoreTime = System.currentTimeMillis();
-                Origin origin = new Origin();
-                origin.setCreatedAt(scoreTime);
-                // generateProductDescription
-                origin.setDescription(itemLogDTO.getDescriptionOrigin());
-                origin.setSupportingDocuments(qrCodeGenerator.generateProductDescription(itemLogDTO.getProductId(), itemLogDTO.getAddress(), scoreTime));
-                origin.setEmail(user.getEmail());
-                origin.setFullNameManufacturer(user.getFirstName() + " " + user.getLastName());
-                origin.setOrg_name(user.getOrg_name());
-                origin.setPhone(user.getPhone());
-                origin.setLocation(savedLocation);
-                Origin saveOrigin = originRepository.save(origin);
-
-                List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
-                List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
-                List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
-
-                for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
-                    // Create Item
-                    Item item = new Item();
-                    item.setCreatedAt(scoreTime);
-                    item.setCurrentOwner(user.getEmail());
-                    item.setProductRecognition(qrCodeGenerator.generateProductCode(itemLogDTO.getProductId()));
-                    item.setStatus(1);
-                    item.setOrigin(saveOrigin);
-                    item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-                   // item.setCertificate_link(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
-                    item.setCertificate_link(documentGenerator.generatePdfFromHtml("meomeo.html"));
-                    items.add(item);
-
-                    // Create Party
-                    Party party = new Party();
-                    party.setDescription(itemLogDTO.getDescriptionOrigin());
-                    party.setEmail(user.getEmail());
-                    party.setPartyFullName(user.getFirstName() + " " + user.getLastName());
-                    party.setPhoneNumber(user.getPhone());
-                    parties.add(party);
-
-                    // Create ItemLog
-                    ItemLog itemLog = new ItemLog();
-                    itemLog.setAddress(itemLogDTO.getAddress());
-                    itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
-                    itemLog.setEvent_id(eventTypeRepository.findOneByEventId(1)); // tạo mới
-                    itemLog.setStatus(1);
-                    itemLog.setTimeStamp(scoreTime);
-                    itemLog.setItem(item);
-                    itemLog.setLocation(savedLocation);
-                    itemLog.setParty(party);
-                    Point point = pointService.randomPoint();
-                    itemLog.setPoint(point.toString());
-                    itemLogs.add(itemLog);
-                }
-
-                // Save all entities in batch
-                itemRepository.saveAll(items);
-                partyRepository.saveAll(parties);
-                itemLogRepository.saveAll(itemLogs);
-                return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
+                return handleAddItem(itemLogDTO, currentUser);
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
 
-    public class InvalidCoordinateException extends Exception {
+    private ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
+        try {
+            User user = userRepository.getReferenceById(currentUser.getUserId());
+
+            // Lưu địa chỉ
+            Location location = createLocation(itemLogDTO);
+            validateAndSetCoordinates(location, itemLogDTO);
+
+            Location savedLocation = locationRepository.save(location);
+
+            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
+
+            List<Item> items = createItems(itemLogDTO, user, saveOrigin);
+            List<Party> parties = createParties(itemLogDTO, user);
+            List<ItemLog> itemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
+
+            // Save all entities in batch
+            itemRepository.saveAll(items);
+            partyRepository.saveAll(parties);
+            itemLogRepository.saveAll(itemLogs);
+            logService.info("Add successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
+        } catch (Exception ex) {
+            logService.logError(ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
+    }
+
+    private Location createLocation(ItemLogDTO itemLogDTO) {
+        Location location = new Location();
+        location.setAddress(itemLogDTO.getAddress());
+        location.setCity(itemLogDTO.getCity());
+        location.setCountry(itemLogDTO.getCountry());
+        location.setDistrict(itemLogDTO.getDistrict());
+        location.setWard(itemLogDTO.getStreet());
+        return location;
+    }
+
+    private void validateAndSetCoordinates(Location location, ItemLogDTO itemLogDTO) throws InvalidCoordinateException, CoordinateOutOfRangeException {
+        double corX = parseCoordinate(itemLogDTO.getCoordinateX());
+        double corY = parseCoordinate(itemLogDTO.getCoordinateY());
+
+        // Check if corX and corY are within their valid ranges
+        if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
+            location.setCoordinateX(itemLogDTO.getCoordinateX());
+            location.setCoordinateY(itemLogDTO.getCoordinateY());
+            System.out.println("Coordinates set successfully.");
+        } else {
+            throw new CoordinateOutOfRangeException("Coordinates are out of valid range.");
+        }
+    }
+
+    private Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
+        long scoreTime = System.currentTimeMillis();
+        Origin origin = new Origin();
+        origin.setCreatedAt(scoreTime);
+        origin.setDescription(itemLogDTO.getDescriptionOrigin());
+        origin.setSupportingDocuments(qrCodeGenerator.generateProductDescription(itemLogDTO.getProductId(), itemLogDTO.getAddress(), scoreTime));
+        origin.setEmail(user.getEmail());
+        origin.setFullNameManufacturer(user.getFirstName() + " " + user.getLastName());
+        origin.setOrg_name(user.getOrg_name());
+        origin.setPhone(user.getPhone());
+        origin.setLocation(savedLocation);
+        return originRepository.save(origin);
+    }
+
+    private List<Item> createItems(ItemLogDTO itemLogDTO, User user, Origin saveOrigin) throws IOException {
+
+        List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
+        long scoreTime = System.currentTimeMillis();
+        for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
+            Item item = new Item();
+            item.setCreatedAt(scoreTime);
+            item.setCurrentOwner(user.getEmail());
+            String productRecog =qrCodeGenerator.generateProductCode(itemLogDTO.getProductId());
+            item.setProductRecognition(productRecog);
+            item.setStatus(1);
+            item.setOrigin(saveOrigin);
+            item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
+            Context context = new Context();
+
+            String html = templateEngine.process(Const.TEMPLATE_FILE_NAME.CERTIFICATE, context);
+            byte[] cert = documentGenerator.generatePdfFromHtml(html);
+            String certLink = cloudinaryService.uploadPdfToCloudinary(cert, "trace_origin_cert_of+" + productRecog);
+            item.setCertificateLink(certLink);
+            items.add(item);
+        }
+        return items;
+    }
+
+    private List<Party> createParties(ItemLogDTO itemLogDTO, User user) {
+        List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
+        for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
+            Party party = new Party();
+            party.setDescription(itemLogDTO.getDescriptionOrigin());
+            party.setEmail(user.getEmail());
+            party.setPartyFullName(user.getFirstName() + " " + user.getLastName());
+            party.setPhoneNumber(user.getPhone());
+            parties.add(party);
+        }
+        return parties;
+    }
+
+    private List<ItemLog> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, List<Party> parties) {
+        List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
+        long scoreTime = System.currentTimeMillis();
+        for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
+            ItemLog itemLog = new ItemLog();
+            itemLog.setAddress(itemLogDTO.getAddress());
+            itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
+            itemLog.setEvent_id(eventTypeRepository.findOneByEventId(1)); // tạo mới
+            itemLog.setStatus(1);
+            itemLog.setTimeStamp(scoreTime);
+            itemLog.setItem(items.get(i));
+            itemLog.setLocation(savedLocation);
+            itemLog.setParty(parties.get(i));
+            Point point = pointService.randomPoint();
+            itemLog.setPoint(point.toString());
+            itemLogs.add(itemLog);
+        }
+        return itemLogs;
+    }
+
+//    private double parseCoordinate(String coordinate) throws InvalidCoordinateException {
+//        try {
+//            return Double.parseDouble(coordinate);
+//        } catch (NumberFormatException ex) {
+//            throw new InvalidCoordinateException("Invalid coordinate: " + coordinate);
+//        }
+//    }
+
+
+    public static class InvalidCoordinateException extends Exception {
         public InvalidCoordinateException(String message) {
             super(message);
         }
     }
 
-    public class CoordinateOutOfRangeException extends Exception {
+    public static class CoordinateOutOfRangeException extends Exception {
         public CoordinateOutOfRangeException(String message) {
             super(message);
         }
@@ -235,7 +312,7 @@ public class ItemController {
 
 
     @GetMapping("/findAllItemByProductId")
-    public ResponseEntity findAllItemByProductId(@RequestParam int ProductId) {
+    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
         List<Item> itemList = itemRepository.findByProductId(ProductId);
         if (itemList == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not foumd!");
@@ -248,11 +325,11 @@ public class ItemController {
 
     //list all item_log by product_recogine
     @GetMapping("/viewLineItem")
-    public ResponseEntity viewLineItem(@RequestParam String productRecognition) {
+    public ResponseEntity<?> viewLineItem(@RequestParam String productRecognition) {
         try {
             Item item = itemRepository.findByProductRecognition(productRecognition);
             if (item == null) {
-                return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
             List<ItemLog> itemList = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
@@ -271,6 +348,7 @@ public class ItemController {
                 return ResponseEntity.status(HttpStatus.OK).body(itemLogResponse);
             }
         } catch (Exception ex) {
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while processing viewLineItem:: " + ex.getMessage());
         }
     }
@@ -280,31 +358,24 @@ public class ItemController {
         dto.setItemLogId(itemLog.getItemLogId());
         dto.setAddress(itemLog.getAddress());
         long timestamp = itemLog.getTimeStamp();
-//        Date date = new Date(timestamp);
-//        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-//        String formattedDate = formatter.format(date);
-
         dto.setCreatedAt(String.valueOf(timestamp));
-        //EventType eventType = eventTypeRepository.getReferenceById(itemLog.getEvent_id());
         dto.setEventType(itemLog.getEvent_id().getEvent_type());
         dto.setPartyName(itemLog.getParty().getPartyFullName());
         dto.setDescription(itemLog.getDescription());
-
-        return dto;
-
-
-    }
-
-    private ItemDTO convertToItemDTO(Item item) {
-        ItemDTO dto = new ItemDTO();
-        dto.setProductRecognition(item.getProductRecognition());
         return dto;
     }
+
+//    private ItemDTO convertToItemDTO(Item item) {
+//        ItemDTO dto = new ItemDTO();
+//        dto.setProductRecognition(item.getProductRecognition());
+//        return dto;
+//    }
+
     @GetMapping("/viewOrigin")
-    public ResponseEntity getOrigin(@RequestParam int itemLogId) {
+    public ResponseEntity<?> viewOrigin(@RequestParam int itemLogId) {
         try {
             ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
-            if(itemLog == null)  return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
+            if (itemLog == null) return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
 
             OriginDTO originDTO = new OriginDTO();
             originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
@@ -319,75 +390,124 @@ public class ItemController {
             originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
             originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
-            Integer productId = itemLog.getItem().getProduct().getProductId();
-            if (productId == null) {
+           // Integer productId = itemLog.getItem().getProduct().getProductId();
+            ImageProduct imageProduct = imageProductRepository.findByproductId(itemLog.getItem().getProduct().getProductId());
+            if (imageProduct == null) {
                 originDTO.setImage(null);
             } else {
-                ImageProduct imageProduct = imageProductRepository.findByproductId(itemLog.getItem().getProduct().getProductId());
-                if (imageProduct == null) {
-                    originDTO.setImage(null);
-                } else {
-                    String img = imageProduct.getFilePath();
-                    originDTO.setImage(img);
-                }
+                String img = imageProduct.getFilePath();
+                originDTO.setImage(img);
             }
-            if (originDTO != null) {
-                return new ResponseEntity<>(originDTO, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
+            return new ResponseEntity<>(originDTO, HttpStatus.OK);
         } catch (Exception ex) {
-            System.err.println("Error occurred while processing viewLineItem: " + ex.getMessage());
+            logService.logError(ex);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
         }
     }
+
     @GetMapping("/getCertificate")
-    public ResponseEntity getCertificate(@RequestBody String req,@RequestParam String productRecognition){
-        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
-        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
+    public ResponseEntity<?> getCertificate(@RequestBody String req, @RequestParam String productRecognition) {
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
-        Item item = itemRepository.findByProductRecognition(productRecognition); // B1
+
+        Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-        }
-        if (email != null && !email.isEmpty()) {
-            if (item.getCurrentOwner().equals(email)) {
-                //// day check co du so su kien khong
-                ////
-                List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-                int countItem = list.size();
-
-                if (countItem < 1) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
-                }
-                // check xem point co du khong ngoai tru point null
-                List<ItemLog> listPoint = itemLogRepository.getPointItemId(item.getItemId());
-                int countPoint = listPoint.size();
-
-                if(countPoint != countItem){
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-                }else {
-                    ////
-                //    public byte[] getCertificate(byte[] pdfData) {
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
-                        headers.setContentDispositionFormData("attachment", "certificate.pdf");
-                    //    return pdfData;
-                //    }
-                    byte[] pdfData = item.getCertificate_link();
-                    return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
-                }
-
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
         }
 
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is missing.");
+        }
+
+        if (!item.getCurrentOwner().equals(email)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
+        }
+
+        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemId(item.getItemId());
+        if (itemLogs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
+        }
+
+        List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+        if (pointLogs.size() != itemLogs.size()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mismatch in item logs and point logs.");
+        }
+
+        if (!pointService.arePointsOnCurve(pointLogs)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Points do not form a valid graph.");
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "certificate.pdf");
+
+        String pdfData = item.getCertificateLink();
+        return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
     }
+
+
+    @GetMapping("/getTESTCertificate")
+    public ResponseEntity<?> getTESTCertificate(@RequestParam String productRecognition) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "certificate.pdf");
+        Item item = itemRepository.findByProductRecognition(productRecognition);
+
+        String pdfLink = item.getCertificateLink();
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+
+        // Return the PDF link as a response entity
+        return ResponseEntity.ok().headers(headers).body(pdfLink);
+    }
+
+//    @GetMapping("/convertHtmlToPdf")
+//    public ResponseEntity<byte[]> convertHtmlToPdf() {
+//        // HTML content to convert to PDF
+//        String htmlContent = "<html><body><h1>Hello, World!</h1></body></html>";
+//
+//        // Prepare ByteArrayOutputStream to hold PDF bytes
+//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//
+//        try {
+//            // Create PdfWriter
+//            PdfWriter writer = new PdfWriter(baos);
+//            // Create PdfDocument
+//            PdfDocument pdf = new PdfDocument(writer);
+//            // Set landscape orientation
+//            pdf.setDefaultPageSize(PageSize.A4.rotate());
+//
+//            // Convert HTML to PDF
+//            ConverterProperties props = new ConverterProperties();
+//            HtmlConverter.convertToPdf(htmlContent, pdf, props);
+//
+//            // Close PdfDocument
+//            pdf.close();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        // Prepare HttpHeaders
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_PDF);
+//        headers.setContentDispositionFormData("attachment", "converted-document.pdf");
+//
+//        // Return PDF as ResponseEntity
+//        return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+//    }
+
+//    private boolean arePointsOnCurve(List<ItemLog> pointLogs) {
+//        List<Point> points = new ArrayList<>();
+//        for (int i = 1; i < pointLogs.size() - 1; i++) {
+//            Point point = pointService.getPoint(pointLogs.get(i).getPoint());
+//            points.add(point);
+//        }
+//
+//        Point startPoint = pointService.getPoint(pointLogs.get(0).getPoint());
+//        return pointService.isPointOnCurve(points, startPoint);
+//    }
+
     @PostMapping(value = "/confirmCurrentOwner")
     public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
         // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
@@ -409,15 +529,17 @@ public class ItemController {
         }
     }
 
-    // API uy quyen checkCurrentOwner => authorized
-// Cai nay la uy quyen nguoi nhan
-        // B1. Kiem tra xem san pham nay da duoc uy quyen chua bang cach check currentOwner voi status la 0
-        // - Neu ma co currentOwner roi va co status la 1 thi co nghia la chua uy quyen
-        // - Neu ma co currentOwner roi va co status la 0 thi co nghia la da uy quyen roi => khong cho uy quyen nua
-        // B2. Neu chua uy quyen thi
-        // - Update currentOwner voi email cua nguoi duoc uy quyen va status la 0
-        // - Update bang itemLog voi id dai nhat voi authorized_id va bang authorized nhung thong tin cua nguoi duoc uy quyen
-        // - Gui mail thong bao cho nguoi dung la bạn da duoc uy quyen
+    /**
+     * API uy quyen checkCurrentOwner => authorized
+     * Cai nay la uy quyen nguoi nhan
+     * B1. Kiem tra xem san pham nay da duoc uy quyen chua bang cach check currentOwner voi status la 0
+     * - Neu ma co currentOwner roi va co status la 1 thi co nghia la chua uy quyen
+     * - Neu ma co currentOwner roi va co status la 0 thi co nghia la da uy quyen roi => khong cho uy quyen nua
+     * B2. Neu chua uy quyen thi
+     * - Update currentOwner voi email cua nguoi duoc uy quyen va status la 0
+     * - Update bang itemLog voi id dai nhat voi authorized_id va bang authorized nhung thong tin cua nguoi duoc uy quyen
+     * - Gui mail thong bao cho nguoi dung la bạn da duoc uy quyen
+     */
     @PostMapping(value = "/authorized")
     public ResponseEntity<?> authorize(@RequestBody Authorized authorized, @RequestParam int itemLogId) {
         try {
@@ -441,14 +563,14 @@ public class ItemController {
             }
 
             // B2: Tiến hành ủy quyền nếu chưa ủy quyền
-                Location location = new Location();
-                location.setAddress(authorized.getLocation().getAddress());
-                location.setCity(authorized.getLocation().getCity());
-                location.setCountry(authorized.getLocation().getCountry());
-                location.setCoordinateX(authorized.getLocation().getCoordinateX());
-                location.setCoordinateY(authorized.getLocation().getCoordinateY());
+            Location location = new Location();
+            location.setAddress(authorized.getLocation().getAddress());
+            location.setCity(authorized.getLocation().getCity());
+            location.setCountry(authorized.getLocation().getCountry());
+            location.setCoordinateX(authorized.getLocation().getCoordinateX());
+            location.setCoordinateY(authorized.getLocation().getCoordinateY());
 
-                Location savedLocation = locationRepository.save(location);
+            Location savedLocation = locationRepository.save(location);
 
             Authorized authorizedSaved = authorizedRepository.save(new Authorized(
                     authorized.getAuthorized_name(),
@@ -458,30 +580,30 @@ public class ItemController {
                     savedLocation,
                     authorized.getPhoneNumber(),
                     authorized.getDescription()
-                ));
+            ));
 
             // Cập nhật trạng thái sản phẩm
-                itemRepository.updateStatusAndCurrent(item.getItemId(), authorized.getAuthorized_email());
+            itemRepository.updateStatusAndCurrent(item.getItemId(), authorized.getAuthorized_email());
 
             // Cập nhật authorized_id vào bảng itemLog
-                itemLogRepository.updateAuthorized(authorizedSaved.getAuthorized_id(), itemLogId);
+            itemLogRepository.updateAuthorized(authorizedSaved.getAuthorized_id(), itemLogId);
 
             // Gửi thông báo email
-                ClientSdi sdi = new ClientSdi();
-                sdi.setEmail(authorized.getAuthorized_email());
-                sdi.setUsername(authorized.getAuthorized_name());
-                sdi.setName(authorized.getAuthorized_name());
+            ClientSdi sdi = new ClientSdi();
+            sdi.setEmail(authorized.getAuthorized_email());
+            sdi.setUsername(authorized.getAuthorized_name());
+            sdi.setName(authorized.getAuthorized_name());
 
             clientService.notification(sdi);
 
-            return  ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
+            return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
 
         } catch (Exception ex) {
-            // Ghi log lỗi
-            System.err.println("Error occurred while processing authorization: " + ex.getMessage());
+            logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
-            }
         }
+    }
+
     @PostMapping(value = "/checkAuthorized")
     public ResponseEntity<Boolean> checkAuthorized(@RequestParam String productRecognition) throws MessagingException {
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
@@ -497,20 +619,18 @@ public class ItemController {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
+
     //API check CurrentOwner
     @PostMapping(value = "/checkCurrentOwner")
-    public ResponseEntity<Boolean> checkCurrentOwner(@RequestBody String req, @RequestParam String productRecognition) throws MessagingException {
+    public ResponseEntity<Boolean> checkCurrentOwner(@RequestBody String email, @RequestParam String productRecognition) {
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
-        JSONObject jsonReq = new JSONObject(req);
-        String email = jsonReq.getString("email");
-        Item item = itemRepository.findByProductRecognition(productRecognition); // B1
-        if (item == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-        }
-//        if (item.getStatus() == 0) {
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
-       // } else if (item.getStatus() == 1) {
+        logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
+        try{
+            Item item = itemRepository.findByProductRecognition(productRecognition); // B1
+            if (item == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+            }
             if (email != null && !email.isEmpty()) {
                 if (item.getCurrentOwner().equals(email)) {
                     return ResponseEntity.ok(true);
@@ -520,11 +640,14 @@ public class ItemController {
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
             }
-       // }
-   //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }catch (Exception e){
+            logService.logError(e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
     }
+
     @PostMapping(value = "/sendCurrentOwnerOTP")
-    public ResponseEntity<String> sendCurrentOwnerOTP(@RequestBody String req) {
+    public ResponseEntity<?> sendCurrentOwnerOTP(@RequestBody String req) {
         try {
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
@@ -541,8 +664,10 @@ public class ItemController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
             }
         } catch (JSONException e) {
+            logService.logError(e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
@@ -550,7 +675,7 @@ public class ItemController {
 
     //API send OTP  nhap mail => sendOTP chua check
     @PostMapping(value = "/sendOTP")
-    public ResponseEntity<String> sendOTP(@RequestBody String req, @RequestParam String productRecognition) {
+    public ResponseEntity<?> sendOTP(@RequestBody String req, @RequestParam String productRecognition) {
         try {
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
@@ -571,7 +696,7 @@ public class ItemController {
 
             // Lấy danh sách item logs và kiểm tra kích thước danh sách
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-            if (list.size() < 1) {
+            if (list.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
             }
             ItemLog itemIndex = list.get(0);
@@ -590,8 +715,11 @@ public class ItemController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
             }
         } catch (JSONException e) {
+            logService.logError(e);
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
@@ -601,10 +729,11 @@ public class ItemController {
     @PostMapping(value = "/confirmOTP")
     public ResponseEntity<Boolean> confirmOTP(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
         try {
-            // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
+            /**
+             // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
             // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
             // - Insert bảng party => Sau khi nhận mới trở thành party
-
+            */
             Item item = itemRepository.findByProductRecognition(productRecognition); // B1
 
             if (item == null) {
@@ -616,7 +745,7 @@ public class ItemController {
 
                 if (check) {
                     Integer status = 1;
-                    itemRepository.updateItemStatus(Long.valueOf(item.getItemId()), status);
+                    itemRepository.updateItemStatus((long) item.getItemId(), status);
                     List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
                     if (list.isEmpty() || list.size() <= 1) {
@@ -626,7 +755,7 @@ public class ItemController {
                     ItemLog itemIndex = list.get(0);
                     Optional<Authorized> authorizedOpt = authorizedRepository.findById(itemIndex.getAuthorized().getAuthorized_id());
 
-                    if (!authorizedOpt.isPresent()) {
+                    if (authorizedOpt.isEmpty()) {
                         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu authorized không tồn tại
                     }
 
@@ -647,9 +776,15 @@ public class ItemController {
                     itemLog.setItem(item);
                     itemLog.setLocation(authorized.getLocation());
                     itemLog.setParty(party);
-                    Point point = pointService.randomPoint();
+                    //Point point = pointService.randomPoint();
+                    double pointX = pointService.generatedoubleX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.interpolate(pointList, pointX);
+                    Point point = new Point(pointX, pointY);
                     itemLog.setPoint(point.toString());
-                    itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2)); // Event này là nhận hàng
+                    //  itemLog.setPoint(point.toString());
+                    itemLog.setEvent_id(eventTypeRepository.findOneByEventId(4)); // Event này là nhận hàng
                     itemLog.setImageItemLog(null);
                     itemLogRepository.updateStatus(1, list.get(1).getItemLogId());
                     itemLogRepository.save(itemLog);
@@ -667,6 +802,5 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false); // Xảy ra lỗi, trả về lỗi server
         }
     }
-
-
 }
+

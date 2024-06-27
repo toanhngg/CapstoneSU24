@@ -1,7 +1,6 @@
 package fpt.CapstoneSU24.service;
 
 
-import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.Location;
@@ -15,8 +14,6 @@ import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.util.Const;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,33 +22,34 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class AuthenticationService {
+
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-    @Autowired
-    RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
+    private final LocationRepository locationRepository;
+    private final AuthTokenRepository authTokenRepository;
+    private final EmailService mailService;
 
     @Autowired
-    LocationRepository locationRepository;
-    @Autowired
-    AuthTokenRepository authTokenRepository;
-    @Autowired
-    private EmailService mailService;
-
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
-            PasswordEncoder passwordEncoder
-    ) {
+            PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository,
+            LocationRepository locationRepository,
+            AuthTokenRepository authTokenRepository,
+            EmailService mailService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
+        this.locationRepository = locationRepository;
+        this.authTokenRepository = authTokenRepository;
+        this.mailService = mailService;
     }
 
     public int signup(RegisterRequest input) {

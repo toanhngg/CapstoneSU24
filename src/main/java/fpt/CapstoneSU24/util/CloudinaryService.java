@@ -78,6 +78,16 @@ public class CloudinaryService {
         }
 
     }
+    public String uploadPdfToCloudinary(byte[] pdfData, String fileName) throws IOException {
+        try {
+            Map uploadResult = cloudinary.uploader().upload(pdfData,
+                    ObjectUtils.asMap("resource_type", "auto", "public_id", fileName));
+            return (String) uploadResult.get("secure_url");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     public MultipartFile convertBase64ToImgFile(String base64String) throws IOException {
         try {
             return convertBase64ToMultipartFile(base64String, "image.png");

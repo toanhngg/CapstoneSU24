@@ -90,11 +90,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 }catch (Exception ex){
                     response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(null).toString());
                 }
+
                 // set cookie í null
             }
             }else{
                 logger.warn("JWT Token does not exist");
             }
+
+
         // Once we get the token validate it.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null && jwtToken.equals(pevJwtToken)) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);

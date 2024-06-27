@@ -1,30 +1,21 @@
 package fpt.CapstoneSU24.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
-import fpt.CapstoneSU24.dto.B03.B03_MailSend;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
-import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
-import fpt.CapstoneSU24.model.*;
+import fpt.CapstoneSU24.model.Certificate;
+import fpt.CapstoneSU24.model.Role;
+import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
-import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.service.EmailService;
-import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.service.UserService;
 import fpt.CapstoneSU24.util.CloudinaryService;
 import fpt.CapstoneSU24.util.Const;
-import fpt.CapstoneSU24.util.DataUtils;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +23,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
@@ -52,41 +39,37 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    private CertificateRepository certificateRepository;
-
-    @Autowired
-    private EmailService mailService;
-
-    @Autowired
-    private AuthTokenRepository authTokenRepository;
-
-    @Autowired
-    private SpringTemplateEngine springTemplateEngine;
-
-    @Autowired
-    private DocumentGenerator documentGenerator;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
+    private final UserRepository userRepository;
+   // private final JavaMailSender mailSender;
+    private final CertificateRepository certificateRepository;
+    private final EmailService mailService;
+   // private final AuthTokenRepository authTokenRepository;
+    private final SpringTemplateEngine springTemplateEngine;
+    private final DocumentGenerator documentGenerator;
+    private final UserService userService;
     private final CloudinaryService cloudinaryService;
 
     @Autowired
-    public UserController(CloudinaryService cloudinaryService) {
+    public UserController(CloudinaryService cloudinaryService, UserService userService,
+                          UserRepository userRepository, EmailService mailService,
+                          CertificateRepository certificateRepository,
+                          //JavaMailSender mailSender, AuthTokenRepository authTokenRepository,
+                          SpringTemplateEngine springTemplateEngine,
+                          DocumentGenerator documentGenerator) {
+        this.userRepository = userRepository;
+        this.certificateRepository = certificateRepository;
+        this.mailService = mailService;
+        this.springTemplateEngine = springTemplateEngine;
+        this.documentGenerator = documentGenerator;
+        this.userService = userService;
         this.cloudinaryService = cloudinaryService;
+        //  this.authTokenRepository = authTokenRepository;
+        //  this.mailSender = mailSender;
     }
 
 
@@ -320,7 +303,7 @@ public class UserController {
                 HttpHeaders headers = new HttpHeaders();
                 headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=certificate.pdf");
                 headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
-                return ResponseEntity.ok().headers(headers).body(certificate.getImages());
+                return ResponseEntity.ok().headers(headers).body(certificate.getImage());
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }

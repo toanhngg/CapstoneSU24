@@ -54,7 +54,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         User authenticatedUser = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);
 
@@ -65,7 +65,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         int n = authenticationService.logout(currentUser);

@@ -230,6 +230,14 @@
 			<artifactId>html2pdf</artifactId>
 			<version>2.1.2</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.5.13.4</version>
+		</dependency>
+
+
 
 		<!-- https://mvnrepository.com/artifact/com.cloudinary/cloudinary-core -->
 		<!-- https://mvnrepository.com/artifact/com.cloudinary/cloudinary-http44 -->
@@ -247,6 +255,17 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.4.4.Final</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>1.6.0.Beta2</version>
 		</dependency>
 
 

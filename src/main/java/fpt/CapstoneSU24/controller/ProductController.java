@@ -44,7 +44,7 @@ public class ProductController {
     @Autowired
     CloudinaryService cloudinaryService;
     @PostMapping("/addProduct")
-    public ResponseEntity addProduct(@Valid @RequestBody AddProductRequest req) {
+    public ResponseEntity<?> addProduct(@Valid @RequestBody AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 2){
@@ -86,7 +86,7 @@ public class ProductController {
 //    - có thêm trường product Id
 //    - nếu không ko edit image (images, avatar) thì để là ""
     @PostMapping("/editProduct")
-    public ResponseEntity editProduct(@Valid @RequestBody EditProductRequest req) {
+    public ResponseEntity<?> editProduct(@Valid @RequestBody EditProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 2){
@@ -136,7 +136,7 @@ public class ProductController {
 
 
     @PostMapping("/findAllProductByManufacturerId")
-    public ResponseEntity findAllProductByManufacturerId(@Valid @RequestBody FilterSearchRequest req) {
+    public ResponseEntity<?> findAllProductByManufacturerId(@Valid @RequestBody FilterSearchRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         try {
@@ -155,7 +155,7 @@ public class ProductController {
         }
     }
     @PostMapping("/findImgByProductId")
-    public ResponseEntity findImgByProductId(@Valid @RequestBody IdRequest req) {
+    public ResponseEntity<?> findImgByProductId(@Valid @RequestBody IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
@@ -172,7 +172,7 @@ public class ProductController {
         }
     }
     @PostMapping("/findProductById")
-    public ResponseEntity findProductById(@Valid @RequestBody IdRequest req) {
+    public ResponseEntity<?> findProductById(@Valid @RequestBody IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
@@ -183,7 +183,7 @@ public class ProductController {
         }
     }
     @PostMapping("/deleteProductById")
-    public ResponseEntity deleteProductById(@Valid @RequestBody IdRequest req) {
+    public ResponseEntity<?> deleteProductById(@Valid @RequestBody IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
