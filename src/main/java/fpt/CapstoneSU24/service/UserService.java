@@ -45,10 +45,9 @@ public class UserService {
     private final EmailService mailService;
     private final SpringTemplateEngine springTemplateEngine;
     private final DocumentGenerator documentGenerator;
-    private final UserService userService;
 
     @Autowired
-    public UserService(CloudinaryService cloudinaryService, UserService userService,
+    public UserService(CloudinaryService cloudinaryService,
                           UserRepository userRepository, EmailService mailService,
                           CertificateRepository certificateRepository,
                           SpringTemplateEngine springTemplateEngine,
@@ -58,7 +57,6 @@ public class UserService {
         this.mailService = mailService;
         this.springTemplateEngine = springTemplateEngine;
         this.documentGenerator = documentGenerator;
-        this.userService = userService;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -121,7 +119,7 @@ public class UserService {
 
     public ResponseEntity<?> getUsersByEmail(B03_RequestDTO userRequestDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+        UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
 
         if (userProfileDTO.getRole().getRoleId() != 1) {
             return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -165,7 +163,7 @@ public class UserService {
 
     public ResponseEntity<String> updateStatus(int userId, int status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+        UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
         if ( userProfileDTO.getRole().getRoleId() != 1) {
             return ResponseEntity.ok(null);
         }
@@ -183,7 +181,7 @@ public class UserService {
     public Boolean lockUser(String req) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+            UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
 
             if (userProfileDTO == null || userProfileDTO.getRole().getRoleId() != 1) {
                 return false;
@@ -260,17 +258,17 @@ public class UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (userId > -1 || !(authentication.getPrincipal() instanceof User) ) {
-            currentUser = userService.getUserProfile(authentication, userId);
+            currentUser = getUserProfile(authentication, userId);
             return ResponseEntity.ok(currentUser);
         }
 
-        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+        UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
 
         if ( userProfileDTO.getRole().getRoleId() != 1) {
             return ResponseEntity.ok(userProfileDTO);
         }
         else if (userProfileDTO.getRole().getRoleId() == 1) {
-            currentUser = userService.getUserProfile(authentication, userId);
+            currentUser = getUserProfile(authentication, userId);
             return ResponseEntity.ok(currentUser);
         } else {
             return ResponseEntity.status(400).body(null);
@@ -279,7 +277,7 @@ public class UserService {
 
     public ResponseEntity<?> generateDoc() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserProfileDTO userProfileDTO = userService.getUserProfile(authentication,-1);
+        UserProfileDTO userProfileDTO = getUserProfile(authentication,-1);
         //kiem tra user ton tai va da ky hop dong chua
         if (userProfileDTO != null && userProfileDTO.getStatus() == 0) {
             String finalHtml;
@@ -336,7 +334,7 @@ public class UserService {
         {
             return ResponseEntity.ok("The commitment contract already singed");
         }else{
-            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+            UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
             String finalHtml;
 
             DataMailDTO dataMail = new DataMailDTO();

@@ -85,7 +85,10 @@ public class ItemService {
         this.cloudinaryService = cloudinaryService;
         this.logService = logService;
     }
-
+    /*
+     * type is sort type: "desc" or "asc"
+     * default data startDate and endDate equal 0 (need insert 2 data)
+     * */
     public ResponseEntity<?> searchItem(FilterSearchRequest req) {
         try {
             Page<Item> items;

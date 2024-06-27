@@ -2,46 +2,21 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
-import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
-import fpt.CapstoneSU24.model.Certificate;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.repository.AuthTokenRepository;
-import fpt.CapstoneSU24.repository.CertificateRepository;
-import fpt.CapstoneSU24.repository.UserRepository;
-import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.UserService;
-import fpt.CapstoneSU24.util.CloudinaryService;
-import fpt.CapstoneSU24.util.Const;
-import fpt.CapstoneSU24.util.DocumentGenerator;
-import jakarta.mail.MessagingException;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring5.SpringTemplateEngine;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/user")
+
 public class UserController {
 
     private final UserService userService;
@@ -53,7 +28,7 @@ public class UserController {
 
 
     @GetMapping("/getAllUser")
-    public ResponseEntity getAllUsers() {
+    public ResponseEntity<?> getAllUsers() {
         return userService.getAllUsers();
     }
 
