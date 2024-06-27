@@ -19,61 +19,24 @@ import java.time.ZoneId;
 @RestController
 @RequestMapping("/api/report")
 public class ReportController {
-
-   // private final ReportRepository reportRepository;
     private final ReportService reportService;
 
     @Autowired
-    public ReportController(ReportRepository reportRepository, ReportService reportService) {
-       // this.reportRepository = reportRepository;
+    public ReportController(ReportService reportService) {
         this.reportService = reportService;
     }
 
     @PostMapping("/getListReports")
     public ResponseEntity<Page<B02_GetListReport>> getListReports(@RequestBody B02_RequestFilterTable requestFilter) {
-
-        long dateFromEpoch = requestFilter.getDateFrom() != null ? requestFilter.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : 0;
-        long dateToEpoch = requestFilter.getDateTo() != null ? requestFilter.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : 0;
-
-        Integer  reportBy = null;
-        Integer type = null;
-        Integer status = null;
-
-        if (requestFilter.getReportBy() > -1) {
-            reportBy = -1;
-        }
-        if (requestFilter.getType() > -1) {
-            type = -1;
-        }
-        if (requestFilter.getStatus()  > -1) {
-            status = -1;
-        }
-
-        Page<B02_GetListReport> b02GetListReports = reportService.getListReports(
-                requestFilter.getCode(),
-                requestFilter.getTitle(),
-                reportBy,
-                type,
-                dateFromEpoch,
-                dateToEpoch,
-                status,
-                requestFilter.getOrderBy(),
-                requestFilter.getAsc(),
-                requestFilter.getPage(),
-                requestFilter.getSize());
-        return  ResponseEntity.ok(b02GetListReports);
-
+        return reportService.getListReports(requestFilter);
     }
 
 
     @PostMapping("/getReportById")
-    public ResponseEntity<?> getDetailReport(@RequestBody String req)
+    public ResponseEntity<?> getReportById(@RequestBody String req)
     {
-        ReportDetailDto reportDetail = new ReportDetailDto();
-        JSONObject jsonObject = new JSONObject(req);
-        int reportId = jsonObject.has("reportId") ? jsonObject.getInt("reportId") : -1;
-        reportDetail = reportService.getDetailReport(reportId);
-        return ResponseEntity.ok(reportDetail);
+        return reportService.getReportById(req);
+
     }
 
 

@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/location")
 public class LocationController {
-    private JwtService jwtService;
-    private AuthenticationService authenticationService;
+
     private final OpenCageDataService openCageDataService;
+
     @Autowired
     public LocationController(OpenCageDataService openCageDataService){
         this.openCageDataService = openCageDataService;

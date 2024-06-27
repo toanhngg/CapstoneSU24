@@ -267,8 +267,21 @@
 			<artifactId>mapstruct</artifactId>
 			<version>1.6.0.Beta2</version>
 		</dependency>
-
-
+		<dependency>
+			<groupId>org.firebirdsql.jdbc</groupId>
+			<artifactId>jaybird</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.firebirdsql.jdbc</groupId>
+			<artifactId>jaybird</artifactId>
+			<version>4.0.8.java11</version>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.antlr</groupId>-->
+<!--			<artifactId>antlr4-runtime</artifactId>-->
+<!--			<version>4.10.1</version>-->
+<!--			<scope>runtime</scope>-->
+<!--		</dependency>-->
 	</dependencies>
 
 	<build>
@@ -285,7 +298,22 @@
 					</excludes>
 				</configuration>
 			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>org.antlr</groupId>-->
+<!--				<artifactId>antlr4-maven-plugin</artifactId>-->
+<!--				<version>4.10.1</version> &lt;!&ndash; Sử dụng cùng phiên bản ANTLR &ndash;&gt;-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<goals>-->
+<!--							<goal>antlr4</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--			</plugin>-->
 		</plugins>
+
+
+
 		<finalName>trace-origin</finalName>
 	</build>
 

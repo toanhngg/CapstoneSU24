@@ -1,11 +1,13 @@
 package fpt.CapstoneSU24.service;
 
 
+import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.payload.ForgotPasswordRequest;
 import fpt.CapstoneSU24.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.LocationRepository;
@@ -16,6 +18,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +80,9 @@ public class AuthenticationService {
         return 1;
     }
 
-    public int logout(User currentUser) {
+    public int logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
         if (currentUser != null) {
             AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
             if (authToken != null) {
@@ -88,11 +94,10 @@ public class AuthenticationService {
         return 1;
     }
 
-    public int forgotPassword(String req) {
+    public int forgotPassword(ForgotPasswordRequest req) {
         try {
-            JSONObject jsonNode = new JSONObject(req);
-            String email = jsonNode.getString("email");
-            User user = userRepository.findOneByEmail(email);
+
+            User user = userRepository.findOneByEmail(req.getEmail());
             if (user == null) {
                 return 1;
             } else {
@@ -116,6 +121,22 @@ public class AuthenticationService {
             return 0;
         } catch (Exception e) {
             return 2;
+        }
+    }
+    public int changePassword(ChangePasswordDto changePasswordDto){
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User user = (User) authentication.getPrincipal();
+            // Check if the new password and confirm password match
+            if (!changePasswordDto.getPassword().equals(changePasswordDto.getConfirmPassword())) {
+                return 1;
+            }
+            // Change password for the authenticated user
+            user.setPassword(changePasswordDto.getPassword());
+            ChangePassword(user);
+            return 0;
+        } catch (Exception e) {
+            return 2 ;
         }
     }
 
