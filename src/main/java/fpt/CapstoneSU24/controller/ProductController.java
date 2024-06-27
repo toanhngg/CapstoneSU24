@@ -49,6 +49,7 @@ public class ProductController {
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 2){
             try {
+                if(categoryRepository.findOneByCategoryId(req.getCategoryId()) ==null) return ResponseEntity.status(500).body("can not find id category");
                 Product product = new Product();
                 product.setProductName(req.getProductName());
                 product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
@@ -100,11 +101,16 @@ public class ProductController {
                 product.setDescription(req.getDescription());
                 product.setWarranty(req.getWarranty());
                 product.setCreateAt(System.currentTimeMillis());
-                product.setManufacturer(currentUser);
+//                product.setManufacturer(currentUser);
 //                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
                 productRepository.save(product);
                 //save image
                 if(!req.getImages().isEmpty()){
+                    try {
+                        imageProductRepository.deleteImageProductWithFilePathNotStartingWithAvatar(product.getProductId());
+                    }catch (Exception e){
+                        System.out.println(e.toString());
+                    }
                     for (String obj : req.getImages()) {
                         String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj),"");
                         imageProductRepository.save(new ImageProduct(0,filePath, product));
@@ -112,6 +118,7 @@ public class ProductController {
                 }
                 //save ava
                 if(!req.getAvatar().isEmpty()){
+                    imageProductRepository.deleteImageProductWithFilePathStartingWithAvatar(product.getProductId());
                     String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/"+product.getProductId());
                     imageProductRepository.save(new ImageProduct(0,filePathAvatar, product));
                 }
@@ -119,7 +126,7 @@ public class ProductController {
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(200).body("successfully");
             }catch (Exception e){
-                return ResponseEntity.status(500).body("error edit new product");
+                return ResponseEntity.status(500).body("error edit product");
             }
             //add product
         }else {

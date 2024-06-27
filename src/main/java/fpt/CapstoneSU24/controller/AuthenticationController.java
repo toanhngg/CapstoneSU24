@@ -12,6 +12,7 @@ import fpt.CapstoneSU24.service.EmailService;
 import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.payload.LoginRequest;
 import fpt.CapstoneSU24.util.Const;
+import fpt.CapstoneSU24.util.JwtTokenUtil;
 import io.swagger.v3.core.util.Json;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -39,73 +40,40 @@ public class AuthenticationController {
     @Autowired
     private JwtService jwtService;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     private AuthenticationService authenticationService;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AuthTokenRepository authTokenRepository;
-    @Autowired
-    private EmailService mailService;
+    private JwtTokenUtil jwtTokenUtil;
+
     @PostMapping("/signup")
     public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
-        if(userRepository.findOneByEmail(registerRequest.getEmail()) == null){
-            try {
-                User registeredUser = authenticationService.signup(registerRequest);
-                authTokenRepository.save(new AuthToken(0,registeredUser,null));
-                return ResponseEntity.status(200).body("create successfully");
-            }catch (Exception e){
-                return ResponseEntity.ok().body(e);
-            }
+        try {
+            return ResponseEntity.status(200).body(authenticationService.signup(registerRequest) == 0 ? "create successfully" : "your email already exists");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("error create new account");
         }
-        return  ResponseEntity.status(500).body("your email already exists");
     }
+
     @PostMapping("/login")
     public ResponseEntity login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         User authenticatedUser = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);
-        ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken) // key & value
-                .secure(true).httpOnly(true)
-                .path("/")
-                .sameSite("None")
-                .domain(null)
-                .maxAge(-1)
-                .build();
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(jwtToken).toString());
         System.out.println("jwt: " + jwtToken);
         log.info("User {} is attempting to log in.", loginRequest.getEmail());
         return ResponseEntity.status(200).body("login successfully");
     }
+
     @PostMapping("/logout")
     public ResponseEntity logout(HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        try {
-            User currentUser = (User) authentication.getPrincipal();
-            if (currentUser != null) {
-                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
-                if (authToken != null) {
-                    authToken.setJwtHash(null);
-                    authTokenRepository.save(authToken);
-                }
-                try {
-                    ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
-                            .secure(true).httpOnly(true)
-                            .path("/")
-                            .sameSite("None")
-                            .domain(null)
-                            .maxAge(0)
-                            .build();
-                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-                    return ResponseEntity.status(200).body("logout successfully");
-                } catch (Exception e) {
-                    return ResponseEntity.ok().body(e);
-                }
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(200).body("logout successfully");
-        }
-        return ResponseEntity.status(200).body("logout successfully");
+        User currentUser = (User) authentication.getPrincipal();
+        int n = authenticationService.logout(currentUser);
+        if (n == 0) {
+            response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(null).toString());
+            return ResponseEntity.status(500).body("logout successfully");
+        } else
+            return ResponseEntity.status(500).body(n == 1 ? "current don't have any account to logout" : "user don't have authToken");
     }
 
     @PostMapping("/changePassword")
@@ -135,36 +103,11 @@ public class AuthenticationController {
 
     @PostMapping("/forgotPassword")
     public ResponseEntity<String> forgetPassword(@RequestBody String req) {
-        try {
-            JSONObject jsonNode = new JSONObject(req);
-            String email = jsonNode.getString("email");
-            User user = userRepository.findOneByEmail(email);
-            if (user == null) {
-                return ResponseEntity.status(401).body("Email incorrect !!!");
-            }else{
-                String rndPass = authenticationService.generateRandomPassword();
-                user.setPassword(rndPass);
-                authenticationService.ChangePassword(user);
-                DataMailDTO dataMail = new DataMailDTO();
-
-                dataMail.setTo(user.getEmail());
-
-                dataMail.setSubject(Const.SEND_MAIL_SUBJECT.SUBJECT_CHANGEPASS);
-
-                Map<String, Object> props = new HashMap<>();
-                props.put("name", user.getFirstName() + user.getLastName());
-                props.put("newPassword", rndPass);
-
-                dataMail.setProps(props);
-
-                mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CHANGEPASSWORD);
-            }
-            return ResponseEntity.status(200).body("Password changed successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        int status = authenticationService.forgotPassword(req);
+        if (status == 0) {
+            return ResponseEntity.status(200).body("successfully");
+        } else {
+            return ResponseEntity.status(500).body(status == 1? "email incorrect": "error forgot password");
         }
     }
-
-
-
 }

@@ -2,13 +2,20 @@ package fpt.CapstoneSU24.service;
 
 
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
+import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.Location;
+import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.RegisterRequest;
+import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.LocationRepository;
 import fpt.CapstoneSU24.repository.RoleRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.util.Const;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -30,6 +39,11 @@ public class AuthenticationService {
 
     @Autowired
     LocationRepository locationRepository;
+    @Autowired
+    AuthTokenRepository authTokenRepository;
+    @Autowired
+    private EmailService mailService;
+
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
@@ -40,19 +54,71 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User signup(RegisterRequest input) {
-        User user = new User();
-        user.setEmail(input.getEmail());
-        user.setFirstName(input.getFirstName());
-        user.setLastName(input.getLastName());
-        user.setPhone(input.getPhone());
-        user.setRole(roleRepository.findOneByRoleId(2));
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
-        user.setCreateAt(System.currentTimeMillis());
-        Location location = new Location(0,input.getAddress(), input.getCity(), input.getCountry(),input.getCoordinateX(),input.getCoordinateY(), input.getDistrict(),input.getWard()); //manhDT sua bang
-        locationRepository.save(location);
-        user.setLocation(location);
-        return userRepository.save(user);
+    public int signup(RegisterRequest input) {
+        if (userRepository.findOneByEmail(input.getEmail()) == null) {
+            if (roleRepository.findOneByRoleId(2) == null) {
+                roleRepository.save(new Role(0, "admin"));
+                roleRepository.save(new Role(0, "manufacture"));
+            }
+            User user = new User();
+            user.setEmail(input.getEmail());
+            user.setFirstName(input.getFirstName());
+            user.setLastName(input.getLastName());
+            user.setPhone(input.getPhone());
+            user.setRole(roleRepository.findOneByRoleId(2));
+            user.setPassword(passwordEncoder.encode(input.getPassword()));
+            user.setCreateAt(System.currentTimeMillis());
+            Location location = new Location(0, input.getAddress(), input.getCity(), input.getCountry(), input.getCoordinateX(), input.getCoordinateY(), input.getDistrict(), input.getWard()); //manhDT sua bang
+            locationRepository.save(location);
+            user.setLocation(location);
+            userRepository.save(user);
+            authTokenRepository.save(new AuthToken(0, user, null));
+            return 0;
+        }
+        return 1;
+    }
+
+    public int logout(User currentUser) {
+        if (currentUser != null) {
+            AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
+            if (authToken != null) {
+                authToken.setJwtHash(null);
+                authTokenRepository.save(authToken);
+                return 0;
+            } else return 2;
+        }
+        return 1;
+    }
+
+    public int forgotPassword(String req) {
+        try {
+            JSONObject jsonNode = new JSONObject(req);
+            String email = jsonNode.getString("email");
+            User user = userRepository.findOneByEmail(email);
+            if (user == null) {
+                return 1;
+            } else {
+                String rndPass = generateRandomPassword();
+                user.setPassword(rndPass);
+                ChangePassword(user);
+                DataMailDTO dataMail = new DataMailDTO();
+
+                dataMail.setTo(user.getEmail());
+
+                dataMail.setSubject(Const.SEND_MAIL_SUBJECT.SUBJECT_CHANGEPASS);
+
+                Map<String, Object> props = new HashMap<>();
+                props.put("name", user.getFirstName() + user.getLastName());
+                props.put("newPassword", rndPass);
+
+                dataMail.setProps(props);
+
+                mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CHANGEPASSWORD);
+            }
+            return 0;
+        } catch (Exception e) {
+            return 2;
+        }
     }
 
     public User authenticate(String email, String password) {
@@ -65,8 +131,7 @@ public class AuthenticationService {
                 .orElseThrow();
     }
 
-    public User ChangePassword(User user)
-    {
+    public User ChangePassword(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
