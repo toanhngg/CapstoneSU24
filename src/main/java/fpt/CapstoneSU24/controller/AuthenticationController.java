@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -48,9 +49,9 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            return ResponseEntity.status(200).body(authenticationService.signup(registerRequest) == 0 ? "create successfully" : "your email already exists");
+            return ResponseEntity.status(HttpStatus.OK).body(authenticationService.signup(registerRequest) == 0 ? "create successfully" : "your email already exists");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("error create new account");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
         }
     }
 
@@ -61,7 +62,7 @@ public class AuthenticationController {
         response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(jwtToken).toString());
         System.out.println("jwt: " + jwtToken);
         log.info("User {} is attempting to log in.", loginRequest.getEmail());
-        return ResponseEntity.status(200).body("login successfully");
+        return ResponseEntity.status(HttpStatus.OK).body("login successfully");
     }
 
     @PostMapping("/logout")
@@ -69,27 +70,27 @@ public class AuthenticationController {
         int status = authenticationService.logout();
         if (status == 0) {
             response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(null).toString());
-            return ResponseEntity.status(200).body("logout successfully");
+            return ResponseEntity.status(HttpStatus.OK).body("logout successfully");
         }
-        return ResponseEntity.status(500).body(status == 1 ? "current don't have any account to logout" : "user don't have authToken");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "current don't have any account to logout" : "user don't have authToken");
     }
 
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
         int status = authenticationService.changePassword(changePasswordDto);
         if (status == 0) {
-            return ResponseEntity.status(200).body("change password successfully");
+            return ResponseEntity.status(HttpStatus.OK).body("change password successfully");
         }
-        return ResponseEntity.status(500).body(status == 1 ? "new password and confirm password do not match" : "an error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "new password and confirm password do not match" : "an error occurred");
     }
 
     @PostMapping("/forgotPassword")
     public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgotPasswordRequest req) {
         int status = authenticationService.forgotPassword(req);
         if (status == 0) {
-            return ResponseEntity.status(200).body("successfully");
+            return ResponseEntity.status(HttpStatus.OK).body("successfully");
         } else {
-            return ResponseEntity.status(500).body(status == 1 ? "email incorrect" : "error forgot password");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "email incorrect" : "error forgot password");
         }
     }
 }
