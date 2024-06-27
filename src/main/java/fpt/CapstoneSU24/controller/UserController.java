@@ -101,26 +101,28 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
 
-        if ( userProfileDTO.getRole().getRoleId() != 1) {
+        if (userProfileDTO.getRole().getRoleId() != 1) {
             return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
 
-        //Convert Date
+        // Convert Date
         Long timestampFrom = userRequestDTO.getDateFrom() != null ?
                 userRequestDTO.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
         Long timestampTo = userRequestDTO.getDateTo() != null ?
                 userRequestDTO.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
 
-
-        //Chia Page
+        // Paginate
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
         Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
 
-        //mapping DTO
+
+        // Map to DTO with record number
         Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
             B03_GetDataGridDTO B03_GetDataGridDTO = new B03_GetDataGridDTO();
+            int recordNumber = userPage.getNumber() * userPage.getSize() + userPage.getContent().indexOf(user) + 1;
+            B03_GetDataGridDTO.setRecordNumber(recordNumber);
             B03_GetDataGridDTO.setUserId(user.getUserId());
             B03_GetDataGridDTO.setEmail(user.getEmail());
             B03_GetDataGridDTO.setRoleId(user.getRole().getRoleId());
@@ -133,10 +135,6 @@ public class UserController {
             B03_GetDataGridDTO.setUsername(user.getUsername());
             B03_GetDataGridDTO.setAddress(user.getLocation().getAddress());
             B03_GetDataGridDTO.setCountry(user.getLocation().getCountry());
-            B03_GetDataGridDTO.setDistrict(user.getLocation().getDistrict());
-            B03_GetDataGridDTO.setWard(user.getLocation().getWard());
-            B03_GetDataGridDTO.setCity(user.getLocation().getCity());
-
             return B03_GetDataGridDTO;
         });
 
@@ -145,10 +143,7 @@ public class UserController {
 
 
     @PutMapping("/lockUser")
-    public ResponseEntity<String> updateStatus(@RequestBody String req) {
-        JSONObject jsonObject = new JSONObject();
-        int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
-        int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
+    public ResponseEntity<String> updateStatus(@RequestParam int userId, @RequestParam int status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
         if ( userProfileDTO.getRole().getRoleId() != 1) {
@@ -214,7 +209,6 @@ public class UserController {
             return false;
         }
     }
-
 
 
     //Update Table
@@ -336,55 +330,55 @@ public class UserController {
 
     }
 
-//    @PostMapping("/updateCertification")
-//    public ResponseEntity<String> updateCertification(String otp) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User currentUser = (User) authentication.getPrincipal();
-//        if (currentUser.getStatus() != 0)
-//        {
-//            return ResponseEntity.ok("The commitment contract already singed");
-//        }else{
-//            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
-//            String finalHtml;
-//
-//            DataMailDTO dataMail = new DataMailDTO();
-//            LocalDate currentDate = LocalDate.now();
-//
-//            Map<String, Object> props = new HashMap<>();
-//            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
-//            props.put("companyAddress", userProfileDTO.getAddress());
-//            props.put("phoneNumber", userProfileDTO.getPhone());
-//            props.put("email", userProfileDTO.getEmail());
-//            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
-//            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
-//            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
-//            props.put("signed", true);
-//            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
-//            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-//
-//            dataMail.setProps(props);
-//
-//            Context context = new Context();
-//            context.setVariables(dataMail.getProps());
-//
-//            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
-//
-//            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
-//            if (pdfBytes != null) {
-//                Certificate certificate = new Certificate();
-//                certificate.setCertificateName("Test");
-//                certificate.setIssuingAuthority("test");
-//                certificate.setImages(pdfBytes);
-//                certificate.setIssuanceDate(System.currentTimeMillis());
-//                certificate.setManufacturer(currentUser);
-//                certificateRepository.save(certificate);
-//                currentUser.setStatus(1);
-//                userRepository.save(currentUser);
-//            }
-//            return ResponseEntity.ok("Singed");
-//        }
-//
-//    }
+    @PostMapping("/updateCertification")
+    public ResponseEntity<String> updateCertification(String otp) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getStatus() != 0)
+        {
+            return ResponseEntity.ok("The commitment contract already singed");
+        }else{
+            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
+            String finalHtml;
+
+            DataMailDTO dataMail = new DataMailDTO();
+            LocalDate currentDate = LocalDate.now();
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("companyAddress", userProfileDTO.getAddress());
+            props.put("phoneNumber", userProfileDTO.getPhone());
+            props.put("email", userProfileDTO.getEmail());
+            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+            props.put("signed", true);
+            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+            dataMail.setProps(props);
+
+            Context context = new Context();
+            context.setVariables(dataMail.getProps());
+
+            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
+
+            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
+            if (pdfBytes != null) {
+                Certificate certificate = new Certificate();
+                certificate.setCertificateName("Test");
+                certificate.setIssuingAuthority("test");
+                certificate.setImage(pdfBytes);
+                certificate.setIssuanceDate(System.currentTimeMillis());
+                certificate.setManufacturer(currentUser);
+                certificateRepository.save(certificate);
+                currentUser.setStatus(1);
+                userRepository.save(currentUser);
+            }
+            return ResponseEntity.ok("Singed");
+        }
+
+    }
 
     @PutMapping("/updateAvatar")
     public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {
