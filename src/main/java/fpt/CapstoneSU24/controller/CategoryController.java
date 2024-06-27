@@ -44,7 +44,7 @@ public class CategoryController {
     public ResponseEntity addCategory(@Valid @RequestBody CreateCategoryRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if(currentUser.getRole().getRoleId() == 2){
+        if(currentUser.getRole().getRoleId() == 1){
            Category category = new Category(0,req.getName(), req.getDescription());
            categoryRepository.save(category);
            return ResponseEntity.status(200).body("successfully");
@@ -56,8 +56,9 @@ public class CategoryController {
     public ResponseEntity editCategory(@Valid @RequestBody EditCategoryRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if(currentUser.getRole().getRoleId() == 2){
+        if(currentUser.getRole().getRoleId() == 1){
             Category category = categoryRepository.findOneByCategoryId(req.getCategoryId());
+            if(category == null) return ResponseEntity.status(500).body("Can't find category by id");
             category.setName(req.getName());
             category.setDescription(req.getDescription());
             category.setName(req.getName());
@@ -74,12 +75,11 @@ public class CategoryController {
         if (currentUser.getRole().getRoleId() == 1) {
         try {
             Category category = categoryRepository.findOneByCategoryId(req.getId());
-
-                    categoryRepository.deleteById(req.getId());
-                return ResponseEntity.status(200).body("Successfully");
-
+            if(category == null) return ResponseEntity.status(500).body("Can't find category by id");
+            categoryRepository.deleteById(req.getId());
+            return ResponseEntity.status(200).body("Successfully");
         }catch (Exception e){
-            return ResponseEntity.status(500).body("Can't find category by userId");
+            return ResponseEntity.status(500).body("error delete category");
         }
         }else{
             return ResponseEntity.status(500).body("Your account not permitted to handle this action");

@@ -49,6 +49,7 @@ public class ProductController {
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 2){
             try {
+                if(categoryRepository.findOneByCategoryId(req.getCategoryId()) ==null) return ResponseEntity.status(500).body("can not find id category");
                 Product product = new Product();
                 product.setProductName(req.getProductName());
                 product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
