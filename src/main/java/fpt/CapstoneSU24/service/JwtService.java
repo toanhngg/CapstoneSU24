@@ -8,6 +8,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -17,12 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
 @Service
 public class JwtService {
     @Value("${security.jwt.secret-key}")
@@ -30,9 +29,13 @@ public class JwtService {
 
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
-    @Autowired
-    private AuthTokenRepository authTokenRepository;
 
+    private final AuthTokenRepository authTokenRepository;
+
+    @Autowired
+    public JwtService(AuthTokenRepository authTokenRepository) {
+        this.authTokenRepository = authTokenRepository;
+    }
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }

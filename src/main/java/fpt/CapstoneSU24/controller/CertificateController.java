@@ -64,18 +64,6 @@ public class CertificateController {
             return ResponseEntity.status(500).body("error when get all manu to verify");
         }
     }
-//    private CertificateListDTO mapper_CertificateDTO(Certificate certificate){
-//        CertificateListDTO certificateListDTO = new CertificateListDTO();
-//        certificateListDTO.setCertificateName(certificate.getCertificateName());
-//        certificateListDTO.setCertificateImage("temp");
-//        String issuanceDate = epochDate.dateTimeToString(epochDate.epochToDate(certificate.getIssuanceDate()), "dd-MM-yyyy");
-//        certificateListDTO.setIssuanceDate(issuanceDate);
-//        certificateListDTO.setIssuing_authority(certificate.getIssuingAuthority());
-//        certificateListDTO.setManufacturerName(certificate.getManufacturer().getFirstName() + certificate.getManufacturer().getLastName());
-//        certificateListDTO.setCertificateId(String.valueOf(certificate.getCertificateId()));
-//        certificateListDTO.setManufacturerId(String.valueOf(certificate.getManufacturer().getUserId()));
-//        return certificateListDTO;
-//    }
 
     @PostMapping("/createCertificate")
     public ResponseEntity<?> createCertificate(@Valid @RequestBody CreateCertificateRequest req) throws IOException {
