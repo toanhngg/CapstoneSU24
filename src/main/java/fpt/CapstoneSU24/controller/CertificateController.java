@@ -30,8 +30,12 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/certificate")
 public class CertificateController {
+    private final CertificateService certificateService;
     @Autowired
-    CertificateService certificateService;
+public CertificateController( CertificateService certificateService){
+        this.certificateService = certificateService;
+    }
+
     @PostMapping("/getListCertificateByManuId")
     public ResponseEntity<?> getListCertificateByManuId(@Valid @RequestBody IdRequest req)
     {

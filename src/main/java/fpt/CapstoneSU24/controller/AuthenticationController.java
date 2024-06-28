@@ -25,12 +25,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class AuthenticationController {
 
+    private final AuthenticationService authenticationService;
+
     @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private AuthenticationService authenticationService;
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    public AuthenticationController(AuthenticationService authenticationService){
+        this.authenticationService =authenticationService;
+    }
 
     @PostMapping("/signup")
     public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
