@@ -29,16 +29,10 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/certificate")
 public class CertificateController {
-
     @Autowired
     CertificateRepository certificateRepository;
     @Autowired
     UserRepository userRepository;
-    @Autowired
-    EpochDate epochDate;
-
-    @Autowired
-    UserService userService;
     @Autowired
     CloudinaryService cloudinaryService;
 

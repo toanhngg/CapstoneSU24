@@ -19,16 +19,11 @@ public class EditProductRequest {
     @NotNull(message = "The weight is required")
     @Min(value = 0, message = "Value must be positive")
     private float weight;
-//    @NotBlank(message = "The unitPrice is required")
-//    private String unitPrice;
     @NotBlank(message = "The description is required")
     private String description;
     @Min(value = 0, message = "Value must be positive")
     @NotNull(message = "The warranty is required")
     private int warranty;
-//    @NotNull(message = "The certificateId is required")
-//    @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
-//    private int certificateId;
     @NotNull(message = "The images is required")
     private List<String> images;
     @NotNull(message = "The avatar is required")
