@@ -257,25 +257,25 @@
 			<artifactId>spring-test</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate.orm</groupId>
-			<artifactId>hibernate-core</artifactId>
-			<version>6.4.4.Final</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
-		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.6.0.Beta2</version>
+			<version>1.5.2.Final</version>
 		</dependency>
 		<dependency>
-			<groupId>org.firebirdsql.jdbc</groupId>
-			<artifactId>jaybird</artifactId>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+			<version>1.5.2.Final</version>
+			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.firebirdsql.jdbc</groupId>
-			<artifactId>jaybird</artifactId>
-			<version>4.0.8.java11</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.firebirdsql.jdbc</groupId>-->
+<!--			<artifactId>jaybird</artifactId>-->
+<!--		</dependency>-->
+	<!--		<dependency>-->
+	<!--			<groupId>org.firebirdsql.jdbc</groupId>-->
+	<!--			<artifactId>jaybird</artifactId>-->
+	<!--			<version>4.0.8.java11</version>-->
+	<!--		</dependency>-->
 	</dependencies>
 
 	<build>
