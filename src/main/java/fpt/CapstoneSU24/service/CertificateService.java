@@ -5,7 +5,7 @@ import fpt.CapstoneSU24.dto.ListCertificateDTOResponse;
 import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.Certificate;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.util.CloudinaryService;

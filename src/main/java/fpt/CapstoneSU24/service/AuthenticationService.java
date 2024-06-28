@@ -2,16 +2,15 @@ package fpt.CapstoneSU24.service;
 
 
 import fpt.CapstoneSU24.controller.AuthenticationController;
-import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.payload.ForgotPasswordRequest;
-import fpt.CapstoneSU24.payload.LoginRequest;
-import fpt.CapstoneSU24.payload.RegisterRequest;
+import fpt.CapstoneSU24.dto.payload.ForgotPasswordRequest;
+import fpt.CapstoneSU24.dto.payload.LoginRequest;
+import fpt.CapstoneSU24.dto.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.LocationRepository;
 import fpt.CapstoneSU24.repository.RoleRepository;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class AuthenticationService {

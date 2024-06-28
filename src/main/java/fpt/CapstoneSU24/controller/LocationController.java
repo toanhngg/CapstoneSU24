@@ -1,10 +1,8 @@
 package fpt.CapstoneSU24.controller;
 
 
-import fpt.CapstoneSU24.payload.VerifyAddressRequest;
-import fpt.CapstoneSU24.payload.VerifyDDAddressRequest;
-import fpt.CapstoneSU24.service.AuthenticationService;
-import fpt.CapstoneSU24.service.JwtService;
+import fpt.CapstoneSU24.dto.payload.VerifyAddressRequest;
+import fpt.CapstoneSU24.dto.payload.VerifyDDAddressRequest;
 import fpt.CapstoneSU24.service.OpenCageDataService;
 import jakarta.validation.Valid;
 import org.json.JSONArray;

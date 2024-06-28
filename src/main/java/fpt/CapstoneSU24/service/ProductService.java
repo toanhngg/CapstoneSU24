@@ -1,17 +1,15 @@
 package fpt.CapstoneSU24.service;
 
 
-import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.payload.AddProductRequest;
-import fpt.CapstoneSU24.payload.EditProductRequest;
-import fpt.CapstoneSU24.payload.FilterSearchRequest;
-import fpt.CapstoneSU24.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.AddProductRequest;
+import fpt.CapstoneSU24.dto.payload.EditProductRequest;
+import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
+import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.CloudinaryService;
-import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,8 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
