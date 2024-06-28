@@ -116,7 +116,7 @@ public class UserService {
         return userProfileDTO;
     }
 //    =========================
-public ResponseEntity getAllUser() {
+public ResponseEntity getAllUsers() {
     List<User> userList = userRepository.findAll();
     return ResponseEntity.ok(userList);
 }
@@ -166,12 +166,65 @@ public ResponseEntity getAllUser() {
 
         return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
+    public ResponseEntity<Role> getRoleByUserId(int userId) {
+        User user = userRepository.findOneByUserId(userId);
+        if (user != null) {
+            Role role = user.getRole();
+            return ResponseEntity.ok(role);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+//    public ResponseEntity<String> updateCertification(String otp) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User currentUser = (User) authentication.getPrincipal();
+//        if (currentUser.getStatus() != 0)
+//        {
+//            return ResponseEntity.ok("The commitment contract already singed");
+//        }else{
+//            UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
+//            String finalHtml;
+//
+//            DataMailDTO dataMail = new DataMailDTO();
+//            LocalDate currentDate = LocalDate.now();
+//
+//            Map<String, Object> props = new HashMap<>();
+//            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+//            props.put("companyAddress", userProfileDTO.getAddress());
+//            props.put("phoneNumber", userProfileDTO.getPhone());
+//            props.put("email", userProfileDTO.getEmail());
+//            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+//            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+//            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+//            props.put("signed", true);
+//            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
+//            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+//
+//            dataMail.setProps(props);
+//
+//            Context context = new Context();
+//            context.setVariables(dataMail.getProps());
+//
+//            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
+//
+//            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
+//            if (pdfBytes != null) {
+//                Certificate certificate = new Certificate();
+//                certificate.setCertificateName("Test");
+//                certificate.setIssuingAuthority("test");
+//                certificate.setImages(pdfBytes);
+//                certificate.setIssuanceDate(System.currentTimeMillis());
+//                certificate.setManufacturer(currentUser);
+//                certificateRepository.save(certificate);
+//                currentUser.setStatus(1);
+//                userRepository.save(currentUser);
+//            }
+//            return ResponseEntity.ok("Singed");
+//        }
+//    }
 
 
-    public ResponseEntity<String> updateStatus(String req) {
-        JSONObject jsonObject = new JSONObject();
-        int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
-        int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
+    public ResponseEntity<String> updateStatus(int userId, int status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
         if ( userProfileDTO.getRole().getRoleId() != 1) {
@@ -353,57 +406,6 @@ public ResponseEntity getAllUser() {
         }
 
     }
-
-//    @PostMapping("/updateCertification")
-//    public ResponseEntity<String> updateCertification(String otp) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User currentUser = (User) authentication.getPrincipal();
-//        if (currentUser.getStatus() != 0)
-//        {
-//            return ResponseEntity.ok("The commitment contract already singed");
-//        }else{
-//            UserProfileDTO userProfileDTO = userService.getUserProfile(authentication, -1);
-//            String finalHtml;
-//
-//            DataMailDTO dataMail = new DataMailDTO();
-//            LocalDate currentDate = LocalDate.now();
-//
-//            Map<String, Object> props = new HashMap<>();
-//            props.put("companyName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
-//            props.put("companyAddress", userProfileDTO.getAddress());
-//            props.put("phoneNumber", userProfileDTO.getPhone());
-//            props.put("email", userProfileDTO.getEmail());
-//            props.put("day", currentDate.format(DateTimeFormatter.ofPattern("dd")));
-//            props.put("month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
-//            props.put("year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
-//            props.put("signed", true);
-//            props.put("signerName", userProfileDTO.getFirstName() + " " + userProfileDTO.getLastName());
-//            props.put("signDate", currentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-//
-//            dataMail.setProps(props);
-//
-//            Context context = new Context();
-//            context.setVariables(dataMail.getProps());
-//
-//            finalHtml = springTemplateEngine.process(Const.TEMPLATE_FILE_NAME_eSgin.ESGIN, context);
-//
-//            byte[] pdfBytes = documentGenerator.onlineHtmlToPdf(finalHtml);
-//            if (pdfBytes != null) {
-//                Certificate certificate = new Certificate();
-//                certificate.setCertificateName("Test");
-//                certificate.setIssuingAuthority("test");
-//                certificate.setImages(pdfBytes);
-//                certificate.setIssuanceDate(System.currentTimeMillis());
-//                certificate.setManufacturer(currentUser);
-//                certificateRepository.save(certificate);
-//                currentUser.setStatus(1);
-//                userRepository.save(currentUser);
-//            }
-//            return ResponseEntity.ok("Singed");
-//        }
-//
-//    }
-
     public ResponseEntity<String> updateAvatar(MultipartFile file) {
         try {
 

@@ -178,16 +178,21 @@ public class ProductService {
     public ResponseEntity deleteProductById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
-            if (itemRepository.findAllByProductId(req.getId()).isEmpty()) {
-                productRepository.deleteOneByProductId(req.getId());
-                return ResponseEntity.status(HttpStatus.OK).body("delete product success");
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product can't delete because product have instants");
-            }
+        Product productDelete = productRepository.findOneByProductId(req.getId());
+        if(productDelete != null){
+            if (productDelete.getManufacturer().getUserId() == currentUser.getUserId()) {
+                if (itemRepository.findAllByProductId(req.getId()).isEmpty()) {
+                    imageProductRepository.deleteByProductId(req.getId());
+                    productRepository.deleteOneByProductId(req.getId());
+                    return ResponseEntity.status(HttpStatus.OK).body("delete product success");
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product can't delete because product have instants");
+                }
 
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");
+            }
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not exist product id="+ req.getId());
     }
 }

@@ -7,9 +7,8 @@ import java.util.List;
 public class AddProductRequest {
     @NotBlank(message = "The productName is required")
     private String productName;
-    @NotNull(message = "The certificateId is required")
+    @NotNull(message = "The categoryId is required")
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
-    @NotBlank(message = "The categoryId is required")
     private int categoryId;
     @NotBlank(message = "The dimensions is required")
     private String dimensions;

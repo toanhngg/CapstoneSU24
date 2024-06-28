@@ -52,7 +52,7 @@ public class JwtService {
             authToken.setJwtHash(token);
             authTokenRepository.save(authToken);
         }
-        return generateToken(new HashMap<>(), userDetails);
+        return token;
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
