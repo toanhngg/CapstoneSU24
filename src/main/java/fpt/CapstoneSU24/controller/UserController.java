@@ -1,58 +1,15 @@
 package fpt.CapstoneSU24.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
-import fpt.CapstoneSU24.dto.B03.B03_MailSend;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
-import fpt.CapstoneSU24.dto.ChangePasswordDto;
-import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.model.*;
-import fpt.CapstoneSU24.repository.AuthTokenRepository;
-import fpt.CapstoneSU24.repository.CertificateRepository;
-import fpt.CapstoneSU24.repository.UserRepository;
-import fpt.CapstoneSU24.service.AuthenticationService;
-import fpt.CapstoneSU24.service.EmailService;
-import fpt.CapstoneSU24.service.JwtService;
 import fpt.CapstoneSU24.service.UserService;
-import fpt.CapstoneSU24.util.CloudinaryService;
-import fpt.CapstoneSU24.util.Const;
-import fpt.CapstoneSU24.util.DataUtils;
-import fpt.CapstoneSU24.util.DocumentGenerator;
-import jakarta.mail.MessagingException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring5.SpringTemplateEngine;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/user")
