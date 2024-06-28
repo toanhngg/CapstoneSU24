@@ -230,14 +230,6 @@
 			<artifactId>html2pdf</artifactId>
 			<version>2.1.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<version>5.5.13.4</version>
-		</dependency>
-
-
 
 		<!-- https://mvnrepository.com/artifact/com.cloudinary/cloudinary-core -->
 		<!-- https://mvnrepository.com/artifact/com.cloudinary/cloudinary-http44 -->
@@ -257,31 +249,17 @@
 			<artifactId>spring-test</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate.orm</groupId>
-			<artifactId>hibernate-core</artifactId>
-			<version>6.4.4.Final</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
-		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.6.0.Beta2</version>
+			<version>1.5.2.Final</version>
 		</dependency>
 		<dependency>
-			<groupId>org.firebirdsql.jdbc</groupId>
-			<artifactId>jaybird</artifactId>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+			<version>1.5.2.Final</version>
+			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.firebirdsql.jdbc</groupId>
-			<artifactId>jaybird</artifactId>
-			<version>4.0.8.java11</version>
-		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.antlr</groupId>-->
-<!--			<artifactId>antlr4-runtime</artifactId>-->
-<!--			<version>4.10.1</version>-->
-<!--			<scope>runtime</scope>-->
-<!--		</dependency>-->
+
 	</dependencies>
 
 	<build>
@@ -298,18 +276,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-<!--			<plugin>-->
-<!--				<groupId>org.antlr</groupId>-->
-<!--				<artifactId>antlr4-maven-plugin</artifactId>-->
-<!--				<version>4.10.1</version> &lt;!&ndash; Sử dụng cùng phiên bản ANTLR &ndash;&gt;-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<goals>-->
-<!--							<goal>antlr4</goal>-->
-<!--						</goals>-->
-<!--					</execution>-->
-<!--				</executions>-->
-<!--			</plugin>-->
 		</plugins>
 
 

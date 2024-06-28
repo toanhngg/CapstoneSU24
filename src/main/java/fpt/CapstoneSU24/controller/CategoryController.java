@@ -24,35 +24,22 @@ public class CategoryController {
     }
 
     @GetMapping("/findAll")
-    public ResponseEntity<?> findAll() {
-        return ResponseEntity.ok(categoryService.fillAllCategory());
+    public ResponseEntity findAll() {
+        return categoryService.findAll();
     }
 
     @PostMapping("/addCategory")
-    public ResponseEntity<?> addCategory(@Valid @RequestBody CreateCategoryRequest req) {
-        int status = categoryService.addCategory(req);
-        if (status == 0) {
-            return ResponseEntity.status(HttpStatus.OK).body("create successfully");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Your account not permitted to handle this action");
-
+    public ResponseEntity addCategory(@Valid @RequestBody CreateCategoryRequest req) {
+        return categoryService.addCategory(req);
     }
 
     @PostMapping("/editCategory")
-    public ResponseEntity<?> editCategory(@Valid @RequestBody EditCategoryRequest req) {
-        int status = categoryService.editCategory(req);
-        if (status == 0) {
-            return ResponseEntity.status(HttpStatus.OK).body("edit successfully");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "Can't find category by id" : "Your account not permitted to handle this action");
+    public ResponseEntity editCategory(@Valid @RequestBody EditCategoryRequest req) {
+        return categoryService.editCategory(req);
     }
 
     @PostMapping("/deleteById")
-    public ResponseEntity<?> deleteById(@Valid @RequestBody IdRequest req) {
-        int status = categoryService.deleteCategory(req);
-        if (status == 0) {
-            return ResponseEntity.status(HttpStatus.OK).body("delete successfully");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "can't find category by id" : status == 2 ? "error delete category" : "Your account not permitted to handle this action");
+    public ResponseEntity deleteById(@Valid @RequestBody IdRequest req) {
+        return categoryService.deleteById(req);
     }
 }

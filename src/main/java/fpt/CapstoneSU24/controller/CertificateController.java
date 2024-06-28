@@ -26,9 +26,13 @@ public class CertificateController {
     @PutMapping("/createCertificate")
     public ResponseEntity<?> createCertificate(@RequestBody CreateCertificateRequest req)
     {
-        return certificateService.createCertificate(req);
+        return certificateService.getListManuToVerify();
     }
 
+    @PostMapping("/createCertificate")
+    public ResponseEntity<?> createCertificate(@Valid @RequestBody CreateCertificateRequest req) throws IOException {
+        return certificateService.createCertificate(req);
+    }
 }
 
 

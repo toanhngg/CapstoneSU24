@@ -50,6 +50,7 @@ public class UserController {
     }
 
 
+
     //Update Table
     @PutMapping("/updateUserDescriptions")
     public ResponseEntity<String> updateUserDescriptions(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
@@ -79,10 +80,10 @@ public class UserController {
         return userService.generateDoc();
     }
 
-    @PostMapping("/updateCertification")
-    public ResponseEntity<String> updateCertification(String otp) {
-        return userService.updateCertification(otp);
-    }
+//    @PostMapping("/updateCertification")
+//    public ResponseEntity<String> updateCertification(String otp) {
+//        return userService.updateCertification(otp);
+//    }
 
     @PutMapping("/updateAvatar")
     public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {

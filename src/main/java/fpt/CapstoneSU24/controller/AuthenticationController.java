@@ -1,6 +1,8 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
+import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.model.AuthToken;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.payload.ForgotPasswordRequest;
 import fpt.CapstoneSU24.payload.RegisterRequest;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RestController
 public class AuthenticationController {
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
     @Autowired
     private JwtService jwtService;
@@ -32,50 +33,27 @@ public class AuthenticationController {
     private JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(authenticationService.signup(registerRequest) == 0 ? "create successfully" : "your email already exists");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
-        }
+    public ResponseEntity signup(@Valid @RequestBody RegisterRequest registerRequest) {
+   return authenticationService.signup(registerRequest);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        User authenticatedUser = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);
-        response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(jwtToken).toString());
-        System.out.println("jwt: " + jwtToken);
-        log.info("User {} is attempting to log in.", loginRequest.getEmail());
-        return ResponseEntity.status(HttpStatus.OK).body("login successfully");
+    public ResponseEntity login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        return authenticationService.login(loginRequest, response);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        int status = authenticationService.logout();
-        if (status == 0) {
-            response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(null).toString());
-            return ResponseEntity.status(HttpStatus.OK).body("logout successfully");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "current don't have any account to logout" : "user don't have authToken");
+    public ResponseEntity logout(HttpServletResponse response) {
+        return authenticationService.logout(response);
     }
 
     @PostMapping("/changePassword")
     public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto) {
-        int status = authenticationService.changePassword(changePasswordDto);
-        if (status == 0) {
-            return ResponseEntity.status(HttpStatus.OK).body("change password successfully");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "new password and confirm password do not match" : "an error occurred");
+     return authenticationService.changePassword(changePasswordDto);
     }
 
     @PostMapping("/forgotPassword")
     public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgotPasswordRequest req) {
-        int status = authenticationService.forgotPassword(req);
-        if (status == 0) {
-            return ResponseEntity.status(HttpStatus.OK).body("successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status == 1 ? "email incorrect" : "error forgot password");
-        }
+        return authenticationService.forgetPassword(req);
     }
 }
