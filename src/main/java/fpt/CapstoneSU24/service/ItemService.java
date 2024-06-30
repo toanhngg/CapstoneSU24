@@ -177,8 +177,8 @@ public class ItemService {
     }
 
     private void validateAndSetCoordinates(Location location, ItemLogDTO itemLogDTO) throws ItemController.InvalidCoordinateException, ItemController.CoordinateOutOfRangeException {
-        double corX = parseCoordinate(itemLogDTO.getCoordinateX());
-        double corY = parseCoordinate(itemLogDTO.getCoordinateY());
+        double corX = itemLogDTO.getCoordinateX();
+        double corY = itemLogDTO.getCoordinateY();
 
         // Check if corX and corY are within their valid ranges
         if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
