@@ -69,10 +69,10 @@ public class AuthenticationService {
     public ResponseEntity signup(RegisterRequest input) {
         try {
             if (userRepository.findOneByEmail(input.getEmail()) == null) {
-                if (roleRepository.findOneByRoleId(2) == null) {
-                    roleRepository.save(new Role(0, "admin"));
-                    roleRepository.save(new Role(0, "manufacture"));
-                }
+//                if (roleRepository.findOneByRoleId(2) == null) {
+//                    roleRepository.save(new Role(0, "admin"));
+//                    roleRepository.save(new Role(0, "manufacture"));
+//                }
                 User user = new User();
                 user.setEmail(input.getEmail());
                 user.setFirstName(input.getFirstName());
