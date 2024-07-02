@@ -164,12 +164,12 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity findProductById(IdRequest req) {
+    public ResponseEntity findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
             Product product = productRepository.findOneByProductId(req.getId());
-            return ResponseEntity.status(HttpStatus.OK).body(product);
+            return ResponseEntity.status(HttpStatus.OK).body(productMapper.productToProductDetailDTOResponse(product));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");
         }

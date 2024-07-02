@@ -46,9 +46,9 @@ public class ProductController {
         return productService.findImgByProductId(req);
 
     }
-    @PostMapping("/findProductById")
-    public ResponseEntity<?> findProductById(@Valid @RequestBody IdRequest req) {
-        return productService.findProductById(req);
+    @PostMapping("/findProductDetailById")
+    public ResponseEntity<?> findProductDetailById(@Valid @RequestBody IdRequest req) {
+        return productService.findProductDetailById(req);
 
     }
     @PostMapping("/deleteProductById")

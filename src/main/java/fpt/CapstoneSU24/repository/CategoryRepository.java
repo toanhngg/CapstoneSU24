@@ -13,6 +13,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Override
     List<Category> findAll();
     Category findOneByCategoryId(int id);
+    Category findOneByName(String name);
     void deleteOneByCategoryId(int categoryId);
     Page<Category> findAllByNameContaining(String currentOwner, Pageable pageable);
 }

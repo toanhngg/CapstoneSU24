@@ -33,9 +33,12 @@ public class CategoryService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 1){
-            Category category = new Category(0,req.getName(), req.getDescription());
-            categoryRepository.save(category);
-            return ResponseEntity.status(HttpStatus.OK).body("successfully");
+            if(categoryRepository.findOneByName(req.getName()) == null) {
+                Category category = new Category(0, req.getName(), req.getDescription());
+                categoryRepository.save(category);
+                return ResponseEntity.status(HttpStatus.OK).body("successfully");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("your category name already exists");
         }else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Your account not permitted to handle this action");
         }
