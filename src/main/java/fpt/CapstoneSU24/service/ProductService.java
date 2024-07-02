@@ -113,8 +113,7 @@ public class ProductService {
                 }
                 //save ava
                 if (!req.getAvatar().isEmpty()) {
-                    imageProductRepository.deleteImageProductWithFilePathStartingWithAvatar(product.getProductId());
-                    String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
+                    String filePathAvatar = cloudinaryService.updateImage("avatar/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getAvatar()));
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
                 }
 

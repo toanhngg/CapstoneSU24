@@ -30,4 +30,5 @@ public interface ImageProductRepository extends JpaRepository<ImageProduct, Inte
     @Transactional
     @Query("DELETE FROM ImageProduct i WHERE i.product.productId = :productId")
     void deleteByProductId(@Param("productId") int productId);
+
 }

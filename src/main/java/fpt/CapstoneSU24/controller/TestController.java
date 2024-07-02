@@ -13,7 +13,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
-    private  CloudinaryService cloudinaryService;
+    private CloudinaryService cloudinaryService;
 
     @Autowired
     public TestController(CloudinaryService cloudinaryService) {
