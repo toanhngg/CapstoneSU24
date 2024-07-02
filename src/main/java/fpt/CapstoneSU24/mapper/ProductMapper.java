@@ -63,9 +63,7 @@ public abstract class ProductMapper {
     @AfterMapping
     protected void setListImages(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
         List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(product.getProductId()).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());
-        if (imageProducts != null) {
-            productDTO.setListImages(imageProducts);
-        }
+        productDTO.setListImages(imageProducts);
     }
     @AfterMapping
     protected void setListItemsView(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {

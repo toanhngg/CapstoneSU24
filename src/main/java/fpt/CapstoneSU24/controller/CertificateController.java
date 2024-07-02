@@ -13,12 +13,16 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/certificate")
 public class CertificateController {
+    private final CertificateService certificateService;
     @Autowired
-    CertificateService certificateService;
+public CertificateController( CertificateService certificateService){
+        this.certificateService = certificateService;
+    }
+
     @PostMapping("/getListCertificateByManuId")
     public ResponseEntity<?> getListCertificateByManuId(@Valid @RequestBody IdRequest req)
     {
-     return certificateService.getListCertificateByManuId(req);
+        return certificateService.getListCertificateByManuId(req);
     }
 
     @GetMapping("/getListManuToVerify")
@@ -32,8 +36,3 @@ public class CertificateController {
         return certificateService.createCertificate(req);
     }
 }
-
-
-
-
-

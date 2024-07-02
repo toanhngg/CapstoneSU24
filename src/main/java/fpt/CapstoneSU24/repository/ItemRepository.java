@@ -49,8 +49,13 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Item i SET i.status = :status WHERE i.itemId = :itemId")
-    void updateItemStatus(@Param("itemId") Long itemId, @Param("status") Integer status);
+    @Query("UPDATE Item i SET i.status = :status WHERE i.productRecognition = :productRecognition")
+    void updateItemStatus(@Param("productRecognition") String productRecognition, @Param("status") int status);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Item i SET i.status = :status , i.currentOwner = :currentOwner WHERE i.itemId = :itemId")
+    void updateItemStatusAndCurrentOwnwe(@Param("itemId") Long itemId, @Param("status") int status,@Param("currentOwner") String currentOwner);
 
 
     @Query("SELECT i FROM Item i WHERE i.currentOwner = :currentOwner")

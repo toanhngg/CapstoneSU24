@@ -5,7 +5,6 @@ import fpt.CapstoneSU24.dto.payload.EditCategoryRequest;
 import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.service.CategoryService;
-import fpt.CapstoneSU24.service.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +14,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/category")
 
 public class CategoryController {
+
+    private final CategoryService categoryService;
+
     @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private CategoryService categoryService;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @GetMapping("/findAll")
     public ResponseEntity findAll() {

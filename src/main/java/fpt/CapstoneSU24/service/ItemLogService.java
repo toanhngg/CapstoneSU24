@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.dto.EventItemLogDTO;
 import fpt.CapstoneSU24.dto.ItemLogDetailResponse;
 import fpt.CapstoneSU24.dto.Point;
+import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 public class ItemLogService {
@@ -22,13 +24,16 @@ public class ItemLogService {
     private final TransportRepository transportRepository;
     private final AuthorizedRepository authorizedRepository;
     private final PointService pointService;
+    private final ItemService itemService;
+    private final LogService logService;
 
     @Autowired
     public ItemLogService(LocationRepository locationRepository,
                              ItemRepository itemRepository, PartyRepository partyRepository,
                              ItemLogRepository itemLogRepository,
                              EventTypeRepository eventTypeRepository, TransportRepository transportRepository,
-                             AuthorizedRepository authorizedRepository, PointService pointService) {
+                             AuthorizedRepository authorizedRepository, PointService pointService,
+                             ItemService itemService,LogService logService) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -37,6 +42,8 @@ public class ItemLogService {
         this.transportRepository = transportRepository;
         this.authorizedRepository = authorizedRepository;
         this.pointService = pointService;
+        this.itemService = itemService;
+        this.logService = logService;
     }
 
     public ResponseEntity<?> addItemLog(EventItemLogDTO itemLogDTO) {
@@ -47,6 +54,10 @@ public class ItemLogService {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
 
+            if (!itemService.checkOwner(itemLogDTO.getEmailParty(), item.getProductRecognition())) {
+                return new ResponseEntity<>("Unauthorized action.", HttpStatus.UNAUTHORIZED);
+            }
+
             // Get item logs by item ID
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
@@ -54,9 +65,6 @@ public class ItemLogService {
             }
 
             ItemLog itemLogToCheck = list.get(0);
-            if (itemLogToCheck.getStatus() != 0) {
-                return new ResponseEntity<>("Item log status is not valid.", HttpStatus.BAD_REQUEST);
-            }
 
             // Create and save Location
             Location location = new Location();
@@ -70,14 +78,13 @@ public class ItemLogService {
             // Retrieve authorized entity
             Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorized_id());
 
-            // Create Party if eventId is 2
+            // Create and save Party
             Party party = new Party();
             if (itemLogDTO.getEventId() == 2) {
                 if (itemLogDTO.getTransportId() == 0) {
-                    return new ResponseEntity<>("Please choose a carrier.", HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>("Please choose a carrier.", HttpStatus.BAD_REQUEST);
                 }
                 Transport transport = transportRepository.getReferenceById(itemLogDTO.getTransportId());
-
                 party.setEmail(transport.getTransportEmail());
                 party.setPartyFullName(transport.getTransportName());
                 party.setPhoneNumber(transport.getTransportContact());
@@ -86,7 +93,7 @@ public class ItemLogService {
                 party.setEmail("");
                 party.setPartyFullName("");
                 party.setPhoneNumber("");
-                party.setDescription("");
+                party.setDescription("Khác");
             }
             Party savedParty = partyRepository.save(party);
 
@@ -97,29 +104,35 @@ public class ItemLogService {
             itemLog.setAuthorized(authorized);
             itemLog.setStatus(0);
             itemLog.setTimeStamp(System.currentTimeMillis());
-            itemLog.setItem(itemLogToCheck.getItem());
+            itemLog.setItem(item);
             itemLog.setLocation(savedLocation);
             itemLog.setParty(savedParty);
             itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
+
+            // Additional validation
             if (itemLogDTO.getAddress() != null && !itemLogDTO.getAddress().isEmpty() &&
                     itemLogDTO.getDescriptionItemLog() != null && !itemLogDTO.getDescriptionItemLog().isEmpty() &&
                     itemLogDTO.getCity() != null && !itemLogDTO.getCity().isEmpty() &&
                     itemLogDTO.getCountry() != null && !itemLogDTO.getCountry().isEmpty() &&
                     itemLogToCheck.getItem() != null) {
-                double pointX = pointService.generatedoubleX();
+
+                double pointX = pointService.generateX();
                 List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                 List<Point> pointList = pointService.getPointList(pointLogs);
-                double pointY = pointService.interpolate(pointList, pointX);
+                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
                 Point point = new Point(pointX, pointY);
                 itemLog.setPoint(point.toString());
             }
+
             itemLogRepository.save(itemLog);
             return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
+
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logService.logError(ex);
             return new ResponseEntity<>("An error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     public ResponseEntity<?> getItemLogDetail(int itemLogId) {
         try {

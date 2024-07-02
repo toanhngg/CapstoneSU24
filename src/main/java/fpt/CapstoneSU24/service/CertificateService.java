@@ -24,12 +24,20 @@ import java.util.Arrays;
 import java.util.List;
 @Service
 public class CertificateService {
+    private final CertificateRepository certificateRepository;
+    private final  EpochDate epochDate;
+    private final CloudinaryService cloudinaryService;
+    private final UserRepository userRepository;
+
     @Autowired
-    CertificateRepository certificateRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    CloudinaryService cloudinaryService;
+    public CertificateService(CertificateRepository certificateRepository,
+                              UserRepository userRepository,
+                              CloudinaryService cloudinaryService,EpochDate epochDate){
+        this.certificateRepository = certificateRepository;
+        this.epochDate = epochDate;
+        this.cloudinaryService = cloudinaryService;
+        this.userRepository = userRepository;
+    }
     public ResponseEntity<?> getListCertificateByManuId(@Valid @RequestBody IdRequest req)
     {
         try {
