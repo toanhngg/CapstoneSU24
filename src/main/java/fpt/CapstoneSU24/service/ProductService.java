@@ -118,7 +118,7 @@ public class ProductService {
                 }
 
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("add product successfully");
+                return ResponseEntity.status(HttpStatus.OK).body("edit product successfully");
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error edit product");
             }

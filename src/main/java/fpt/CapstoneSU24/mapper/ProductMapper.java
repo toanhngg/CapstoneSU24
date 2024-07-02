@@ -25,7 +25,7 @@ public abstract class ProductMapper {
     private ItemRepository itemRepository;
     @Autowired
     private ItemMapper itemMapper;
-
+    @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "description", target = "description")
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually

@@ -32,6 +32,10 @@ public class TestController {
             return ResponseEntity.status(500).body("Failed to upload image");
         }
     }
+    @GetMapping("/healthCheck")
+    public ResponseEntity<String> healthCheck() {
+            return ResponseEntity.status(200).body("alive");
+    }
 
     @GetMapping("/down")
     public ResponseEntity<byte[]> getImage(@RequestParam String publicId) {

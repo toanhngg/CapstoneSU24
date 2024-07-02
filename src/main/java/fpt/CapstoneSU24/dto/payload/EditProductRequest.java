@@ -24,9 +24,9 @@ public class EditProductRequest {
     @Min(value = 0, message = "Value must be positive")
     @NotNull(message = "The warranty is required")
     private int warranty;
-    @NotNull(message = "The images is required")
+    @NotBlank(message = "The images is required")
     private List<String> images;
-    @NotNull(message = "The avatar is required")
+    @NotBlank(message = "The avatar is required")
     private String avatar;
     @NotNull(message = "The file3D is required")
     private String file3D;
