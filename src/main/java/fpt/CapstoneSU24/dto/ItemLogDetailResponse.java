@@ -14,8 +14,8 @@ public class ItemLogDetailResponse {
     private String receiver;
     private String PartyPhoneNumber;
     private String addressInParty;
-    private String coordinateX;
-    private String coordinateY;
+    private double coordinateX;
+    private double coordinateY;
     private long timeReceive;
     private String descriptionItemLog;
 

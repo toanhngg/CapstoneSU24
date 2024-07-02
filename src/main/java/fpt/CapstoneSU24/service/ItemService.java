@@ -2,13 +2,12 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.controller.ItemController;
 import fpt.CapstoneSU24.dto.*;
+import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
+import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.model.*;
-import fpt.CapstoneSU24.payload.FilterByTimeStampRequest;
-import fpt.CapstoneSU24.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.repository.*;
-import fpt.CapstoneSU24.util.CloudinaryService;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import org.json.JSONException;
@@ -175,8 +174,8 @@ public class ItemService {
     }
 
     private void validateAndSetCoordinates(Location location, ItemLogDTO itemLogDTO) throws ItemController.InvalidCoordinateException, ItemController.CoordinateOutOfRangeException {
-        double corX = parseCoordinate(itemLogDTO.getCoordinateX());
-        double corY = parseCoordinate(itemLogDTO.getCoordinateY());
+        double corX = itemLogDTO.getCoordinateX();
+        double corY = itemLogDTO.getCoordinateY();
 
         // Check if corX and corY are within their valid ranges
         if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
@@ -512,11 +511,11 @@ public class ItemService {
 
             if (authorized.getLocation().getAddress() != null &&
                     authorized.getLocation().getCountry() != null &&
-                    authorized.getLocation().getCoordinateX() != null &&
+                    authorized.getLocation().getCoordinateX() != 0 &&
                     authorized.getLocation().getWard() != null &&
                     authorized.getLocation().getDistrict() != null &&
                     authorized.getLocation().getCity() != null &&
-                    authorized.getLocation().getCoordinateY() != null &&
+                    authorized.getLocation().getCoordinateY() != 0 &&
                     authorized.getDescription() != null) {
 
                 double pointX = pointService.generateX();
