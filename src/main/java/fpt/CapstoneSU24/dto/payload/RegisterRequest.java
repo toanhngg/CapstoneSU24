@@ -30,7 +30,12 @@ public class RegisterRequest {
     @Pattern(regexp = "\\d{10}", message = "Invalid phone number format")
     @NotBlank(message = "The phone is required")
     private String phone;
+    @NotBlank(message = "The orgName is required")
+    private String orgName;
 
+    public String getOrgName() {
+        return orgName;
+    }
     public String getEmail() {
         return email;
     }

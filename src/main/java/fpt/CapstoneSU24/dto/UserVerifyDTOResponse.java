@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.dto;
 import fpt.CapstoneSU24.model.Role;
 
 public class UserVerifyDTOResponse {
+    private int userId;
     private String email;
     private String firstName;
     private String lastName;
@@ -10,13 +11,22 @@ public class UserVerifyDTOResponse {
     private String org_name;
     private String profileImage;
 
-    public UserVerifyDTOResponse(String email, String firstName, String lastName, String phone, String org_name, String profileImage) {
+    public UserVerifyDTOResponse(int userId, String email, String firstName, String lastName, String phone, String org_name, String profileImage) {
+        this.userId = userId;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.org_name = org_name;
         this.profileImage = profileImage;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getEmail() {

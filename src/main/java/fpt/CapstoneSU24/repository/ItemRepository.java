@@ -24,6 +24,12 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     Page<Item> findAllByCurrentOwnerContaining(String currentOwner, Pageable pageable);
 
     Page<Item> findByCreatedAtBetween(Long startDate, Long endDate, Pageable pageable);
+    @Query("SELECT i FROM Item i WHERE LOWER(i.currentOwner) LIKE LOWER(CONCAT('%', :currentOwner, '%')) AND i.product.productId = :productId")
+    Page<Item> findAllByCurrentOwnerContainingAndProductId(@Param("currentOwner") String currentOwner,@Param("productId") int productId, Pageable pageable);
+    @Query("SELECT i FROM Item i WHERE i.createdAt BETWEEN :startDate AND :endDate AND i.product.productId = :productId")
+    Page<Item> findByCreatedAtBetweenAndProductId(@Param("startDate") Long startDate, @Param("endDate") Long endDate, @Param("productId") int productId, Pageable pageable);
+    @Query("SELECT i FROM Item i WHERE i.createdAt BETWEEN :startDate AND :endDate AND i.product.productId = :productId AND LOWER(i.currentOwner) LIKE LOWER(CONCAT('%', :currentOwner, '%'))")
+    Page<Item> findByDateAndCurrentOwner(@Param("startDate") Long startDate, @Param("endDate") Long endDate, @Param("productId") int productId, @Param("currentOwner") String currentOwner, Pageable pageable);
 
     List<Item> findByCreatedAtBetween(Long startDate, Long endDate);
 
@@ -61,5 +67,3 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Query("SELECT i FROM Item i WHERE i.currentOwner = :currentOwner")
     List<Item> findByCurrentOwner(@Param("currentOwner") String currentOwner);
 }
-
-

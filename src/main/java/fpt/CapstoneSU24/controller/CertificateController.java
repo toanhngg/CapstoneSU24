@@ -2,6 +2,8 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.Certificate.CreateCertificateRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.PhoneRequest;
+import fpt.CapstoneSU24.dto.payload.ReplyCertByAdminRequest;
 import fpt.CapstoneSU24.service.CertificateService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +27,20 @@ public CertificateController( CertificateService certificateService){
         return certificateService.getListCertificateByManuId(req);
     }
 
-    @GetMapping("/getListManuToVerify")
-    public ResponseEntity<?> getListManuToVerify()
+    @PostMapping("/getListManuToVerify")
+    public ResponseEntity<?> getListManuToVerify(@Valid @RequestBody PhoneRequest req)
     {
-        return certificateService.getListManuToVerify();
+        return certificateService.getListManuToVerify(req);
+    }
+    @GetMapping("/getListCertMe")
+    public ResponseEntity<?> getListCertMe()
+    {
+        return certificateService.getListCertificateMe();
+    }
+    @GetMapping("/replyCertByAdmin")
+    public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req)
+    {
+        return certificateService.replyCertByAdmin(req);
     }
 
     @PostMapping("/createCertificate")

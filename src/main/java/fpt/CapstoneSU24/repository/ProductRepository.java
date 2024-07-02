@@ -19,6 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer>  {
     @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id")
     List<Product> findAllByManufacturerId(@Param("id")  int id);
     Page<Product> findAllByProductNameContaining(String productName, Pageable pageable);
+    Page<Product> findByManufacturerAndCreateAtBetweenAndProductNameContaining(User manufacturer, Long startDate, Long endDate, String productName, Pageable pageable);
     Page<Product> findByManufacturerAndCreateAtBetween(User manufacturer, Long startDate, Long endDate, Pageable pageable);
     Page<Product> findByManufacturerAndProductNameContaining(User manufacturer, String productName, Pageable pageable);
     @Modifying

@@ -39,7 +39,6 @@ public class ProductController {
     @PostMapping("/findAllProductByManufacturerId")
     public ResponseEntity<?> findAllProductByManufacturerId(@Valid @RequestBody FilterSearchRequest req) {
         return productService.findAllProductByManufacturerId(req);
-
     }
     @PostMapping("/findImgByProductId")
     public ResponseEntity<?> findImgByProductId(@Valid @RequestBody IdRequest req) {

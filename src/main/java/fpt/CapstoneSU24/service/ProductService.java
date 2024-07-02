@@ -136,7 +136,9 @@ public class ProductService {
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
-            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+            if (req.getStartDate() != 0 && req.getEndDate() != 0 && req.getName().isEmpty()) {
+                products = productRepository.findByManufacturerAndCreateAtBetween(currentUser, req.getStartDate(), req.getEndDate(), pageable);
+            }else if (req.getStartDate() != 0 && req.getEndDate() != 0) {
                 products = productRepository.findByManufacturerAndCreateAtBetween(currentUser, req.getStartDate(), req.getEndDate(), pageable);
             } else {
                 products = productRepository.findByManufacturerAndProductNameContaining(currentUser, req.getName(), pageable);

@@ -20,7 +20,5 @@ public abstract class ItemMapper {
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "status", target = "status")
 
-    public abstract List<ItemViewDTOResponse> itemToItemViewDTOResponse(List<Item> item);
-
-
+    public abstract ItemViewDTOResponse itemToItemViewDTOResponse(Item item);
 }

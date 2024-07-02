@@ -15,9 +15,9 @@ public class Location {
     private String city;
     @Column(name = "country", columnDefinition = "nvarchar(50)")
     private String country;
-    @Column(name = "coordinateX", columnDefinition = "nvarchar(50)")
+    @Column(name = "coordinateX")
     private double coordinateX;
-    @Column(name = "coordinateY", columnDefinition = "nvarchar(50)")
+    @Column(name = "coordinateY")
     private double coordinateY;
     //manhdt
     //them quan huyen phuong xa

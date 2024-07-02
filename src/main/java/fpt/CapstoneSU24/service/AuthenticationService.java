@@ -78,6 +78,7 @@ public class AuthenticationService {
                 user.setFirstName(input.getFirstName());
                 user.setLastName(input.getLastName());
                 user.setPhone(input.getPhone());
+                user.setOrg_name(input.getOrgName());
                 user.setRole(roleRepository.findOneByRoleId(2));
                 user.setPassword(passwordEncoder.encode(input.getPassword()));
                 user.setCreateAt(System.currentTimeMillis());

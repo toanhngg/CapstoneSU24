@@ -18,21 +18,32 @@ public class Certificate {
     private String images;
     @Column(name = "issuance_date")
     private long issuanceDate;
+    @Column(name = "note", columnDefinition = "nvarchar(255)")
+    private String note;
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "manufacturer_id")
     private User manufacturer;
 
-    public Certificate(int certificateId, String certificateName, String issuingAuthority, String images, long issuanceDate, User manufacturer) {
+    public Certificate(int certificateId, String certificateName, String issuingAuthority, String images, long issuanceDate, String note, User manufacturer) {
         this.certificateId = certificateId;
         this.certificateName = certificateName;
         this.issuingAuthority = issuingAuthority;
         this.images = images;
         this.issuanceDate = issuanceDate;
+        this.note = note;
         this.manufacturer = manufacturer;
     }
 
     public Certificate() {
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public int getCertificateId() {

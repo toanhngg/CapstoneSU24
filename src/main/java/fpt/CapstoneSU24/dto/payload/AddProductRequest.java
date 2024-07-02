@@ -27,7 +27,7 @@ public class AddProductRequest {
 //    @NotNull(message = "The certificateId is required")
 //    @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
 //    private int certificateId;
-    @NotBlank(message = "The images is required")
+    @NotEmpty(message = "The images is required")
     private List<String> images;
     @NotBlank(message = "The avatar is required")
     private String avatar;
