@@ -24,9 +24,9 @@ public class RegisterRequest {
     @NotBlank(message = "The district is required")
     private String district;
     @NotNull(message = "The coordinateX is required")
-    private double coordinateX;
+    private Double coordinateX;
     @NotNull(message = "The coordinateY is required")
-    private double coordinateY;
+    private Double coordinateY;
     @Pattern(regexp = "\\d{10}", message = "Invalid phone number format")
     @NotBlank(message = "The phone is required")
     private String phone;
@@ -67,11 +67,11 @@ public class RegisterRequest {
         return district;
     }
 
-    public double getCoordinateX() {
+    public Double getCoordinateX() {
         return coordinateX;
     }
 
-    public double getCoordinateY() {
+    public Double getCoordinateY() {
         return coordinateY;
     }
 

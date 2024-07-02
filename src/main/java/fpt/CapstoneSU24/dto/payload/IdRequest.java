@@ -9,9 +9,9 @@ public class IdRequest {
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
     @NotNull(message = "The id is required")
     @Min(value = 1, message = "The id must be a positive number")
-    private int id;
+    private Integer id;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 }

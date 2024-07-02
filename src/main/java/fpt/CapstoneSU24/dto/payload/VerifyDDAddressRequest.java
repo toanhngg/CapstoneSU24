@@ -6,15 +6,15 @@ import jakarta.validation.constraints.NotNull;
 public class VerifyDDAddressRequest {
 
     @NotNull(message = "The lat is not null")
-    private double lat;
+    private Double lat;
     @NotNull(message = "The lng is not null")
-    private double lng;
+    private Double lng;
 
-    public double getLat() {
+    public Double getLat() {
         return lat;
     }
 
-    public double getLng() {
+    public Double getLng() {
         return lng;
     }
 }
