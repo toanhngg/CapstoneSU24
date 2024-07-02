@@ -39,10 +39,7 @@ public class ItemController {
     @PostMapping("/addItem")
     public ResponseEntity<?> addItem(@Valid @RequestBody ItemLogDTO itemLogDTO) {
         return itemService.addItem(itemLogDTO);
-
     }
-
-
 
 //    private double parseCoordinate(String coordinate) throws InvalidCoordinateException {
 //        try {
@@ -51,8 +48,6 @@ public class ItemController {
 //            throw new InvalidCoordinateException("Invalid coordinate: " + coordinate);
 //        }
 //    }
-
-
     public static class InvalidCoordinateException extends Exception {
         public InvalidCoordinateException(String message) {
             super(message);
@@ -79,87 +74,21 @@ public class ItemController {
 
     }
 
-
-
     @GetMapping("/viewOrigin")
     public ResponseEntity<?> viewOrigin(@RequestParam int itemLogId) {
         return itemService.viewOrigin(itemLogId);
     }
 
     @GetMapping("/getCertificate")
-    public ResponseEntity<?> getCertificate(@RequestBody String req, @RequestParam String productRecognition) {
-        return itemService.getCertificate(req,productRecognition);
+    public ResponseEntity<?> getCertificate(@RequestBody String email, @RequestParam String productRecognition) {
+         return itemService.getCertificate(email,productRecognition);
     }
-
-
-//    @GetMapping("/getTESTCertificate")
-//    public ResponseEntity<?> getTESTCertificate(@RequestParam String productRecognition) throws IOException {
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_PDF);
-//        headers.setContentDispositionFormData("attachment", "certificate.pdf");
-//        Item item = itemRepository.findByProductRecognition(productRecognition);
-//
-//        String pdfLink = item.getCertificateLink();
-//        headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
-//
-//        // Return the PDF link as a response entity
-//        return ResponseEntity.ok().headers(headers).body(pdfLink);
-//    }
-
-//    @GetMapping("/convertHtmlToPdf")
-//    public ResponseEntity<byte[]> convertHtmlToPdf() {
-//        // HTML content to convert to PDF
-//        String htmlContent = "<html><body><h1>Hello, World!</h1></body></html>";
-//
-//        // Prepare ByteArrayOutputStream to hold PDF bytes
-//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//
-//        try {
-//            // Create PdfWriter
-//            PdfWriter writer = new PdfWriter(baos);
-//            // Create PdfDocument
-//            PdfDocument pdf = new PdfDocument(writer);
-//            // Set landscape orientation
-//            pdf.setDefaultPageSize(PageSize.A4.rotate());
-//
-//            // Convert HTML to PDF
-//            ConverterProperties props = new ConverterProperties();
-//            HtmlConverter.convertToPdf(htmlContent, pdf, props);
-//
-//            // Close PdfDocument
-//            pdf.close();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        // Prepare HttpHeaders
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_PDF);
-//        headers.setContentDispositionFormData("attachment", "converted-document.pdf");
-//
-//        // Return PDF as ResponseEntity
-//        return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
-//    }
-
-//    private boolean arePointsOnCurve(List<ItemLog> pointLogs) {
-//        List<Point> points = new ArrayList<>();
-//        for (int i = 1; i < pointLogs.size() - 1; i++) {
-//            Point point = pointService.getPoint(pointLogs.get(i).getPoint());
-//            points.add(point);
-//        }
-//
-//        Point startPoint = pointService.getPoint(pointLogs.get(0).getPoint());
-//        return pointService.isPointOnCurve(points, startPoint);
-//    }
 
     @PostMapping(value = "/confirmCurrentOwner")
     public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
         // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
         // - Chính xác => Buoc tiep theo
         return itemService.confirmCurrentOwner(otp,productRecognition);
-
     }
 
     /**
@@ -174,8 +103,8 @@ public class ItemController {
      * - Gui mail thong bao cho nguoi dung la bạn da duoc uy quyen
      */
     @PostMapping(value = "/authorized")
-    public ResponseEntity<?> authorize(@RequestBody Authorized authorized, @RequestParam int itemLogId) {
-        return itemService.authorize(authorized,itemLogId);
+    public ResponseEntity<?> authorize(@Valid @RequestBody AuthorizedDTO authorized) {
+        return itemService.authorize(authorized);
     }
 
     @PostMapping(value = "/checkAuthorized")
@@ -200,17 +129,18 @@ public class ItemController {
 
     //API send OTP  nhap mail => sendOTP chua check
     @PostMapping(value = "/sendOTP")
-    public ResponseEntity<?> sendOTP(@RequestBody String req, @RequestParam String productRecognition) {
-        return itemService.sendOTP(req,productRecognition);
-
+    public ResponseEntity<?> sendOTP(@RequestBody String email, @RequestParam String productRecognition) {
+        return itemService.sendOTP(email,productRecognition);
     }
-
 
     // API verify OTP
     @PostMapping(value = "/confirmOTP")
     public ResponseEntity<Boolean> confirmOTP(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
         return itemService.confirmOTP(otp,productRecognition);
-
+    }
+    @PostMapping(value = "/abortItem")
+    public ResponseEntity<?> abortItem(@RequestBody AbortDTO abortDTO, @RequestParam String productRecognition ){
+        return itemService.abortItem(abortDTO,productRecognition);
     }
 }
 

@@ -34,8 +34,11 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
             "WHERE il.itemLogId = :itemLogId")
     ItemLog getItemLogs(@Param("itemLogId") int itemLogId);
 
-    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId")
+    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId desc")
     List<ItemLog> getItemLogsByItemId(@Param("itemId") Integer itemId);
+
+    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId asc")
+    List<ItemLog> getItemLogsByItemIdAsc(@Param("itemId") Integer itemId);
 
     @Query("SELECT il FROM ItemLog il LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.point IS NOT NULL")
     List<ItemLog> getPointItemId(@Param("itemId") Integer itemId);

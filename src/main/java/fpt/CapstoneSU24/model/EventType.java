@@ -16,7 +16,9 @@ public class EventType {
         this.eventId = eventId;
         this.event_type = event_type;
     }
-
+    public EventType(int eventId) {
+        this.eventId = eventId;
+    }
     public EventType() {
     }
 

@@ -33,7 +33,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -145,7 +144,6 @@ public class ItemService {
             // Lưu địa chỉ
             Location location = createLocation(itemLogDTO);
             validateAndSetCoordinates(location, itemLogDTO);
-
             Location savedLocation = locationRepository.save(location);
 
             Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
@@ -254,7 +252,8 @@ public class ItemService {
             itemLog.setItem(items.get(i));
             itemLog.setLocation(savedLocation);
             itemLog.setParty(parties.get(i));
-            Point point = pointService.randomPoint();
+
+            Point point = pointService.randomPoint(10000,10000);
             itemLog.setPoint(point.toString());
             itemLogs.add(itemLog);
         }
@@ -288,7 +287,7 @@ public class ItemService {
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
-            List<ItemLog> itemList = itemLogRepository.getItemLogsByItemId(item.getItemId());
+            List<ItemLog> itemList = itemLogRepository.getItemLogsByItemIdAsc(item.getItemId());
 
             if (itemList.isEmpty()) {
                 // Trả về chỉ thông tin của Item nếu không có ItemLog nào
@@ -309,6 +308,7 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while processing viewLineItem:: " + ex.getMessage());
         }
     }
+
     private ItemLogDTOResponse convertToItemLogDTO(ItemLog itemLog) {
         ItemLogDTOResponse dto = new ItemLogDTOResponse();
         dto.setItemLogId(itemLog.getItemLogId());
@@ -358,7 +358,6 @@ public class ItemService {
     public ResponseEntity<?> getCertificate(String req, String productRecognition) {
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
-
         Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
@@ -381,11 +380,9 @@ public class ItemService {
         if (pointLogs.size() != itemLogs.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mismatch in item logs and point logs.");
         }
-
         if (!pointService.arePointsOnCurve(pointLogs)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Points do not form a valid graph.");
         }
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "certificate.pdf");
@@ -399,6 +396,7 @@ public class ItemService {
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
         }
+
         if (item.getStatus() == 1 && item.getCurrentOwner().equals(otp.getEmail())) {
             boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
             if (check) {
@@ -411,101 +409,142 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<?> authorize(Authorized authorized, int itemLogId) {
-        try {
-            // B1: Kiểm tra trạng thái ủy quyền của sản phẩm
-            ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
-            if (itemLog == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item log not found!");
-            }
-
-            Item item = itemRepository.findByProductRecognition(itemLog.getItem().getProductRecognition());
-            if (item == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found!");
-            }
-
-            if (item.getStatus() == 0) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized!");
-            }
-
-            if (authorized.getAuthorized_email() == null || authorized.getAuthorized_email().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter authorized person's email!");
-            }
-
-            // B2: Tiến hành ủy quyền nếu chưa ủy quyền
-            Location location = new Location();
-            location.setAddress(authorized.getLocation().getAddress());
-            location.setCity(authorized.getLocation().getCity());
-            location.setCountry(authorized.getLocation().getCountry());
-            location.setCoordinateX(authorized.getLocation().getCoordinateX());
-            location.setCoordinateY(authorized.getLocation().getCoordinateY());
-
-            Location savedLocation = locationRepository.save(location);
-
-            Authorized authorizedSaved = authorizedRepository.save(new Authorized(
-                    authorized.getAuthorized_name(),
-                    authorized.getAuthorized_email(),
-                    itemLog.getParty().getPartyFullName(),
-                    item.getCurrentOwner(),
-                    savedLocation,
-                    authorized.getPhoneNumber(),
-                    authorized.getDescription()
-            ));
-
-            // Cập nhật trạng thái sản phẩm
-            itemRepository.updateStatusAndCurrent(item.getItemId(), authorized.getAuthorized_email());
-
-            // Cập nhật authorized_id vào bảng itemLog
-            itemLogRepository.updateAuthorized(authorizedSaved.getAuthorized_id(), itemLogId);
-
-            // Gửi thông báo email
-            ClientSdi sdi = new ClientSdi();
-            sdi.setEmail(authorized.getAuthorized_email());
-            sdi.setUsername(authorized.getAuthorized_name());
-            sdi.setName(authorized.getAuthorized_name());
-
-            clientService.notification(sdi);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
-
-        } catch (Exception ex) {
-            logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+    public ResponseEntity<Boolean> checkAuthorized(String productRecognition) {
+        Item item = findByProductRecognition(productRecognition); // B1
+        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
+        if (list.get(0).getAuthorized() == null) {
+            return ResponseEntity.ok(false);
+        } else {
+            return ResponseEntity.ok(true);
         }
     }
 
-    public ResponseEntity<Boolean> checkAuthorized(String productRecognition) {
-        Item item = itemRepository.findByProductRecognition(productRecognition); // B1
-        if (item == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+    public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
+        try {
+            Item item = findByProductRecognition(authorized.getProductRecognition());
+            // kiểm tra người đang ủy quyền có phải current owner không
+            if (checkOwner(authorized.getAssign_person_mail(), item.getProductRecognition())) {
+                if (item.getStatus() == 0) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized!");
+                }
+                // B2: Tiến hành ủy quyền nếu chưa ủy quyền
+                if (addEventAuthorized(authorized, item)) {
+                    // Gửi thông báo email
+                    ClientSdi sdi = new ClientSdi();
+                    sdi.setEmail(authorized.getAuthorized_email());
+                    sdi.setUsername(authorized.getAuthorized_name());
+                    sdi.setName(authorized.getAuthorized_name());
+                    clientService.notification(sdi);
+                    return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
+                }
+
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not the owner");
+            }
+            // B1: Kiểm tra trạng thái ủy quyền của sản phẩm
+
+        } catch (Exception ex) {
+            logService.logError(ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex);
         }
-        if (item.getStatus() == 0) {
-            return ResponseEntity.ok(true);
-        } else if (item.getStatus() == 1) {
-            return ResponseEntity.ok(false);
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        return null;
     }
 
     public ResponseEntity<Boolean> checkCurrentOwner(String email, String productRecognition) {
         logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
         try{
-            Item item = itemRepository.findByProductRecognition(productRecognition); // B1
-            if (item == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-            }
-            if (email != null && !email.isEmpty()) {
-                if (item.getCurrentOwner().equals(email)) {
+            if (checkOwner(email, productRecognition)) {
                     return ResponseEntity.ok(true);
-                } else {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
-                }
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
             }
         }catch (Exception e){
             logService.logError(e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
+    }
+
+    public boolean checkOwner(String email, String productRecognition) {
+        if (email == null || email.isEmpty()) {
+            return false;
+        }
+        Item item = itemRepository.findByProductRecognition(productRecognition);
+        if (item == null) {
+            return false;
+        }
+        return email.equals(item.getCurrentOwner());
+    }
+
+    public Item findByProductRecognition(String productRecognition) {
+        if (productRecognition == null || productRecognition.isEmpty()) {
+            throw new IllegalArgumentException("Product recognition cannot be null or empty");
+        }
+        return itemRepository.findByProductRecognition(productRecognition);
+    }
+
+    public ItemLog getItemLogs(int itemLogId) {
+        return itemLogRepository.getItemLogs(itemLogId);
+    }
+
+    public boolean addEventAuthorized(AuthorizedDTO authorized, Item item) {
+        if (authorized == null || item == null) {
+            return false;
+        }
+        try {
+            Location savedLocation = locationRepository.save(authorized.getLocation());
+            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+            if (list.isEmpty()) {
+                return false;
+            }
+            ItemLog itemIndex = list.get(0);
+
+            Authorized authorizedSaved = authorizedRepository.save(new Authorized(
+                    authorized.getAuthorized_name(),
+                    authorized.getAuthorized_email(),
+                    itemIndex.getParty().getPartyFullName(),
+                    item.getCurrentOwner(),
+                    savedLocation,
+                    authorized.getPhoneNumber(),
+                    authorized.getDescription()
+            ));
+
+            Point point = null;
+
+            if (authorized.getLocation().getAddress() != null &&
+                    authorized.getLocation().getCountry() != null &&
+                    authorized.getLocation().getCoordinateX() != null &&
+                    authorized.getLocation().getWard() != null &&
+                    authorized.getLocation().getDistrict() != null &&
+                    authorized.getLocation().getCity() != null &&
+                    authorized.getLocation().getCoordinateY() != null &&
+                    authorized.getDescription() != null) {
+
+                double pointX = pointService.generateX();
+                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                List<Point> pointList = pointService.getPointList(pointLogs);
+                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+
+                point = new Point(pointX, pointY);
+            }
+
+            itemLogRepository.save(new ItemLog(
+                    item,
+                    authorized.getLocation().getAddress(),
+                    itemIndex.getParty(),
+                    itemIndex.getLocation(),
+                    System.currentTimeMillis(),
+                    authorized.getDescription(),
+                    authorizedSaved,
+                    new EventType(3),  // 3 indicates authorization event
+                    1,
+                    null,
+                    point != null ? point.toString() : null
+            ));
+
+            return true;
+        } catch (Exception ex) {
+            logService.logError(ex);
+            return false;
         }
     }
 
@@ -538,28 +577,25 @@ public class ItemService {
         try {
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
-
             // Kiểm tra xem item có tồn tại và có status = 0 hay không
-            Item item = itemRepository.findByProductRecognition(productRecognition);
+            Item item = findByProductRecognition(productRecognition);
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
             }
-            if (item.getStatus() != 0) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
-            }
-
-            // Kiểm tra xem email có đúng là current owner không
-            if (!item.getCurrentOwner().equals(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
-            }
-
-            // Lấy danh sách item logs và kiểm tra kích thước danh sách
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
             }
             ItemLog itemIndex = list.get(0);
-
+            if (itemIndex.getAuthorized() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
+            }
+            System.out.println(itemIndex.getAuthorized().getAuthorized_email());
+            System.out.println(email);
+            // Kiểm tra xem email có đúng là current owner không
+            if (!(itemIndex.getAuthorized().getAuthorized_email()).equals(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
+            }
             // Tạo đối tượng ClientSdi và gửi email OTP
             ClientSdi sdi = new ClientSdi();
             sdi.setEmail(itemIndex.getAuthorized().getAuthorized_email());
@@ -591,55 +627,49 @@ public class ItemService {
              // - Insert bảng party => Sau khi nhận mới trở thành party
              */
             Item item = itemRepository.findByProductRecognition(productRecognition); // B1
-
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
             }
+            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+            if (list.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+            }
+            ItemLog itemIndex = list.get(0);
+            if (itemIndex.getAuthorized() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            }
 
-            if (item.getStatus() == 0) {
-                boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
-
+            // Kiểm tra xem email có đúng là current owner không
+            if (!(itemIndex.getAuthorized().getAuthorized_email()).equals(otp.getEmail())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
+            }
+            boolean check = clientService.checkOTPinSQL(otp.getEmail().trim(), otp.getOtp().trim());
                 if (check) {
-                    Integer status = 1;
-                    itemRepository.updateItemStatus((long) item.getItemId(), status);
-                    List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-
-                    if (list.isEmpty() || list.size() <= 1) {
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu không có log hoặc log không đủ
-                    }
-
-                    ItemLog itemIndex = list.get(0);
-                    Optional<Authorized> authorizedOpt = authorizedRepository.findById(itemIndex.getAuthorized().getAuthorized_id());
-
-                    if (authorizedOpt.isEmpty()) {
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu authorized không tồn tại
-                    }
-
-                    Authorized authorized = authorizedOpt.get();
+                    int status = 1;
+                    itemRepository.updateItemStatusAndCurrentOwnwe((long) item.getItemId(), status, itemIndex.getAuthorized().getAuthorized_email());
                     Party party = partyRepository.save(new Party(
-                            authorized.getDescription(),
-                            authorized.getAuthorized_email(),
-                            authorized.getAuthorized_name(),
-                            authorized.getPhoneNumber()
+                            itemIndex.getAuthorized().getDescription(),
+                            itemIndex.getAuthorized().getAuthorized_email(),
+                            itemIndex.getAuthorized().getAuthorized_name(),
+                            itemIndex.getAuthorized().getPhoneNumber()
                     ));
 
                     ItemLog itemLog = new ItemLog();
-                    itemLog.setAddress(authorized.getLocation().getAddress());
-                    itemLog.setDescription(authorized.getDescription());
+                    itemLog.setAddress(itemIndex.getAuthorized().getLocation().getAddress());
+                    itemLog.setDescription(itemIndex.getAuthorized().getDescription());
                     itemLog.setAuthorized(null);
                     itemLog.setStatus(1);
                     itemLog.setTimeStamp(System.currentTimeMillis());
                     itemLog.setItem(item);
-                    itemLog.setLocation(authorized.getLocation());
+                    itemLog.setLocation(itemIndex.getAuthorized().getLocation());
                     itemLog.setParty(party);
-                    //Point point = pointService.randomPoint();
-                    double pointX = pointService.generatedoubleX();
+
+                    double pointX = pointService.generateX();
                     List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                     List<Point> pointList = pointService.getPointList(pointLogs);
-                    double pointY = pointService.interpolate(pointList, pointX);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
                     Point point = new Point(pointX, pointY);
                     itemLog.setPoint(point.toString());
-                    //  itemLog.setPoint(point.toString());
                     itemLog.setEvent_id(eventTypeRepository.findOneByEventId(4)); // Event này là nhận hàng
                     itemLog.setImageItemLog(null);
                     itemLogRepository.updateStatus(1, list.get(1).getItemLogId());
@@ -649,14 +679,53 @@ public class ItemService {
                 } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
                 }
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // Status không phù hợp
-            }
         } catch (Exception ex) {
             // Log the error
-            System.err.println("Error occurred while confirming OTP: " + ex.getMessage());
+            // System.err.println("Error occurred while confirming OTP: " + ex.getMessage());
+            logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false); // Xảy ra lỗi, trả về lỗi server
         }
+    }
+
+    public ResponseEntity<String> abortItem(AbortDTO abortDTO, String productRecognition) {
+        try{
+            JSONObject jsonReq = new JSONObject(abortDTO.getItem().getCurrentOwner());
+            String email = jsonReq.getString("email");
+//            if (checkOwner(email, productRecognition)) {
+//                // Ghi lai item log
+//                ItemLog itemLog = new ItemLog();
+//                itemLog.setAddress(abortDTO.getAddress());
+//                itemLog.setDescription(abortDTO.getDescription());
+//                itemLog.setAuthorized(null);
+//                itemLog.setStatus(1);
+//                itemLog.setTimeStamp(System.currentTimeMillis());
+//                itemLog.setItem(abortDTO.getItem());
+//                itemLog.setLocation(itemIndex.getAuthorized().getLocation());
+//                itemLog.setParty(party);
+//
+//                double pointX = pointService.generateX();
+//                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+//                List<Point> pointList = pointService.getPointList(pointLogs);
+//                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+//                Point point = new Point(pointX, pointY);
+//                itemLog.setPoint(point.toString());
+//                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(4)); // Event này là nhận hàng
+//                itemLog.setImageItemLog(null);
+//                itemLogRepository.updateStatus(1, list.get(1).getItemLogId());
+//                itemLogRepository.save(itemLog);
+//
+//                return ResponseEntity.ok(true); // Thành công, trả về true
+//                // Cap nhat trang thai cua item => da bi huy
+//                itemRepository.updateItemStatus(productRecognition,5);
+//                return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
+//            } else {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+//            }
+        }catch (Exception ex){
+            logService.logError(ex);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
+        }
+        return null;
     }
 
 

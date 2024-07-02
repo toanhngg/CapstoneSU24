@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
+import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.model.OTP;
 import fpt.CapstoneSU24.repository.ClientRepository;
 import fpt.CapstoneSU24.repository.OTPRepository;
@@ -22,15 +23,18 @@ public class ClientService implements ClientRepository {
     private final OTPRepository otpResponsitory;
     private final PartyRepository partyRepository;
     private final OTPService otpService;
+    private final LogService logService;
 
     @Autowired
     public ClientService(EmailService mailService, RedisSortedSetService redisSortedSetService,
-                         OTPRepository otpResponsitory, PartyRepository partyRepository, OTPService otpService) {
+                         OTPRepository otpResponsitory, PartyRepository partyRepository, OTPService otpService,
+                         LogService logService) {
         this.mailService = mailService;
         this.redisSortedSetService = redisSortedSetService;
         this.otpResponsitory = otpResponsitory;
         this.partyRepository = partyRepository;
         this.otpService = otpService;
+        this.logService =logService;
 
     }
 
@@ -56,8 +60,9 @@ public class ClientService implements ClientRepository {
         // tam cmt de test cho do bi spam
             //mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_REGISTER);
             return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
+        } catch (Exception ex) {
+            logService.logError(ex);
+           // exp.printStackTrace();
         }
         return false;
     }
@@ -89,8 +94,9 @@ public class ClientService implements ClientRepository {
             // tam cmt de test cho do bi spam
          // mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_SENDOTP);
             return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
+        } catch (Exception ex) {
+            logService.logError(ex);
+           // exp.printStackTrace();
         }
         return false;
     }
@@ -109,8 +115,10 @@ public class ClientService implements ClientRepository {
             dataMail.setProps(props);
             mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_NOTIFICATION);
             return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
+        } catch (Exception ex) {
+            logService.logError(ex);
+
+            //exp.printStackTrace();
         }
         return false;
     }
@@ -126,8 +134,9 @@ public class ClientService implements ClientRepository {
            else{
                return false;
            }
-        } catch (Exception exp) {
-            exp.printStackTrace();
+        } catch (Exception ex) {
+            logService.logError(ex);
+            //exp.printStackTrace();
         }
         return false;
     }
@@ -135,8 +144,9 @@ public class ClientService implements ClientRepository {
     public Boolean checkOTPinSQL(String email, String otp) {
         try {
             return otpService.verifyOTP(email, otp);
-        } catch (Exception exp) {
-            exp.printStackTrace();
+        } catch (Exception ex) {
+            logService.logError(ex);
+            //exp.printStackTrace();
         }
         return false;
     }

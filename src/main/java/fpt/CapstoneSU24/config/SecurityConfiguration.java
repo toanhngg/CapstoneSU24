@@ -78,7 +78,8 @@ public class SecurityConfiguration {
                                 "api/item/confirmCurrentOwner",
                                 "api/user/getUserById",
                                 "api/item/getTESTCertificate",
-                                "api/item/convertHtmlToPdf"
+                                "api/item/convertHtmlToPdf",
+                                "api/item/getCertificate"
 
                         ).permitAll()
                         .anyRequest().authenticated())

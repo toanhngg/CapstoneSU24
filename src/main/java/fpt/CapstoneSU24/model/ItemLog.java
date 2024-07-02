@@ -29,9 +29,6 @@ public class ItemLog {
     @ManyToOne
     @JoinColumn(name = "event_id", columnDefinition = "int default 0")
     private EventType event_id;
-
-//    @Column(name = "event_type", columnDefinition = "nvarchar(50)")
-//    private String eventType;
     @Column(name = "status")
     private int status;
     @OneToOne(mappedBy = "itemLog", cascade = CascadeType.ALL)
@@ -39,24 +36,22 @@ public class ItemLog {
     private ImageItemLog imageItemLog;
      @Column(name = "point", columnDefinition = "nvarchar(50)")
      private String point;
-/*    @Column(name = "event_id")
-    private int event_id;*/
 
-//    public ItemLog(int itemLogId, Item item, String address, Party party, Location location, long timeStamp, String description, String eventType, int status, ImageItemLog imageItemLog) {
-//        this.itemLogId = itemLogId;
+
+//    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, int status, ImageItemLog imageItemLog, EventType event_id) {
 //        this.item = item;
 //        this.address = address;
 //        this.party = party;
 //        this.location = location;
 //        this.timeStamp = timeStamp;
 //        this.description = description;
-//        this.eventType = eventType;
+//        this.authorized = authorized;
 //        this.status = status;
 //        this.imageItemLog = imageItemLog;
+//        this.event_id = event_id;
 //    }
 
-
-    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, int status, ImageItemLog imageItemLog, EventType event_id) {
+    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, EventType event_id, int status, ImageItemLog imageItemLog, String point) {
         this.item = item;
         this.address = address;
         this.party = party;
@@ -64,9 +59,10 @@ public class ItemLog {
         this.timeStamp = timeStamp;
         this.description = description;
         this.authorized = authorized;
+        this.event_id = event_id;
         this.status = status;
         this.imageItemLog = imageItemLog;
-        this.event_id = event_id;
+        this.point = point;
     }
 
     public Authorized getAuthorized() {
@@ -93,9 +89,6 @@ public class ItemLog {
         this.itemLogId = itemLogId;
     }
 
-    public ItemLog(String eventType, String partyFullName, int status, String coordinateX, String coordinateY, String description) {
-    }
-
     public ImageItemLog getImageItemLog() {
         return imageItemLog;
     }
@@ -107,12 +100,6 @@ public class ItemLog {
     public ItemLog() {
 
     }
-
-//    public ItemLog(int productLogId, Product oneByProductId, String fptu, Actor oneByActorId, int timeStamp, String description, String delivery, int status) {
-//    }
-
-
-
 
     public Item getItem() {
         return item;
@@ -162,13 +149,6 @@ public class ItemLog {
         this.description = description;
     }
 
-//    public String getEventType() {
-//        return eventType;
-//    }
-//
-//    public void setEventType(String eventType) {
-//        this.eventType = eventType;
-//    }
 
     public int getStatus() {
         return status;
