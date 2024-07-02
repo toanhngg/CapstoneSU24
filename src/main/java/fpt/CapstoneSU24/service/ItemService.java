@@ -146,7 +146,7 @@ public class ItemService {
             validateAndSetCoordinates(location, itemLogDTO);
             Location savedLocation = locationRepository.save(location);
 
-            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
+            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, user.getLocation());
 
             List<Item> items = createItems(itemLogDTO, user, saveOrigin);
             List<Party> parties = createParties(itemLogDTO, user);
