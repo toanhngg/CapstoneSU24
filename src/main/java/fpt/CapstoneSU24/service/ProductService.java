@@ -1,17 +1,15 @@
 package fpt.CapstoneSU24.service;
 
 
-import fpt.CapstoneSU24.dto.UserProfileDTO;
+import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.payload.AddProductRequest;
-import fpt.CapstoneSU24.payload.EditProductRequest;
-import fpt.CapstoneSU24.payload.FilterSearchRequest;
-import fpt.CapstoneSU24.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.AddProductRequest;
+import fpt.CapstoneSU24.dto.payload.EditProductRequest;
+import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
+import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
-import fpt.CapstoneSU24.util.CloudinaryService;
-import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,8 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,6 +89,9 @@ public class ProductService {
         if (currentUser.getRole().getRoleId() == 2) {
             try {
                 Product product = productRepository.findOneByProductId(req.getProductId());
+                if (product == null){
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product id don't exists");
+                }
                 product.setProductName(req.getProductName());
                 product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
 //            product.setUnitPrice(req.getUnitPrice());
@@ -119,8 +118,7 @@ public class ProductService {
                 }
                 //save ava
                 if (!req.getAvatar().isEmpty()) {
-                    imageProductRepository.deleteImageProductWithFilePathStartingWithAvatar(product.getProductId());
-                    String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
+                    String filePathAvatar = cloudinaryService.updateImage("avatar/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getAvatar()));
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
                 }
 
@@ -148,7 +146,7 @@ public class ProductService {
             } else {
                 products = productRepository.findByManufacturerAndProductNameContaining(currentUser, req.getName(), pageable);
             }
-            return ResponseEntity.status(HttpStatus.OK).body(products);
+            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToProductDTOResponse));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
         }
@@ -171,12 +169,12 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity findProductById(IdRequest req) {
+    public ResponseEntity findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
             Product product = productRepository.findOneByProductId(req.getId());
-            return ResponseEntity.status(HttpStatus.OK).body(product);
+            return ResponseEntity.status(HttpStatus.OK).body(productMapper.productToProductDetailDTOResponse(product));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");
         }
