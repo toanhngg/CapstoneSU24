@@ -146,7 +146,7 @@ public class ItemService {
             validateAndSetCoordinates(location, itemLogDTO);
             Location savedLocation = locationRepository.save(location);
 
-            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, user.getLocation());
+            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
 
             List<Item> items = createItems(itemLogDTO, user, saveOrigin);
             List<Party> parties = createParties(itemLogDTO, user);
@@ -334,7 +334,8 @@ public class ItemService {
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
             originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
             originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-            originDTO.setAddress(itemLog.getItem().getOrigin().getLocation().getAddress());
+            originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
+            originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
             originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
             originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
