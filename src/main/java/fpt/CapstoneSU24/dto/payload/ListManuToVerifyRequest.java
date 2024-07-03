@@ -3,7 +3,7 @@ package fpt.CapstoneSU24.dto.payload;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 
-public class PhoneRequest {
+public class ListManuToVerifyRequest {
     @NotNull(message = "The phone is required")
     private String phone;
     @NotNull(message = "The type is not null")

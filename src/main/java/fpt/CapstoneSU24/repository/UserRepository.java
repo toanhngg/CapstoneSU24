@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     public User findOneByEmail(String email);
     public User findOneByEmailAndPassword(String email, String password);
     Optional<User> findByEmail(String email);
-    Page<User> findAllByPhoneContaining(String phone, Pageable pageable);
+    Page<User> findAllByPhoneContainingAndStatus(String phone, int status, Pageable pageable);
 
     Page<User> findAllByStatus(int status, Pageable pageable);
 

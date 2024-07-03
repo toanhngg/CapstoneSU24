@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public class EditCertificateRequest {
-    @NotBlank(message = "certId is required")
+    @NotNull(message = "certId is required")
     public Integer certId;
     @NotNull(message = "Name is required")
     @Size(max = 100, message = "Name must be less than 100 characters")

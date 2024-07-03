@@ -2,7 +2,7 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.Certificate.CreateCertificateRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
-import fpt.CapstoneSU24.dto.payload.PhoneRequest;
+import fpt.CapstoneSU24.dto.payload.ListManuToVerifyRequest;
 import fpt.CapstoneSU24.dto.payload.ReplyCertByAdminRequest;
 import fpt.CapstoneSU24.service.CertificateService;
 import jakarta.validation.Valid;
@@ -28,14 +28,14 @@ public CertificateController( CertificateService certificateService){
     }
 
     @PostMapping("/getListManuToVerify")
-    public ResponseEntity<?> getListManuToVerify(@Valid @RequestBody PhoneRequest req)
+    public ResponseEntity<?> getListManuToVerify(@Valid @RequestBody ListManuToVerifyRequest req)
     {
         return certificateService.getListManuToVerify(req);
     }
     @GetMapping("/getListCertMe")
     public ResponseEntity<?> getListCertMe()
     {
-        return certificateService.getListCertificateMe();
+        return certificateService.getListCertMe();
     }
     @GetMapping("/replyCertByAdmin")
     public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req)
@@ -46,5 +46,17 @@ public CertificateController( CertificateService certificateService){
     @PostMapping("/createCertificate")
     public ResponseEntity<?> createCertificate(@Valid @RequestBody CreateCertificateRequest req) throws IOException {
         return certificateService.createCertificate(req);
+    }
+    @GetMapping("/deleteAllCertByManufacturer")
+    public ResponseEntity<?> deleteAllCertByManufacturer() throws IOException {
+        return certificateService.deleteAllCertByManufacturer();
+    }
+    @PostMapping("/deleteCertCertId")
+    public ResponseEntity<?> deleteCertCertId(@Valid @RequestBody IdRequest req) throws IOException {
+        return certificateService.deleteCertCertId(req);
+    }
+    @GetMapping("/SendRequestVerifyCert")
+    public ResponseEntity<?> SendRequestVerifyCert() throws IOException {
+        return certificateService.sendRequestVerifyCert();
     }
 }

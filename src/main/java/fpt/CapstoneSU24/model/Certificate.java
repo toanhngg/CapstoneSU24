@@ -20,7 +20,6 @@ public class Certificate {
     private long issuanceDate;
     @Column(name = "note", columnDefinition = "nvarchar(255)")
     private String note;
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "manufacturer_id")
     private User manufacturer;

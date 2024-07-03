@@ -14,7 +14,12 @@ import java.util.List;
 public interface CertificateRepository extends JpaRepository<Certificate, Integer> {
 
     Certificate findOneByCertificateId(int id);
-
+    @Modifying
+    @Transactional
+    void deleteAllByManufacturer_userId(int id);
+    @Modifying
+    @Transactional
+    void deleteAllByCertificateId(int id);
     Certificate findOneByManufacturer_userId(int id);
 
     List<Certificate> findByManufacturer_userId(int id);
