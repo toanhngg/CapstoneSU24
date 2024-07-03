@@ -105,7 +105,7 @@ public class CertificateService {
     public ResponseEntity<?> deleteCertCertId(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 7) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 0) {
             try {
                 Certificate c = certificateRepository.findOneByCertificateId(req.getId());
                 if(c != null){
@@ -188,7 +188,7 @@ public class CertificateService {
     public ResponseEntity<?> createCertificate(CreateCertificateRequest req) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 1) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 7) {
             try {
                 String fullFilePath = "";
                 for (int i = 0; i < req.getFile().size(); i++) {

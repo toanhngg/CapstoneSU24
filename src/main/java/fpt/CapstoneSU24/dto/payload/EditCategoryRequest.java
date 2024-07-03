@@ -1,9 +1,10 @@
 package fpt.CapstoneSU24.dto.payload;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class EditCategoryRequest {
-    @NotBlank(message = "The categoryId is required")
+    @NotNull(message = "The categoryId is required")
     private Integer categoryId;
     @NotBlank(message = "The name is required")
     private String name;
