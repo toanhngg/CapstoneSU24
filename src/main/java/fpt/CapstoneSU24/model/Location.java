@@ -45,6 +45,9 @@ public class Location {
         this.ward = ward;
     }
 
+    public Location(Location location) {
+    }
+
     public int getLocationId() {
         return locationId;
     }

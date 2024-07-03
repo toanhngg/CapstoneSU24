@@ -13,6 +13,6 @@ import java.util.List;
 public interface ItemLogMapper {
     ItemLogMapper INSTANCE = Mappers.getMapper(ItemLogMapper.class);
 
-    AbortDTO itemLogToAbortDTO(ItemLog itemLog);
+ //   AbortDTO itemLogToAbortDTO(ItemLog itemLog);
 
 }

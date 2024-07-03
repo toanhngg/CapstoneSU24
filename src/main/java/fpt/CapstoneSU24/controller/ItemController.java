@@ -1,12 +1,12 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.*;
-import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.service.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
@@ -61,10 +61,10 @@ public class ItemController {
     }
 
 
-    @GetMapping("/findAllItemByProductId")
-    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
-        return itemService.findByProductId(ProductId);
-    }
+//    @GetMapping("/findAllItemByProductId")
+//    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
+//        return itemService.findByProductId(ProductId);
+//    }
 
 
     //list all item_log by product_recogine
@@ -80,8 +80,8 @@ public class ItemController {
     }
 
     @GetMapping("/getCertificate")
-    public ResponseEntity<?> getCertificate(@RequestBody String email, @RequestParam String productRecognition) {
-         return itemService.getCertificate(email,productRecognition);
+    public ResponseEntity<?> getCertificate(@RequestBody CurrentOwnerCheckDTO req) {
+         return itemService.getCertificate(req);
     }
 
     @PostMapping(value = "/confirmCurrentOwner")
@@ -109,6 +109,9 @@ public class ItemController {
 
     @PostMapping(value = "/checkAuthorized")
     public ResponseEntity<Boolean> checkAuthorized(@RequestParam String productRecognition)  {
+        if(productRecognition.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
         return itemService.checkAuthorized(productRecognition);
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
@@ -116,31 +119,34 @@ public class ItemController {
 
     //API check CurrentOwner
     @PostMapping(value = "/checkCurrentOwner")
-    public ResponseEntity<Boolean> checkCurrentOwner(@RequestBody String email, @RequestParam String productRecognition) {
+    public ResponseEntity<Boolean> checkCurrentOwner(@Valid @RequestBody CurrentOwnerCheckDTO req) {
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
-        return itemService.checkCurrentOwner(email,productRecognition);
+        return itemService.checkCurrentOwner(req);
     }
 
     @PostMapping(value = "/sendCurrentOwnerOTP")
-    public ResponseEntity<?> sendCurrentOwnerOTP(@RequestBody String req) {
+    public ResponseEntity<?> sendCurrentOwnerOTP(@Valid @RequestBody CurrentOwnerCheckDTO req) {
         return itemService.sendCurrentOwnerOTP(req);
     }
 
     //API send OTP  nhap mail => sendOTP chua check
     @PostMapping(value = "/sendOTP")
-    public ResponseEntity<?> sendOTP(@RequestBody String email, @RequestParam String productRecognition) {
-        return itemService.sendOTP(email,productRecognition);
+    public ResponseEntity<?> sendOTP(@Valid @RequestBody CurrentOwnerCheckDTO req) {
+        return itemService.sendOTP(req);
     }
 
     // API verify OTP
     @PostMapping(value = "/confirmOTP")
-    public ResponseEntity<Boolean> confirmOTP(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
+    public ResponseEntity<Boolean> confirmOTP(@Valid @RequestBody SendOTP otp, @RequestParam String productRecognition) {
+        if(productRecognition.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
         return itemService.confirmOTP(otp,productRecognition);
     }
     @PostMapping(value = "/abortItem")
-    public ResponseEntity<?> abortItem(@RequestBody AbortDTO abortDTO, @RequestParam String productRecognition ){
-        return itemService.abortItem(abortDTO,productRecognition);
+    public ResponseEntity<?> abortItem(@RequestBody AbortDTO abortDTO ){
+        return itemService.abortItem(abortDTO);
     }
 }
 

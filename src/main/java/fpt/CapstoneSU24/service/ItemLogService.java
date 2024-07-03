@@ -54,7 +54,7 @@ public class ItemLogService {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
 
-            if (!itemService.checkOwner(itemLogDTO.getEmailParty(), item.getProductRecognition())) {
+            if (!itemService.checkOwner(itemLogDTO.getEmailParty(), item.getCurrentOwner())) {
                 return new ResponseEntity<>("Unauthorized action.", HttpStatus.UNAUTHORIZED);
             }
 

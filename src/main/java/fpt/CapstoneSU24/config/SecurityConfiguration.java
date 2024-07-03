@@ -79,8 +79,8 @@ public class SecurityConfiguration {
                                 "api/user/getUserById",
                                 "api/item/getTESTCertificate",
                                 "api/item/convertHtmlToPdf",
-                                "api/item/getCertificate"
-
+                                "api/item/getCertificate",
+                                "api/item/abortItem"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

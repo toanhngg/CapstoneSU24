@@ -1,147 +1,60 @@
 package fpt.CapstoneSU24.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Data
 @Getter
 @Setter
 public class EventItemLogDTO {
-    //  private int userId;
+
+    @NotBlank(message = "Address is mandatory")
     private String address;
+
+    @NotBlank(message = "City is mandatory")
     private String city;
+
+    @NotBlank(message = "Country is mandatory")
     private String country;
+
+    @DecimalMin(value = "-180.0", message = "CoordinateX must be between -180 and 180")
+    @DecimalMax(value = "180.0", message = "CoordinateX must be between -180 and 180")
     private double coordinateX;
+
+    @DecimalMin(value = "-90.0", message = "CoordinateY must be between -90 and 90")
+    @DecimalMax(value = "90.0", message = "CoordinateY must be between -90 and 90")
     private double coordinateY;
+
+    @Size(max = 255, message = "DescriptionItemLog must be less than 255 characters")
     private String descriptionItemLog;
+
     @JsonIgnore
     private int authorizedId;
+
+    @NotBlank(message = "ProductRecognition is mandatory")
     private String productRecognition;
+
+    @Positive(message = "EventId must be a positive number")
     private int eventId;
+
     @JsonIgnore
+    @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "PhoneParty is invalid")
     private String phoneParty;
+
     @JsonIgnore
+    @Size(max = 100, message = "FullNameParty must be less than 100 characters")
     private String fullNameParty;
+
     @JsonIgnore
+    @Email(message = "EmailParty should be a valid email")
     private String emailParty;
+
     @JsonIgnore
     private byte[] imageItemLog;
+
+    @Positive(message = "TransportId must be a positive number")
     private int transportId;
 
-    public int getTransportId() {
-        return transportId;
-    }
-
-    public void setTransportId(int transportId) {
-        this.transportId = transportId;
-    }
-
-    public EventItemLogDTO() {
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public double getCoordinateX() {
-        return coordinateX;
-    }
-
-    public void setCoordinateX(double coordinateX) {
-        this.coordinateX = coordinateX;
-    }
-
-    public double getCoordinateY() {
-        return coordinateY;
-    }
-
-    public void setCoordinateY(double coordinateY) {
-        this.coordinateY = coordinateY;
-    }
-
-    public String getDescriptionItemLog() {
-        return descriptionItemLog;
-    }
-
-    public void setDescriptionItemLog(String descriptionItemLog) {
-        this.descriptionItemLog = descriptionItemLog;
-    }
-
-    public int getAuthorizedId() {
-        return authorizedId;
-    }
-
-    public void setAuthorizedId(int authorizedId) {
-        this.authorizedId = authorizedId;
-    }
-
-    public String getProductRecognition() {
-        return productRecognition;
-    }
-
-    public void setProductRecognition(String productRecognition) {
-        this.productRecognition = productRecognition;
-    }
-
-    public int getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(int eventId) {
-        this.eventId = eventId;
-    }
-
-    public String getPhoneParty() {
-        return phoneParty;
-    }
-
-    public void setPhoneParty(String phoneParty) {
-        this.phoneParty = phoneParty;
-    }
-
-    public String getFullNameParty() {
-        return fullNameParty;
-    }
-
-    public void setFullNameParty(String fullNameParty) {
-        this.fullNameParty = fullNameParty;
-    }
-
-    public String getEmailParty() {
-        return emailParty;
-    }
-
-    public void setEmailParty(String emailParty) {
-        this.emailParty = emailParty;
-    }
-
-    public byte[] getImageItemLog() {
-        return imageItemLog;
-    }
-
-    public void setImageItemLog(byte[] imageItemLog) {
-        this.imageItemLog = imageItemLog;
-    }
+    // Getters and setters (or use Lombok @Data annotation for brevity)
 }

@@ -32,17 +32,19 @@ public class ProductService {
     private final ImageProductRepository imageProductRepository;
     private final ItemRepository itemRepository;
     private final CloudinaryService cloudinaryService;
+    private final ProductMapper productMapper;
 
     @Autowired
     public ProductService(ProductRepository productRepository,
                              CategoryRepository categoryRepository,
                              ImageProductRepository imageProductRepository, ItemRepository itemRepository,
-                             CloudinaryService cloudinaryService) {
+                             CloudinaryService cloudinaryService,ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.imageProductRepository = imageProductRepository;
         this.itemRepository = itemRepository;
         this.cloudinaryService = cloudinaryService;
         this.categoryRepository = categoryRepository;
+        this.productMapper = productMapper;
 
 
     }
@@ -169,7 +171,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity findProductDetailById(IdRequest req) {
+    public ResponseEntity<?> findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
