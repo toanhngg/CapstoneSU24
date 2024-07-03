@@ -4,19 +4,16 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
-import fpt.CapstoneSU24.model.AuthToken;
-import fpt.CapstoneSU24.model.Location;
-import fpt.CapstoneSU24.model.Role;
-import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.dto.payload.VerifyEmailRequest;
+import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.dto.payload.ForgotPasswordRequest;
 import fpt.CapstoneSU24.dto.payload.LoginRequest;
 import fpt.CapstoneSU24.dto.payload.RegisterRequest;
-import fpt.CapstoneSU24.repository.AuthTokenRepository;
-import fpt.CapstoneSU24.repository.LocationRepository;
-import fpt.CapstoneSU24.repository.RoleRepository;
-import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
+import fpt.CapstoneSU24.util.DataUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +28,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.util.DateUtils;
 
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,6 +54,12 @@ public class AuthenticationService {
     private EmailService mailService;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private OTPService otpService;
+    @Autowired
+    private OTPRepository otpRepository;
+    @Autowired
+    private ClientService clientService;
 
     public AuthenticationService(
             UserRepository userRepository,
@@ -67,32 +72,35 @@ public class AuthenticationService {
     }
 
     public ResponseEntity signup(RegisterRequest input) {
-        try {
-            if (userRepository.findOneByEmail(input.getEmail()) == null) {
+        if (clientService.checkOTPinSQL(input.getEmail(), input.getOtpVerify())) {
+            try {
+                if (userRepository.findOneByEmail(input.getEmail()) == null) {
 //                if (roleRepository.findOneByRoleId(2) == null) {
 //                    roleRepository.save(new Role(0, "admin"));
 //                    roleRepository.save(new Role(0, "manufacture"));
 //                }
-                User user = new User();
-                user.setEmail(input.getEmail());
-                user.setFirstName(input.getFirstName());
-                user.setLastName(input.getLastName());
-                user.setPhone(input.getPhone());
-                user.setOrg_name(input.getOrgName());
-                user.setRole(roleRepository.findOneByRoleId(2));
-                user.setPassword(passwordEncoder.encode(input.getPassword()));
-                user.setCreateAt(System.currentTimeMillis());
-                Location location = new Location(0, input.getAddress(), input.getCity(), input.getCountry(), input.getCoordinateX(), input.getCoordinateY(), input.getDistrict(), input.getWard()); //manhDT sua bang
-                locationRepository.save(location);
-                user.setLocation(location);
-                userRepository.save(user);
-                authTokenRepository.save(new AuthToken(0, user, null));
-                return ResponseEntity.status(HttpStatus.OK).body("create successfully");
+                    User user = new User();
+                    user.setEmail(input.getEmail());
+                    user.setFirstName(input.getFirstName());
+                    user.setLastName(input.getLastName());
+                    user.setPhone(input.getPhone());
+                    user.setOrg_name(input.getOrgName());
+                    user.setRole(roleRepository.findOneByRoleId(2));
+                    user.setPassword(passwordEncoder.encode(input.getPassword()));
+                    user.setCreateAt(System.currentTimeMillis());
+                    Location location = new Location(0, input.getAddress(), input.getCity(), input.getCountry(), input.getCoordinateX(), input.getCoordinateY(), input.getDistrict(), input.getWard()); //manhDT sua bang
+                    locationRepository.save(location);
+                    user.setLocation(location);
+                    userRepository.save(user);
+                    authTokenRepository.save(new AuthToken(0, user, null));
+                    return ResponseEntity.status(HttpStatus.OK).body("create successfully");
+                }
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("email already exists");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
             }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("email already exists");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("otp code is expired");
     }
 
     public ResponseEntity login(LoginRequest loginRequest, HttpServletResponse response) {
@@ -109,6 +117,36 @@ public class AuthenticationService {
         System.out.println("jwt: " + jwtToken);
         log.info("User {} is attempting to log in.", loginRequest.getEmail());
         return ResponseEntity.status(HttpStatus.OK).body("login successfully");
+    }
+
+    public ResponseEntity sendEmailVerify(VerifyEmailRequest req) {
+        try {
+            DataMailDTO dataMail = new DataMailDTO();
+            dataMail.setTo(req.getEmail());
+            dataMail.setSubject(Const.SEND_MAIL_SUBJECT.VERIFY_EMAIL);
+
+            //create otp
+            String otpVerify = DataUtils.generateTempPwd(6);
+            Map<String, Object> props = new HashMap<>();
+            props.put("otpVerify", otpVerify);
+
+            dataMail.setProps(props);
+
+            //expire otp
+            Date expiryTime = otpService.calculateExpiryTime(2);
+            OTP otpCheck = otpRepository.findOTPByEmail(req.getEmail());
+            if (otpCheck == null) {
+                otpCheck = new OTP(req.getEmail(), otpVerify, expiryTime);
+                otpRepository.save(otpCheck);
+            } else {
+                otpService.updateOTPCode(req.getEmail(), otpVerify, expiryTime);
+            }
+            //send email
+            mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.VERIFY_EMAIL);
+            return ResponseEntity.status(HttpStatus.OK).body("Send email successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
     }
 
     public ResponseEntity logout(HttpServletResponse response) {

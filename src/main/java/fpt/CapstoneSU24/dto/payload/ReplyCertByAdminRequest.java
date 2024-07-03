@@ -1,24 +1,18 @@
 package fpt.CapstoneSU24.dto.payload;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
 public class ReplyCertByAdminRequest {
-    @NotBlank(message = "The manufacturerId is required")
+    @Getter
+    @NotNull(message = "The manufacturerId is required")
     private Integer manufacturerId;
-    @NotBlank(message = "The isAccept is required")
-    private Boolean isAccept;
+    @Getter
+    @NotNull(message = "The isAccept is required")
+    private Integer isAccept;
+    @Getter
     @NotBlank(message = "The note is required")
     private String note;
 
-    public boolean isAccept() {
-        return isAccept;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public int getManufacturerId() {
-        return manufacturerId;
-    }
 }

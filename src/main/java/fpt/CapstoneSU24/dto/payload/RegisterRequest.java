@@ -32,7 +32,12 @@ public class RegisterRequest {
     private String phone;
     @NotBlank(message = "The orgName is required")
     private String orgName;
+    @NotBlank(message = "The otp is required")
+    private String otpVerify;
 
+    public String getOtpVerify() {
+        return otpVerify;
+    }
     public String getOrgName() {
         return orgName;
     }

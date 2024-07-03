@@ -3,8 +3,10 @@ package fpt.CapstoneSU24.controller;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.payload.ForgotPasswordRequest;
 import fpt.CapstoneSU24.dto.payload.RegisterRequest;
+import fpt.CapstoneSU24.dto.payload.VerifyEmailRequest;
 import fpt.CapstoneSU24.service.AuthenticationService;
 import fpt.CapstoneSU24.dto.payload.LoginRequest;
+import fpt.CapstoneSU24.service.ClientService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ public class AuthenticationController {
 
     @Autowired
     public AuthenticationController(AuthenticationService authenticationService){
-        this.authenticationService =authenticationService;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/signup")
@@ -46,5 +48,9 @@ public class AuthenticationController {
     @PostMapping("/forgotPassword")
     public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgotPasswordRequest req) {
         return authenticationService.forgetPassword(req);
+    }
+    @PostMapping("/sendEmailVerify")
+    public ResponseEntity<?> sendEmailVerify(@Valid @RequestBody VerifyEmailRequest req) {
+        return authenticationService.sendEmailVerify(req);
     }
 }

@@ -70,7 +70,7 @@ public class CertificateService {
         User currentUser = (User) authentication.getPrincipal();
         if (currentUser.getRole().getRoleId() == 1) {
             try {
-                if (req.isAccept()) {
+                if (req.getIsAccept() == 1) {
                     int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
                     User user = userRepository.findOneByUserId(req.getManufacturerId());
                     user.setStatus(1);
