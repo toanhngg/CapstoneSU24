@@ -37,7 +37,7 @@ public CertificateController( CertificateService certificateService){
     {
         return certificateService.getListCertMe();
     }
-    @GetMapping("/replyCertByAdmin")
+    @PostMapping("/replyCertByAdmin")
     public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req)
     {
         return certificateService.replyCertByAdmin(req);

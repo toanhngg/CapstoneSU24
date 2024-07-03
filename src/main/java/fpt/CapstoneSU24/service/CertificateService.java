@@ -52,7 +52,10 @@ public class CertificateService {
             List<ListCertificateDTOResponse> certificateListDTOList = new ArrayList<>();
             for (Certificate c : certificates) {
                 String[] parts = c.getImages().split("\\.");
-                List<String> list = Arrays.asList(parts);
+                List<String> list = new ArrayList<>();
+                for (String part : parts) {
+                    list.add(cloudinaryService.getImageUrl(part));
+                }
                 certificateListDTOList.add(new ListCertificateDTOResponse( c.getCertificateId(),c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate()));
             }
 
@@ -63,22 +66,27 @@ public class CertificateService {
     }
 
     public ResponseEntity<?> replyCertByAdmin(ReplyCertByAdminRequest req) {
-        try {
-            if (req.isAccept()) {
-                int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
-                User user = userRepository.findOneByUserId(req.getManufacturerId());
-                user.setStatus(9);
-                userRepository.save(user);
-            } else {
-                int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
-                User user = userRepository.findOneByUserId(req.getManufacturerId());
-                user.setStatus(7);
-                userRepository.save(user);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getRole().getRoleId() == 1) {
+            try {
+                if (req.isAccept()) {
+                    int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
+                    User user = userRepository.findOneByUserId(req.getManufacturerId());
+                    user.setStatus(1);
+                    userRepository.save(user);
+                } else {
+                    int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
+                    User user = userRepository.findOneByUserId(req.getManufacturerId());
+                    user.setStatus(7);
+                    userRepository.save(user);
+                }
+                return ResponseEntity.ok("update status for manufacturer id " + req.getManufacturerId());
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body("error");
             }
-            return ResponseEntity.ok("update status for manufacturer id " + req.getManufacturerId());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("error");
         }
+        return ResponseEntity.status(500).body("your account is not allowed for this action");
     }
 
     public ResponseEntity<?> deleteAllCertByManufacturer() {
@@ -143,7 +151,7 @@ public class CertificateService {
     public ResponseEntity<?> sendRequestVerifyCert() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 9) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 1) {
             try {
               currentUser.setStatus(8);
               userRepository.save(currentUser);
@@ -180,7 +188,7 @@ public class CertificateService {
     public ResponseEntity<?> createCertificate(CreateCertificateRequest req) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 9) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 1) {
             try {
                 String fullFilePath = "";
                 for (int i = 0; i < req.getFile().size(); i++) {
