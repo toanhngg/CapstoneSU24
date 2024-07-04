@@ -19,9 +19,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     public User findOneByEmail(String email);
     public User findOneByEmailAndPassword(String email, String password);
     Optional<User> findByEmail(String email);
+    Page<User> findAllByPhoneContainingAndStatus(String phone, int status, Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u.status = :status")
-    List<User> findAllByStatus(@Param("status")  int status);
+    Page<User> findAllByStatus(int status, Pageable pageable);
 
     @Query("SELECT u FROM User u " +
             "WHERE (:email IS NULL OR :email = '' OR u.email = :email) " +
@@ -51,5 +51,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                              @Param("dateFrom") Long dateFrom,
                              @Param("dateTo") Long dateTo,
                              Pageable pageable);*/
+    @Query("SELECT o FROM User o WHERE o.org_name LIKE :orgName AND o.status = 1")
+    Page<User> findAllUser(@Param("orgName") String orgName, Pageable pageable);
 }
 

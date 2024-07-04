@@ -6,15 +6,15 @@ import jakarta.validation.constraints.Null;
 
 public class UpdateStatusUserRequest {
     @NotNull(message = "The id is required")
-    private int id;
+    private Integer id;
     @NotNull(message = "The status is required")
-    private int status;
+    private Integer status;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 }

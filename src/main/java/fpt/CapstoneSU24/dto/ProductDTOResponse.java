@@ -1,11 +1,13 @@
 package fpt.CapstoneSU24.dto;
 
 public class ProductDTOResponse {
+    private int productId;
     private String productName;
     private String description;
     private String avatar;
 
-    public ProductDTOResponse(String productName, String description, String avatar) {
+    public ProductDTOResponse(int productId, String productName, String description, String avatar) {
+        this.productId = productId;
         this.productName = productName;
         this.description = description;
         this.avatar = avatar;
@@ -33,5 +35,13 @@ public class ProductDTOResponse {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 }

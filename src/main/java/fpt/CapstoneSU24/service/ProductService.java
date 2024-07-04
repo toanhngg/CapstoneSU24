@@ -7,7 +7,7 @@ import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.dto.payload.AddProductRequest;
 import fpt.CapstoneSU24.dto.payload.EditProductRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
+import fpt.CapstoneSU24.dto.payload.FilterSearchProductRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
@@ -125,7 +125,7 @@ public class ProductService {
                 }
 
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("add product successfully");
+                return ResponseEntity.status(HttpStatus.OK).body("edit product successfully");
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error edit product");
             }
@@ -135,7 +135,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity findAllProductByManufacturerId(FilterSearchRequest req) {
+    public ResponseEntity findAllProductByManufacturerId(FilterSearchProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         try {
@@ -144,9 +144,9 @@ public class ProductService {
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
             if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                products = productRepository.findByManufacturerAndCreateAtBetween(currentUser, req.getStartDate(), req.getEndDate(), pageable);
+                products = productRepository.findAllProductWithDate(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
             } else {
-                products = productRepository.findByManufacturerAndProductNameContaining(currentUser, req.getName(), pageable);
+                products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
             }
             return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToProductDTOResponse));
         } catch (Exception e) {

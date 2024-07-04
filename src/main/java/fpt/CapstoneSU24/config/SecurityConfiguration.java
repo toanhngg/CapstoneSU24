@@ -81,7 +81,14 @@ public class SecurityConfiguration {
                                 "api/item/convertHtmlToPdf",
                                 "api/item/getCertificate",
                                 "api/item/abortItem",
-                                "api/itemlog/editItemLog"
+                                "api/itemlog/editItemLog",
+                                "api/test/healthCheck",
+                                "api/category/findAll",
+                                "/api/certificate/getListCertificateByManuId",
+                                "/api/user/getDetailUser",
+                                "/api/user/getAllUser"
+
+
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

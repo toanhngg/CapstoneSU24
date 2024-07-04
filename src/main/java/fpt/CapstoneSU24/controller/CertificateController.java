@@ -2,6 +2,8 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.Certificate.CreateCertificateRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.ListManuToVerifyRequest;
+import fpt.CapstoneSU24.dto.payload.ReplyCertByAdminRequest;
 import fpt.CapstoneSU24.service.CertificateService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +27,36 @@ public CertificateController( CertificateService certificateService){
         return certificateService.getListCertificateByManuId(req);
     }
 
-    @GetMapping("/getListManuToVerify")
-    public ResponseEntity<?> getListManuToVerify()
+    @PostMapping("/getListManuToVerify")
+    public ResponseEntity<?> getListManuToVerify(@Valid @RequestBody ListManuToVerifyRequest req)
     {
-        return certificateService.getListManuToVerify();
+        return certificateService.getListManuToVerify(req);
+    }
+    @GetMapping("/getListCertMe")
+    public ResponseEntity<?> getListCertMe()
+    {
+        return certificateService.getListCertMe();
+    }
+    @PostMapping("/replyCertByAdmin")
+    public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req)
+    {
+        return certificateService.replyCertByAdmin(req);
     }
 
     @PostMapping("/createCertificate")
     public ResponseEntity<?> createCertificate(@Valid @RequestBody CreateCertificateRequest req) throws IOException {
         return certificateService.createCertificate(req);
+    }
+    @GetMapping("/deleteAllCertByManufacturer")
+    public ResponseEntity<?> deleteAllCertByManufacturer() throws IOException {
+        return certificateService.deleteAllCertByManufacturer();
+    }
+    @PostMapping("/deleteCertCertId")
+    public ResponseEntity<?> deleteCertCertId(@Valid @RequestBody IdRequest req) throws IOException {
+        return certificateService.deleteCertCertId(req);
+    }
+    @GetMapping("/SendRequestVerifyCert")
+    public ResponseEntity<?> SendRequestVerifyCert() throws IOException {
+        return certificateService.sendRequestVerifyCert();
     }
 }

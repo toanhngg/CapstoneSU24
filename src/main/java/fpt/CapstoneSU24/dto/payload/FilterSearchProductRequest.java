@@ -2,7 +2,7 @@ package fpt.CapstoneSU24.dto.payload;
 
 import jakarta.validation.constraints.*;
 
-public class FilterSearchRequest {
+public class FilterSearchProductRequest {
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
     @NotNull(message = "The pageSize is required")
     private int pageSize;
@@ -17,8 +17,14 @@ public class FilterSearchRequest {
     private long endDate;
     @NotNull(message = "The name is not null")
     private String name;
+    @NotNull(message = "The categoryName is not null")
+    private String categoryName;
     @NotNull(message = "The type is not null")
     private String type;
+
+    public String getCategoryName() {
+        return categoryName;
+    }
 
     public int getPageSize() {
         return pageSize;

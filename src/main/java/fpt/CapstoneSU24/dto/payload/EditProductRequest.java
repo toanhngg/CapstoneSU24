@@ -6,24 +6,24 @@ import java.util.List;
 
 public class EditProductRequest {
     @NotNull(message = "The product Id is required")
-    private int productId;
+    private Integer productId;
     @NotBlank(message = "The productName is required")
     private String productName;
     @NotNull(message = "The certificateId is required")
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
-    private int categoryId;
+    private Integer categoryId;
     @NotBlank(message = "The dimensions is required")
     private String dimensions;
     @NotBlank(message = "The material is required")
     private String material;
     @NotNull(message = "The weight is required")
     @Min(value = 0, message = "Value must be positive")
-    private float weight;
+    private Float weight;
     @NotBlank(message = "The description is required")
     private String description;
     @Min(value = 0, message = "Value must be positive")
     @NotNull(message = "The warranty is required")
-    private int warranty;
+    private Integer warranty;
     @NotNull(message = "The images is required")
     private List<String> images;
     @NotNull(message = "The avatar is required")
@@ -31,31 +31,27 @@ public class EditProductRequest {
     @NotNull(message = "The file3D is required")
     private String file3D;
 
-    public int getProductId() {
+    public Integer getProductId() {
         return productId;
-    }
-
-    public String getDimensions() {
-        return dimensions;
     }
 
     public String getProductName() {
         return productName;
     }
 
-    public int getCategoryId() {
+    public Integer getCategoryId() {
         return categoryId;
     }
 
-//    public String getUnitPrice() {
-//        return unitPrice;
-//    }
+    public String getDimensions() {
+        return dimensions;
+    }
 
     public String getMaterial() {
         return material;
     }
 
-    public float getWeight() {
+    public Float getWeight() {
         return weight;
     }
 
@@ -63,13 +59,9 @@ public class EditProductRequest {
         return description;
     }
 
-    public int getWarranty() {
+    public Integer getWarranty() {
         return warranty;
     }
-
-//    public int getCertificateId() {
-//        return certificateId;
-//    }
 
     public List<String> getImages() {
         return images;

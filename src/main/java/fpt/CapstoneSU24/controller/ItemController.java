@@ -1,8 +1,8 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.*;
+import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.service.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class ItemController {
      * default data startDate and endDate equal 0 (need insert 2 data)
      * */
     @PostMapping("/search")
-    public ResponseEntity<?> searchItem(@Valid @RequestBody FilterSearchRequest req) {
+    public ResponseEntity<?> searchItem(@Valid @RequestBody FilterSearchItemRequest req) {
         return itemService.searchItem(req);
     }
 

@@ -64,9 +64,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
                 if(jwtToken.equals(pevJwtToken)){
                     //generate new token and save in database
-                    String newJwtToken = jwtService.generateToken(currentUser, currentUser);
+//                    String newJwtToken = jwtService.generateToken(currentUser, currentUser);
                     //save in cookie
-                    response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(newJwtToken).toString());
+                    response.setHeader(HttpHeaders.SET_COOKIE, jwtTokenUtil.setResponseCookie(jwtToken).toString());
                 }else {
                     logger.warn("JWT Token does not matching");
                     //set all session is null

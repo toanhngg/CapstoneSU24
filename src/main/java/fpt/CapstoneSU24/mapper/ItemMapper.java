@@ -15,12 +15,10 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public abstract class ItemMapper {
-    @Mapping(source = "id", target = "id")
+    @Mapping(source = "itemId", target = "itemId")
     @Mapping(source = "productRecognition", target = "productRecognition")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "status", target = "status")
 
-    public abstract List<ItemViewDTOResponse> itemToItemViewDTOResponse(List<Item> item);
-
-
+    public abstract ItemViewDTOResponse itemToItemViewDTOResponse(Item item);
 }

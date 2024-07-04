@@ -14,9 +14,8 @@ public class ProductDetailDTOResponse {
 
     private String avatar;
     private List<String> listImages;
-    private List<ItemViewDTOResponse> listItemsView;
 
-    public ProductDetailDTOResponse(int productId, String productName, String dimensions, String material, String description, long createAt, float weight, int warranty, String avatar, List<String> listImages, List<ItemViewDTOResponse> listItemsView) {
+    public ProductDetailDTOResponse(int productId, String productName, String dimensions, String material, String description, long createAt, float weight, int warranty, String avatar, List<String> listImages) {
         this.productId = productId;
         this.productName = productName;
         this.dimensions = dimensions;
@@ -27,8 +26,8 @@ public class ProductDetailDTOResponse {
         this.warranty = warranty;
         this.avatar = avatar;
         this.listImages = listImages;
-        this.listItemsView = listItemsView;
     }
+
     public int getProductId() {
         return productId;
     }
@@ -109,11 +108,4 @@ public class ProductDetailDTOResponse {
         this.listImages = listImages;
     }
 
-    public List<ItemViewDTOResponse> getListItemsView() {
-        return listItemsView;
-    }
-
-    public void setListItemsView(List<ItemViewDTOResponse> listItemsView) {
-        this.listItemsView = listItemsView;
-    }
 }

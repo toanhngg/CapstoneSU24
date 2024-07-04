@@ -3,9 +3,10 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.controller.ItemController;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
+import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.exception.LogService;
+import fpt.CapstoneSU24.mapper.ItemMapper;
 import fpt.CapstoneSU24.mapper.AbortMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
@@ -56,6 +57,8 @@ public class ItemService {
     private final OriginRepository originRepository;
     private final CloudinaryService cloudinaryService;
     private final LogService logService;
+    private final ItemMapper itemMapper;
+    private final AbortMapper abortMapper;
     private final AbortMapper abortMapper;
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
@@ -66,7 +69,7 @@ public class ItemService {
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
-                       AbortMapper abortMapper) {
+                       AbortMapper abortMapper,ItemMapper itemMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -85,26 +88,26 @@ public class ItemService {
         this.originRepository = originRepository;
         this.cloudinaryService = cloudinaryService;
         this.logService = logService;
+        this.itemMapper = itemMapper;
         this.abortMapper = abortMapper;
     }
     /*
      * type is sort type: "desc" or "asc"
      * default data startDate and endDate equal 0 (need insert 2 data)
      * */
-    public ResponseEntity<?> searchItem(FilterSearchRequest req) {
+    public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
         try {
             Page<Item> items;
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
 //        Page<Item> items = jsonReq.getString("type") == null? itemRepository.findAll(pageable) : jsonReq.getString("type").equals("desc") ? itemRepository.sortItemsByCreatedAtDesc(pageable) :  itemRepository.sortItemsByCreatedAtAsc(pageable);
-            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate(), pageable);
-
-            } else {
-                items = itemRepository.findAllByCurrentOwnerContaining(req.getName(), pageable);
+            if(req.getStartDate() != 0 && req.getEndDate() != 0){
+                items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
+            }else{
+                items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
             }
-            return ResponseEntity.status(200).body(items);
+            return ResponseEntity.status(200).body(items.map(itemMapper::itemToItemViewDTOResponse));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");
         }

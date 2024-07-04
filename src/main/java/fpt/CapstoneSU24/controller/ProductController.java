@@ -2,7 +2,7 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.payload.AddProductRequest;
 import fpt.CapstoneSU24.dto.payload.EditProductRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
+import fpt.CapstoneSU24.dto.payload.FilterSearchProductRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.service.ProductService;
 import jakarta.validation.Valid;
@@ -38,9 +38,8 @@ public class ProductController {
 
 
     @PostMapping("/findAllProductByManufacturerId")
-    public ResponseEntity<?> findAllProductByManufacturerId(@Valid @RequestBody FilterSearchRequest req) {
+    public ResponseEntity<?> findAllProductByManufacturerId(@Valid @RequestBody FilterSearchProductRequest req) {
         return productService.findAllProductByManufacturerId(req);
-
     }
     @PostMapping("/findImgByProductId")
     public ResponseEntity<?> findImgByProductId(@Valid @RequestBody IdRequest req) {

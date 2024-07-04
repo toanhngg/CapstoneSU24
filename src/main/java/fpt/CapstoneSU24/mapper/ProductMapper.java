@@ -25,7 +25,7 @@ public abstract class ProductMapper {
     private ItemRepository itemRepository;
     @Autowired
     private ItemMapper itemMapper;
-
+    @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "description", target = "description")
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
@@ -42,7 +42,6 @@ public abstract class ProductMapper {
 
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
     @Mapping(target = "listImages", ignore = true) // Ignore avatar for now, we'll set it manually
-    @Mapping(target = "listItemsView", ignore = true) // Ignore avatar for now, we'll set it manually
 
     public abstract ProductDetailDTOResponse productToProductDetailDTOResponse(Product product);
 
@@ -65,11 +64,11 @@ public abstract class ProductMapper {
         List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(product.getProductId()).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());
         productDTO.setListImages(imageProducts);
     }
-    @AfterMapping
-    protected void setListItemsView(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
-        List<Item> items = itemRepository.findAllByProductId(product.getProductId());
-        if (items != null) {
-            productDTO.setListItemsView(itemMapper.itemToItemViewDTOResponse(items));
-        }
-    }
+//    @AfterMapping
+//    protected void setListItemsView(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
+//        List<Item> items = itemRepository.findAllByProductId(product.getProductId());
+//        if (items != null) {
+//            productDTO.setListItemsView(itemMapper.itemToItemViewDTOResponse(items));
+//        }
+//    }
 }

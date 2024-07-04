@@ -5,6 +5,9 @@ import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
+import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
+import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
@@ -107,11 +110,26 @@ public class UserService {
         }
         return userProfileDTO;
     }
-//    =========================
-public ResponseEntity getAllUsers() {
-    List<User> userList = userRepository.findAll();
-    return ResponseEntity.ok(userList);
+public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
+    try {
+        Page<User> users;
+        Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+                req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+                        PageRequest.of(req.getPageNumber(), req.getPageSize());
+        users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
+        return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body("Error when fetching data");
+    }
 }
+    public ResponseEntity<?> getDetailUser(IdRequest req) {
+        try {
+              User user = userRepository.findOneByUserId(req.getId());
+            return ResponseEntity.status(200).body(userMapper.usersToUserViewDetailDTO(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
+    }
 
     public ResponseEntity<?> getUsersByEmail(B03_RequestDTO userRequestDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
