@@ -1,5 +1,7 @@
 package fpt.CapstoneSU24.controller;
 
+import fpt.CapstoneSU24.dto.AbortDTO;
+import fpt.CapstoneSU24.dto.EditItemLogDTO;
 import fpt.CapstoneSU24.dto.EventItemLogDTO;
 import fpt.CapstoneSU24.service.ItemLogService;
 import jakarta.validation.Valid;
@@ -29,7 +31,9 @@ public class ItemLogController {
     public ResponseEntity<?> getItemLogDetail(@RequestParam int itemLogId) {
         if(itemLogId < 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ItemLogId is not null");
         return itemLogService.getItemLogDetail(itemLogId);
-
-
+    }
+    @PostMapping(value = "/editItemLog")
+    public ResponseEntity<?> editItemLog(@Valid @RequestBody EditItemLogDTO dataEditDTO){
+        return itemLogService.editItemLog(dataEditDTO);
     }
 }

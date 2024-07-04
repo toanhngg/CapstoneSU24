@@ -80,7 +80,8 @@ public class SecurityConfiguration {
                                 "api/item/getTESTCertificate",
                                 "api/item/convertHtmlToPdf",
                                 "api/item/getCertificate",
-                                "api/item/abortItem"
+                                "api/item/abortItem",
+                                "api/itemlog/editItemLog"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

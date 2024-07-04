@@ -55,7 +55,10 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Query("UPDATE ItemLog i SET i.status = :status  WHERE i.itemLogId = :itemLogId")
     void updateStatus(@Param("status") int status, @Param("itemLogId") int itemLogId);
 
-
+    @Modifying
+    @Transactional
+    @Query("UPDATE ItemLog i SET i.address = :address WHERE i.itemLogId = :itemLogId")
+    void updateItemLog(@Param("address") String address, @Param("itemLogId") int itemLogId);
 
     //   List<Item> findAllById(int itemId);
 //    @Query("SELECT o FROM Origin o WHERE o.Product.productId = :id")

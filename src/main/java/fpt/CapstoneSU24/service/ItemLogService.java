@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.service;
 
+import fpt.CapstoneSU24.dto.EditItemLogDTO;
 import fpt.CapstoneSU24.dto.EventItemLogDTO;
 import fpt.CapstoneSU24.dto.ItemLogDetailResponse;
 import fpt.CapstoneSU24.dto.Point;
@@ -11,8 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Service
 public class ItemLogService {
@@ -155,5 +156,46 @@ public class ItemLogService {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
         }
+    }
+
+    public ResponseEntity<?> editItemLog( EditItemLogDTO dataEditDTO) {
+        ItemLog itemlogDetail = itemLogRepository.findById((Integer)dataEditDTO.getItemLogId())
+                .orElseThrow(() -> new RuntimeException("ItemLog not found"));
+        Item item = itemRepository.getReferenceById(itemlogDetail.getItem().getItemId());
+
+        if(itemService.checkOwner(dataEditDTO.getEmail(),item.getCurrentOwner())) {
+            Location location = locationRepository.findOneByItemLogId(dataEditDTO.getItemLogId());
+            locationRepository.updateLocation(location.getLocationId(),dataEditDTO.getLocation().getAddress(),dataEditDTO.getLocation().getCity(),
+                    dataEditDTO.getLocation().getCountry(),dataEditDTO.getLocation().getCoordinateX(),dataEditDTO.getLocation().getCoordinateY(),
+                    dataEditDTO.getLocation().getDistrict(),dataEditDTO.getLocation().getWard());
+
+            if (hasNullFields(itemlogDetail)) {
+                double pointX = pointService.generateX();
+                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(itemlogDetail.getItem().getItemId());
+                List<Point> pointList = pointService.getPointList(pointLogs);
+                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                Point point = new Point(pointX, pointY);
+                itemlogDetail.setPoint(point.toString());
+            }
+            // Save the updated ItemLog
+            itemLogRepository.save(itemlogDetail);
+
+
+            return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail!");
+    }
+    public boolean hasNullFields(ItemLog itemLog) {
+        for (Field field : itemLog.getClass().getDeclaredFields()) {
+            field.setAccessible(true); // Allows access to private fields
+            try {
+                if (field.get(itemLog) == null) {
+                    return true;
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Failed to access field: " + field.getName(), e);
+            }
+        }
+        return false;
     }
 }

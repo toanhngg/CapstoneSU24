@@ -30,6 +30,7 @@ public class AuthorizedDTO {
     @NotNull(message = "Location is required")
     private Location location;
 
+
    // @NotBlank(message = "Description is required")
     @Size(max = 100, message = "Description must be less than 500 characters")
     private String description;

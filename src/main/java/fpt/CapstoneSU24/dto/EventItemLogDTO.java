@@ -9,14 +9,19 @@ import lombok.Setter;
 @Setter
 public class EventItemLogDTO {
 
-    @NotBlank(message = "Address is mandatory")
+ //@NotBlank(message = "Address is mandatory")
     private String address;
 
-    @NotBlank(message = "City is mandatory")
+ // @NotBlank(message = "City is mandatory")
     private String city;
 
-    @NotBlank(message = "Country is mandatory")
+ //@NotBlank(message = "Country is mandatory")
     private String country;
+
+    private String district;
+
+    private String ward;
+
 
     @DecimalMin(value = "-180.0", message = "CoordinateX must be between -180 and 180")
     @DecimalMax(value = "180.0", message = "CoordinateX must be between -180 and 180")
@@ -56,5 +61,4 @@ public class EventItemLogDTO {
     @Positive(message = "TransportId must be a positive number")
     private int transportId;
 
-    // Getters and setters (or use Lombok @Data annotation for brevity)
 }
