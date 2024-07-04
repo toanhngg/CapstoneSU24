@@ -34,6 +34,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,7 +68,8 @@ public class ItemService {
                        ClientService clientService, AuthorizedRepository authorizedRepository,
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
-                       DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService, ItemMapper itemMapper, AbortMapper abortMapper) {
+                       DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
+                       AbortMapper abortMapper,ItemMapper itemMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -174,7 +176,7 @@ public class ItemService {
         location.setCity(itemLogDTO.getCity());
         location.setCountry(itemLogDTO.getCountry());
         location.setDistrict(itemLogDTO.getDistrict());
-        location.setWard(itemLogDTO.getStreet());
+        location.setWard(itemLogDTO.getWard());
         return location;
     }
 
@@ -434,16 +436,7 @@ public class ItemService {
                 if (item.getStatus() == 0) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized!");
                 }
-                // B2: Tiến hành ủy quyền nếu chưa ủy quyền
-                if (addEventAuthorized(authorized, item)) {
-                    // Gửi thông báo email
-                    ClientSdi sdi = new ClientSdi();
-                    sdi.setEmail(authorized.getAuthorized_email());
-                    sdi.setUsername(authorized.getAuthorized_name());
-                    sdi.setName(authorized.getAuthorized_name());
-                    clientService.notification(sdi);
-                    return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
-                }
+                return addEventAuthorized(authorized, item);
 
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not the owner");
@@ -454,7 +447,6 @@ public class ItemService {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex);
         }
-        return null;
     }
 
     public ResponseEntity<Boolean> checkCurrentOwner(CurrentOwnerCheckDTO req) {
@@ -498,65 +490,78 @@ public class ItemService {
         return itemLogRepository.getItemLogs(itemLogId);
     }
 
-    public boolean addEventAuthorized(AuthorizedDTO authorized, Item item) {
+    public ResponseEntity<String> addEventAuthorized(AuthorizedDTO authorized, Item item) {
         if (authorized == null || item == null) {
-            return false;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authored or Item is null");
         }
         try {
             Location savedLocation = locationRepository.save(authorized.getLocation());
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
-                return false;
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
             }
             ItemLog itemIndex = list.get(0);
 
-            Authorized authorizedSaved = authorizedRepository.save(new Authorized(
-                    authorized.getAuthorized_name(),
-                    authorized.getAuthorized_email(),
-                    itemIndex.getParty().getPartyFullName(),
-                    item.getCurrentOwner(),
-                    savedLocation,
-                    authorized.getPhoneNumber(),
-                    authorized.getDescription()
-            ));
+            long timeInsert = System.currentTimeMillis();
 
-            Point point = null;
+            long timeDifference = timeInsert - itemIndex.getTimeStamp() ;
 
-            if (authorized.getLocation().getAddress() != null &&
-                    authorized.getLocation().getCountry() != null &&
-                    authorized.getLocation().getCoordinateX() != 0 &&
-                    authorized.getLocation().getWard() != null &&
-                    authorized.getLocation().getDistrict() != null &&
-                    authorized.getLocation().getCity() != null &&
-                    authorized.getLocation().getCoordinateY() != 0 &&
-                    authorized.getDescription() != null) {
+            long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
+            if(timeDifference > threeDaysInMillis) {
+                Authorized authorizedSaved = authorizedRepository.save(new Authorized(
+                        authorized.getAuthorized_name(),
+                        authorized.getAuthorized_email(),
+                        itemIndex.getParty().getPartyFullName(),
+                        item.getCurrentOwner(),
+                        savedLocation,
+                        authorized.getPhoneNumber(),
+                        authorized.getDescription()
+                ));
 
-                double pointX = pointService.generateX();
-                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                List<Point> pointList = pointService.getPointList(pointLogs);
-                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                Point point = null;
 
-                point = new Point(pointX, pointY);
+                if (authorized.getLocation().getAddress() != null &&
+                        authorized.getLocation().getCountry() != null &&
+                        authorized.getLocation().getCoordinateX() != 0 &&
+                        authorized.getLocation().getWard() != null &&
+                        authorized.getLocation().getDistrict() != null &&
+                        authorized.getLocation().getCity() != null &&
+                        authorized.getLocation().getCoordinateY() != 0 &&
+                        authorized.getDescription() != null) {
+
+                    double pointX = pointService.generateX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+
+                    point = new Point(pointX, pointY);
+                }
+
+                itemLogRepository.save(new ItemLog(
+                        item,
+                        itemIndex.getAddress(), // cai nay lay cua item log trc no => address luu dia chi thi la o ben location bang Authoried
+                        itemIndex.getParty(),
+                        itemIndex.getLocation(),
+                        timeInsert,
+                        authorized.getDescription(),
+                        authorizedSaved,
+                        new EventType(3),  // 3 indicates authorization event
+                        1,
+                        null,
+                        point != null ? point.toString() : null
+                ));
+                // Gửi thông báo email
+                ClientSdi sdi = new ClientSdi();
+                sdi.setEmail(authorized.getAuthorized_email());
+                sdi.setUsername(authorized.getAuthorized_name());
+                sdi.setName(authorized.getAuthorized_name());
+                clientService.notification(sdi);
+                return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
             }
-
-            itemLogRepository.save(new ItemLog(
-                    item,
-                    authorized.getLocation().getAddress(),
-                    itemIndex.getParty(),
-                    itemIndex.getLocation(),
-                    System.currentTimeMillis(),
-                    authorized.getDescription(),
-                    authorizedSaved,
-                    new EventType(3),  // 3 indicates authorization event
-                    1,
-                    null,
-                    point != null ? point.toString() : null
-            ));
-
-            return true;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot authorize products once created!");
         } catch (Exception ex) {
             logService.logError(ex);
-            return false;
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
 
@@ -722,46 +727,51 @@ public class ItemService {
         try {
 
             Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
-
-            if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
-                if (item.getStatus() == 0)
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
-                // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
-                ItemLog itemLog = new ItemLog();
-                Location locationSaved = new Location();
-                locationSaved.setAddress(abortDTO.getLocation().getAddress());
-                locationSaved.setCity(abortDTO.getLocation().getAddress());
-                locationSaved.setCountry(abortDTO.getLocation().getCountry());
-                locationSaved.setCoordinateX(abortDTO.getLocation().getCoordinateX());
-                locationSaved.setCoordinateY(abortDTO.getLocation().getCoordinateY());
-                locationSaved.setDistrict(abortDTO.getLocation().getDistrict());
-                locationSaved.setWard(abortDTO.getLocation().getWard());
-                locationRepository.save(locationSaved);
-                itemLog.setItem(item);
-                itemLog.setLocation(locationSaved);
-                itemLog.setStatus(1);
-                itemLog.setTimeStamp(System.currentTimeMillis());
-                Party partySaved = new Party();
-                partySaved.setPartyFullName(item.getCurrentOwner());
-                partySaved.setEmail(item.getCurrentOwner());
-                partyRepository.save(partySaved);
-                itemLog.setParty(partySaved);
-                double pointX = pointService.generateX();
-                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                List<Point> pointList = pointService.getPointList(pointLogs);
-                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-                Point point = new Point(pointX, pointY);
-                itemLog.setPoint(point.toString());
-                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(5)); // Event này là nhận hàng
-                itemLog.setImageItemLog(null);
-                itemLogRepository.save(itemLog);
-
-                // Cap nhat trang thai cua item => da bi huy
-                itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
-                return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+            long timeInsert = System.currentTimeMillis();
+            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+            if (list.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("List not found!");
             }
+            ItemLog itemIndex = list.get(0);
+            long timeDifference = timeInsert - itemIndex.getTimeStamp() ;
+
+            long DaysInMillis = TimeUnit.DAYS.toMillis(1);
+            if(timeDifference > DaysInMillis) {
+                if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
+                    if (item.getStatus() == 0)
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+                    // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
+                    ItemLog itemLog = new ItemLog();
+                    Location locationSaved = new Location();
+                    locationSaved.setAddress(abortDTO.getLocation().getAddress());
+                    locationSaved.setCity(abortDTO.getLocation().getCity());
+                    locationSaved.setWard(abortDTO.getLocation().getWard());
+                    locationSaved.setDistrict(abortDTO.getLocation().getDistrict());
+                    locationSaved.setCountry(abortDTO.getLocation().getCountry());
+                    locationSaved.setCoordinateX(abortDTO.getLocation().getCoordinateX());
+                    locationSaved.setCoordinateY(abortDTO.getLocation().getCoordinateY());
+                    locationRepository.save(locationSaved);
+                    Party partySaved = new Party();
+                    partySaved.setPartyFullName(item.getCurrentOwner());
+                    partySaved.setEmail(item.getCurrentOwner());
+                    partyRepository.save(partySaved);
+                    double pointX = pointService.generateX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                    Point point = new Point(pointX, pointY);
+                    itemLogRepository.save(new ItemLog(item,abortDTO.getLocation().getAddress(),partySaved,locationSaved,
+                            System.currentTimeMillis(), abortDTO.getDescription(),null, eventTypeRepository.findOneByEventId(5),
+                            1,abortDTO.getImageItemLog(),point.toString()));
+
+                    // Cap nhat trang thai cua item => da bi huy
+                    itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
+                    return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+                }
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body( "You cannot destroy this item once created!");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
