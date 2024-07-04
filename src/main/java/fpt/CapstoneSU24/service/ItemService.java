@@ -7,6 +7,7 @@ import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.mapper.ItemMapper;
+import fpt.CapstoneSU24.mapper.AbortMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
@@ -56,6 +57,7 @@ public class ItemService {
     private final CloudinaryService cloudinaryService;
     private final LogService logService;
     private final ItemMapper itemMapper;
+    private final AbortMapper abortMapper;
 
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
@@ -65,7 +67,7 @@ public class ItemService {
                        ClientService clientService, AuthorizedRepository authorizedRepository,
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
-                       DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService, ItemMapper itemMapper) {
+                       DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService, ItemMapper itemMapper, AbortMapper abortMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -85,6 +87,7 @@ public class ItemService {
         this.cloudinaryService = cloudinaryService;
         this.logService = logService;
         this.itemMapper = itemMapper;
+        this.abortMapper = abortMapper;
     }
     /*
      * type is sort type: "desc" or "asc"
@@ -275,7 +278,7 @@ public class ItemService {
     public ResponseEntity<?> findByProductId(int productId) {
         List<Item> itemList = itemRepository.findByProductId(productId);
         if (itemList == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not foumd!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(itemList);
 
@@ -335,7 +338,7 @@ public class ItemService {
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
             originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
             originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-            originDTO.setAddress(itemLog.getItem().getOrigin().getLocation().getAddress());
+            originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
             originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
             originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
@@ -356,9 +359,11 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<?> getCertificate(String req, String productRecognition) {
+    public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
+        String productRecognition = jsonReq.getString("productRecognition");
+
         Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
@@ -397,7 +402,6 @@ public class ItemService {
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
         }
-
         if (item.getStatus() == 1 && item.getCurrentOwner().equals(otp.getEmail())) {
             boolean check = clientService.checkOTPinSQL(otp.getEmail(), otp.getOtp());
             if (check) {
@@ -412,6 +416,7 @@ public class ItemService {
 
     public ResponseEntity<Boolean> checkAuthorized(String productRecognition) {
         Item item = findByProductRecognition(productRecognition); // B1
+        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
         if (list.get(0).getAuthorized() == null) {
             return ResponseEntity.ok(false);
@@ -424,7 +429,8 @@ public class ItemService {
         try {
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
-            if (checkOwner(authorized.getAssign_person_mail(), item.getProductRecognition())) {
+            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+            if (checkOwner(authorized.getAssign_person_mail(), item.getCurrentOwner())) {
                 if (item.getStatus() == 0) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized!");
                 }
@@ -451,10 +457,16 @@ public class ItemService {
         return null;
     }
 
-    public ResponseEntity<Boolean> checkCurrentOwner(String email, String productRecognition) {
+    public ResponseEntity<Boolean> checkCurrentOwner(CurrentOwnerCheckDTO req) {
+        JSONObject jsonReq = new JSONObject(req);
+        String email = jsonReq.getString("email");
+        String productRecognition = jsonReq.getString("productRecognition");
+
         logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
+        Item item = findByProductRecognition(productRecognition);
+        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         try{
-            if (checkOwner(email, productRecognition)) {
+            if (checkOwner(email, item.getCurrentOwner())) {
                     return ResponseEntity.ok(true);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
@@ -465,15 +477,14 @@ public class ItemService {
         }
     }
 
-    public boolean checkOwner(String email, String productRecognition) {
+    public boolean checkOwner(String email, String emailCurrentOwner) {
         if (email == null || email.isEmpty()) {
             return false;
         }
-        Item item = itemRepository.findByProductRecognition(productRecognition);
-        if (item == null) {
+        if (emailCurrentOwner == null || emailCurrentOwner.isEmpty()) {
             return false;
         }
-        return email.equals(item.getCurrentOwner());
+        return email.equals(emailCurrentOwner);
     }
 
     public Item findByProductRecognition(String productRecognition) {
@@ -549,22 +560,33 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<?> sendCurrentOwnerOTP(String req) {
+    public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {
         try {
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
+            String productRecognition = jsonReq.getString("productRecognition");
 
-            // Tạo đối tượng ClientSdi và gửi email OTP
-            ClientSdi sdi = new ClientSdi();
-            sdi.setEmail(email);
-
-            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
-
-            if (emailSent) {
-                return ResponseEntity.ok("OTP has been sent successfully.");
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
+            // Kiểm tra xem item có tồn tại và có status = 0 hay không
+            Item item = findByProductRecognition(productRecognition);
+            if (item == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
             }
+            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+            if(checkOwner(email,item.getCurrentOwner())) {
+                // Tạo đối tượng ClientSdi và gửi email OTP
+                ClientSdi sdi = new ClientSdi();
+                sdi.setEmail(item.getCurrentOwner());
+                sdi.setUsername(item.getCurrentOwner());
+                sdi.setName(item.getCurrentOwner());
+                boolean emailSent = clientService.createMailAndSaveSQL(sdi);
+
+                if (emailSent) {
+                    return ResponseEntity.ok("OTP has been sent successfully.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
+                }
+            }
+
         } catch (JSONException e) {
             logService.logError(e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
@@ -572,17 +594,22 @@ public class ItemService {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
+        return null;
     }
 
-    public ResponseEntity<?> sendOTP(String req, String productRecognition) {
+    public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
         try {
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
+            String productRecognition = jsonReq.getString("productRecognition");
+
             // Kiểm tra xem item có tồn tại và có status = 0 hay không
             Item item = findByProductRecognition(productRecognition);
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
             }
+            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
@@ -631,6 +658,8 @@ public class ItemService {
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
             }
+            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
@@ -688,45 +717,55 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<String> abortItem(AbortDTO abortDTO, String productRecognition) {
-        try{
-            JSONObject jsonReq = new JSONObject(abortDTO.getItem().getCurrentOwner());
-            String email = jsonReq.getString("email");
-//            if (checkOwner(email, productRecognition)) {
-//                // Ghi lai item log
-//                ItemLog itemLog = new ItemLog();
-//                itemLog.setAddress(abortDTO.getAddress());
-//                itemLog.setDescription(abortDTO.getDescription());
-//                itemLog.setAuthorized(null);
-//                itemLog.setStatus(1);
-//                itemLog.setTimeStamp(System.currentTimeMillis());
-//                itemLog.setItem(abortDTO.getItem());
-//                itemLog.setLocation(itemIndex.getAuthorized().getLocation());
-//                itemLog.setParty(party);
-//
-//                double pointX = pointService.generateX();
-//                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-//                List<Point> pointList = pointService.getPointList(pointLogs);
-//                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-//                Point point = new Point(pointX, pointY);
-//                itemLog.setPoint(point.toString());
-//                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(4)); // Event này là nhận hàng
-//                itemLog.setImageItemLog(null);
-//                itemLogRepository.updateStatus(1, list.get(1).getItemLogId());
-//                itemLogRepository.save(itemLog);
-//
-//                return ResponseEntity.ok(true); // Thành công, trả về true
-//                // Cap nhat trang thai cua item => da bi huy
-//                itemRepository.updateItemStatus(productRecognition,5);
-//                return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
-//            } else {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
-//            }
-        }catch (Exception ex){
+
+    public ResponseEntity<String> abortItem(AbortDTO abortDTO) {
+        try {
+
+            Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
+
+            if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
+                if (item.getStatus() == 0)
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+                // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
+                ItemLog itemLog = new ItemLog();
+                Location locationSaved = new Location();
+                locationSaved.setAddress(abortDTO.getLocation().getAddress());
+                locationSaved.setCity(abortDTO.getLocation().getAddress());
+                locationSaved.setCountry(abortDTO.getLocation().getCountry());
+                locationSaved.setCoordinateX(abortDTO.getLocation().getCoordinateX());
+                locationSaved.setCoordinateY(abortDTO.getLocation().getCoordinateY());
+                locationSaved.setDistrict(abortDTO.getLocation().getDistrict());
+                locationSaved.setWard(abortDTO.getLocation().getWard());
+                locationRepository.save(locationSaved);
+                itemLog.setItem(item);
+                itemLog.setLocation(locationSaved);
+                itemLog.setStatus(1);
+                itemLog.setTimeStamp(System.currentTimeMillis());
+                Party partySaved = new Party();
+                partySaved.setPartyFullName(item.getCurrentOwner());
+                partySaved.setEmail(item.getCurrentOwner());
+                partyRepository.save(partySaved);
+                itemLog.setParty(partySaved);
+                double pointX = pointService.generateX();
+                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                List<Point> pointList = pointService.getPointList(pointLogs);
+                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                Point point = new Point(pointX, pointY);
+                itemLog.setPoint(point.toString());
+                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(5)); // Event này là nhận hàng
+                itemLog.setImageItemLog(null);
+                itemLogRepository.save(itemLog);
+
+                // Cap nhat trang thai cua item => da bi huy
+                itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
+                return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+            }
+        } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
         }
-        return null;
     }
 
 

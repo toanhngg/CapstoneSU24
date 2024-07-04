@@ -80,6 +80,7 @@ public class SecurityConfiguration {
                                 "api/item/getTESTCertificate",
                                 "api/item/convertHtmlToPdf",
                                 "api/item/getCertificate",
+                                "api/item/abortItem",
                                 "api/test/healthCheck",
                                 "api/category/findAll",
                                 "/api/certificate/getListCertificateByManuId",
