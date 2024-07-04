@@ -100,7 +100,7 @@ public class AuthenticationService {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
             }
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("otp code is expired");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("otp code is incorrect");
     }
 
     public ResponseEntity login(LoginRequest loginRequest, HttpServletResponse response) {

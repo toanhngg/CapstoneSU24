@@ -17,8 +17,8 @@ public class ItemLogDTO {
     private String country;
     @NotNull(message = "The district is required")
     private String district;
-    @NotNull(message = "The street is required")
-    private String street;
+    @NotNull(message = "The ward is required")
+    private String ward;
     @NotNull(message = "The coordinateX is required")
 
     private double coordinateX;
@@ -41,15 +41,15 @@ public class ItemLogDTO {
         this.district = district;
     }
 
-    public String getStreet() {
-        return street;
+    public String getWard() {
+        return ward;
     }
 
-    public void setStreet(String street) {
-        this.street = street;
+    public void setWard(String ward) {
+        this.ward = ward;
     }
 
-        public int getQuantity() {
+    public int getQuantity() {
                 return quantity;
         }
 
