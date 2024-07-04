@@ -80,7 +80,12 @@ public class SecurityConfiguration {
                                 "api/item/getTESTCertificate",
                                 "api/item/convertHtmlToPdf",
                                 "api/item/getCertificate",
-                                "api/test/healthCheck"
+                                "api/test/healthCheck",
+                                "api/category/findAll",
+                                "/api/certificate/getListCertificateByManuId",
+                                "/api/user/getDetailUser",
+                                "/api/user/getAllUser"
+
 
                         ).permitAll()
                         .anyRequest().authenticated())

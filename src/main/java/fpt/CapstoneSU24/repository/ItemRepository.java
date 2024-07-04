@@ -1,6 +1,7 @@
 package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.model.Item;
+import fpt.CapstoneSU24.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 //import org.springframework.data.jdbc.repository.query.Modifying;
@@ -20,6 +21,11 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Query("SELECT o FROM Item o WHERE o.product.productId = :id")
 
     List<Item> findAllByProductId(@Param("id")  int id);
+    @Query("SELECT o FROM Item o WHERE o.product.productId = :id AND o.currentOwner LIKE :currentOwner AND o.productRecognition LIKE :productRecognition")
+    Page<Item> findAllItem(@Param("id") int id, @Param("currentOwner") String currentOwner, @Param("productRecognition") String productRecognition, Pageable pageable);
+
+    @Query("SELECT o FROM Item o WHERE o.product.productId = :id AND o.currentOwner LIKE :currentOwner AND o.productRecognition LIKE :productRecognition AND o.createdAt <= :endDate AND o.createdAt >= :startDate")
+    Page<Item> findAllItemWithDate(@Param("id") int id, @Param("currentOwner") String currentOwner, @Param("productRecognition") String productRecognition, @Param("startDate") long startDate, @Param("endDate") long endDate, Pageable pageable);
 
     Page<Item> findAllByCurrentOwnerContaining(String currentOwner, Pageable pageable);
 

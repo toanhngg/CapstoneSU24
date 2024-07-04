@@ -23,6 +23,12 @@ public class FilterSearchItemRequest {
     private String name;
     @NotNull(message = "The type is not null")
     private String type;
+    @NotNull(message = "The productRecognition is not null")
+    private String productRecognition;
+
+    public String getProductRecognition() {
+        return productRecognition;
+    }
 
     public Integer getProductId() {
         return productId;

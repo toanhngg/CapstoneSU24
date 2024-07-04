@@ -18,6 +18,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer>  {
     public Product findOneByProductId(int id);
     @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id")
     List<Product> findAllByManufacturerId(@Param("id")  int id);
+    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE :categoryName AND o.productName LIKE :productName")
+    Page<Product> findAllProduct(@Param("id") int id, @Param("categoryName") String categoryName, @Param("productName") String productName, Pageable pageable);
+    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE ':categoryName%' AND o.productName LIKE ':productName%' AND o.createAt <= :endDate AND o.createAt >= :startDate")
+    Page<Product> findAllProductWithDate(@Param("id")  int id, @Param("categoryName") String categoryName, @Param("productName") String productName, @Param("startDate") long startDate, @Param("endDate") long endDate, Pageable pageable);
     Page<Product> findAllByProductNameContaining(String productName, Pageable pageable);
     Page<Product> findByManufacturerAndCreateAtBetweenAndProductNameContaining(User manufacturer, Long startDate, Long endDate, String productName, Pageable pageable);
     Page<Product> findByManufacturerAndCreateAtBetween(User manufacturer, Long startDate, Long endDate, Pageable pageable);

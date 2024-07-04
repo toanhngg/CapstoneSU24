@@ -3,6 +3,8 @@ package fpt.CapstoneSU24.controller;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
+import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
+import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.dto.payload.UpdateStatusUserRequest;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
@@ -29,17 +31,19 @@ public class UserController {
     }
 
 
-    @GetMapping("/getAllUser")
-    public ResponseEntity<?> getAllUsers() {
-        return userService.getAllUsers();
+    @PostMapping("/getAllUser")
+    public ResponseEntity<?> getAllUser(@Valid @RequestBody FilterSearchManufacturerRequest req) {
+        return userService.getAllUser(req);
+    }
+    @PostMapping("/getDetailUser")
+    public ResponseEntity<?> getDetailUser(@Valid @RequestBody IdRequest req) {
+        return userService.getDetailUser(req);
     }
 
     @PostMapping("/getDataToTable")
     public ResponseEntity<?> getUsersByEmail(@RequestBody B03_RequestDTO userRequestDTO) {
         return userService.getUsersByEmail(userRequestDTO);
     }
-
-
     @PostMapping("/updateStatus")
     public ResponseEntity<String> updateStatus(@Valid @RequestBody UpdateStatusUserRequest req) {
         return userService.updateStatus(req.getId(), req.getStatus());

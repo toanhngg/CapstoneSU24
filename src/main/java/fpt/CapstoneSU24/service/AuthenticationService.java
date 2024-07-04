@@ -158,7 +158,6 @@ public class AuthenticationService {
                 authToken.setJwtHash(null);
                 authTokenRepository.save(authToken);
             }
-
             ResponseCookie cookie = ResponseCookie.from("jwt", null) // key & value
                     .secure(true).httpOnly(true)
                     .path("/")
@@ -169,7 +168,7 @@ public class AuthenticationService {
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.status(HttpStatus.OK).body("logout successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("don't have any jwt token to logout");
+            return ResponseEntity.status(HttpStatus.OK).body("logout successfully");
         }
     }
 

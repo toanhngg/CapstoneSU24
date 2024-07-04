@@ -4,7 +4,6 @@ import fpt.CapstoneSU24.controller.ItemController;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchRequest;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.mapper.ItemMapper;
@@ -98,12 +97,10 @@ public class ItemService {
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
 //        Page<Item> items = jsonReq.getString("type") == null? itemRepository.findAll(pageable) : jsonReq.getString("type").equals("desc") ? itemRepository.sortItemsByCreatedAtDesc(pageable) :  itemRepository.sortItemsByCreatedAtAsc(pageable);
-            if(req.getStartDate() != 0 && req.getEndDate() != 0 && !req.getName().isEmpty()){
-                items = itemRepository.findByDateAndCurrentOwner(req.getStartDate(), req.getEndDate(), req.getProductId(), req.getName(), pageable);
-            }else if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                items = itemRepository.findByCreatedAtBetweenAndProductId(req.getStartDate(), req.getEndDate(), req.getProductId(), pageable);
-            } else {
-                items = itemRepository.findAllByCurrentOwnerContainingAndProductId(req.getName(), req.getProductId(), pageable);
+            if(req.getStartDate() != 0 && req.getEndDate() != 0){
+                items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
+            }else{
+                items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
             }
             return ResponseEntity.status(200).body(items.map(itemMapper::itemToItemViewDTOResponse));
         } catch (Exception e) {

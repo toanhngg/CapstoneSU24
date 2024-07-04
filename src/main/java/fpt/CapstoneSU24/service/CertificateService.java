@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -56,7 +55,7 @@ public class CertificateService {
                 for (String part : parts) {
                     list.add(cloudinaryService.getImageUrl(part));
                 }
-                certificateListDTOList.add(new ListCertificateDTOResponse( c.getCertificateId(),c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate()));
+                certificateListDTOList.add(new ListCertificateDTOResponse( c.getCertificateId(),c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate(), c.getNote()));
             }
 
             return ResponseEntity.ok(certificateListDTOList);
@@ -138,7 +137,7 @@ public class CertificateService {
                     for (String part : parts) {
                         list.add(cloudinaryService.getImageUrl(part));
                     }
-                    certificateListDTOList.add(new ListCertificateDTOResponse(c.getCertificateId(), c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate()));
+                    certificateListDTOList.add(new ListCertificateDTOResponse(c.getCertificateId(), c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate(), c.getNote()));
                 }
 
                 return ResponseEntity.ok(certificateListDTOList);
@@ -188,7 +187,7 @@ public class CertificateService {
     public ResponseEntity<?> createCertificate(CreateCertificateRequest req) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 7) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 1 && currentUser.getStatus() != 8) {
             try {
                 String fullFilePath = "";
                 for (int i = 0; i < req.getFile().size(); i++) {
@@ -203,6 +202,7 @@ public class CertificateService {
                 newCertificate.setIssuanceDate(req.issuanceDate);
                 newCertificate.setIssuingAuthority(req.getIssuanceAuthority());
                 newCertificate.setManufacturer(currentUser);
+                newCertificate.setNote("Đang chờ phê duyệt");
                 certificateRepository.save(newCertificate);
                 currentUser.setStatus(7);
                 userRepository.save(currentUser);
