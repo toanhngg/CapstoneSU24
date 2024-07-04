@@ -121,7 +121,7 @@ public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
                 req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
                         PageRequest.of(req.getPageNumber(), req.getPageSize());
         users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
-        return ResponseEntity.status(200).body(users.map(userMapper::usersUserViewDTOs));
+        return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
     } catch (Exception e) {
         return ResponseEntity.status(500).body("Error when fetching data");
     }

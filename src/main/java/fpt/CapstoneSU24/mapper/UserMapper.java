@@ -34,7 +34,7 @@ public abstract class UserMapper {
     @Mapping(source = "description", target = "description")
     @Mapping(source = "org_name", target = "org_name")
     @Mapping(target = "profileImage", ignore = true) // Ignore avatar for now, we'll set it manually
-    public abstract UserViewDTO usersUserViewDTOs(User users);
+    public abstract UserViewDTO usersToUserViewDTOs(User users);
 
     @AfterMapping
     protected void setAfter(User user, @MappingTarget UserVerifyDTOResponse userVerifyDTOResponse) {
@@ -44,6 +44,7 @@ public abstract class UserMapper {
     protected void setAfter(User user, @MappingTarget UserViewDetailDTO usersToUserViewDetailDTO) {
         usersToUserViewDetailDTO.setProfileImage(cloudinaryService.getImageUrl(user.getProfileImage()));
     }
+    @AfterMapping
     protected void setAfter(User user, @MappingTarget UserViewDTO userViewDTO) {
         userViewDTO.setProfileImage(cloudinaryService.getImageUrl(user.getProfileImage()));
     }
