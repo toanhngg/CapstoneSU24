@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/eventType")
+@RequestMapping("/api/eventtype")
 @RestController
 public class EventTypeController {
     private final EventTypeService eventTypeService;

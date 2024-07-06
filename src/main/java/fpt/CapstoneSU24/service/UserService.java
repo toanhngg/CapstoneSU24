@@ -44,19 +44,22 @@ public class UserService {
     private final EmailService mailService;
     private final SpringTemplateEngine springTemplateEngine;
     private final DocumentGenerator documentGenerator;
+    private final UserMapper userMapper;
 
     @Autowired
     public UserService(CloudinaryService cloudinaryService,
                           UserRepository userRepository, EmailService mailService,
                           CertificateRepository certificateRepository,
                           SpringTemplateEngine springTemplateEngine,
-                          DocumentGenerator documentGenerator) {
+                          DocumentGenerator documentGenerator,
+                          UserMapper userMapper) {
         this.userRepository = userRepository;
         this.certificateRepository = certificateRepository;
         this.mailService = mailService;
         this.springTemplateEngine = springTemplateEngine;
         this.documentGenerator = documentGenerator;
         this.cloudinaryService = cloudinaryService;
+        this.userMapper = userMapper;
     }
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {

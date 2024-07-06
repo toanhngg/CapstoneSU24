@@ -149,5 +149,10 @@ public class ItemController {
         return itemService.abortItem(abortDTO);
     }
 
+    @GetMapping(value = "/getItemByEventType")
+    public ResponseEntity<?> getItemByEventType(int eventType){
+        return itemService.getItemByEventType(eventType);
+    }
+
 }
 

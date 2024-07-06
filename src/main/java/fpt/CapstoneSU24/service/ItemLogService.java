@@ -8,12 +8,16 @@ import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ItemLogService {
@@ -185,6 +189,7 @@ public class ItemLogService {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail!");
     }
+
     public boolean hasNullFields(ItemLog itemLog) {
         for (Field field : itemLog.getClass().getDeclaredFields()) {
             field.setAccessible(true); // Allows access to private fields
@@ -198,4 +203,31 @@ public class ItemLogService {
         }
         return false;
     }
+
+//    public ResponseEntity<?> getItemLogsByItemId(int itemId) {
+//        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemId(itemId);
+//        if (itemLogs.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId);
+//        } else {
+//            return ResponseEntity.ok(itemLogs.get(0).getEvent_id().getEvent_type());
+//        }
+//    }
+//    public ResponseEntity<?> getItemLogsLocationByItemId(int itemId) {
+//        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemId(itemId);
+//        if (itemLogs.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId);
+//        } else {
+//            return ResponseEntity.ok(itemLogs.get(0).getLocation().getAddress());
+//        }
+//    }
+
+    public ResponseEntity<?> getEventByItemId(int itemId) {
+        Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
+        return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getEvent_id().getEventId())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId));
+    }
+    public ResponseEntity<?> getLocationItemId(int itemId) {
+        Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
+        return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getLocation())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Location found for itemId: " + itemId));
+    }
+
 }

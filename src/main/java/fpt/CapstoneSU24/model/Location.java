@@ -26,10 +26,6 @@ public class Location {
     @Column(name = "ward", columnDefinition = "nvarchar(100)")
     private String ward;
 
-
-//    @Column(name = "coordinates", columnDefinition = "nvarchar(50)")
-//    private String coordinates;
-
     public Location() {
 
     }

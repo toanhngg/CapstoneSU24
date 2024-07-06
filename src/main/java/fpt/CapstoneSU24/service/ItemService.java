@@ -8,6 +8,7 @@ import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.mapper.ItemMapper;
 import fpt.CapstoneSU24.mapper.AbortMapper;
+import fpt.CapstoneSU24.mapper.LocationMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
@@ -59,7 +60,7 @@ public class ItemService {
     private final LogService logService;
     private final ItemMapper itemMapper;
     private final AbortMapper abortMapper;
-    private final AbortMapper abortMapper;
+    private final LocationMapper locationMapper;
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
                        OriginRepository originRepository, ItemRepository itemRepository,
@@ -69,7 +70,7 @@ public class ItemService {
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
-                       AbortMapper abortMapper,ItemMapper itemMapper) {
+                       AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -90,6 +91,7 @@ public class ItemService {
         this.logService = logService;
         this.itemMapper = itemMapper;
         this.abortMapper = abortMapper;
+        this.locationMapper = locationMapper;
     }
     /*
      * type is sort type: "desc" or "asc"
@@ -148,9 +150,12 @@ public class ItemService {
             User user = userRepository.getReferenceById(currentUser.getUserId());
 
             // Lưu địa chỉ
-            Location location = createLocation(itemLogDTO);
-            validateAndSetCoordinates(location, itemLogDTO);
-            Location savedLocation = locationRepository.save(location);
+          //  Location location = createLocation(itemLogDTO);
+           // validateAndSetCoordinates(location, itemLogDTO);
+         //   Location savedLocation = locationRepository.save(location);
+            Location location = locationMapper.locationDtoToLocation(itemLogDTO.getLocation());
+
+            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
 
             Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
 
@@ -170,36 +175,37 @@ public class ItemService {
         }
     }
 
-    private Location createLocation(ItemLogDTO itemLogDTO) {
-        Location location = new Location();
-        location.setAddress(itemLogDTO.getAddress());
-        location.setCity(itemLogDTO.getCity());
-        location.setCountry(itemLogDTO.getCountry());
-        location.setDistrict(itemLogDTO.getDistrict());
-        location.setWard(itemLogDTO.getWard());
-        return location;
-    }
+//    private Location createLocation(ItemLogDTO itemLogDTO) {
+//        Location location = new Location();
+//        location.setAddress(itemLogDTO.getLocation().getAddress());
+//        location.setCity(itemLogDTO.getLocation().getCity());
+//        location.setCountry(itemLogDTO.getLocation().getCountry());
+//        location.setDistrict(itemLogDTO.getLocation().getDistrict());
+//        location.setWard(itemLogDTO.getLocation().getWard());
+//
+//        return location;
+//    }
 
-    private void validateAndSetCoordinates(Location location, ItemLogDTO itemLogDTO) throws ItemController.InvalidCoordinateException, ItemController.CoordinateOutOfRangeException {
-        double corX = itemLogDTO.getCoordinateX();
-        double corY = itemLogDTO.getCoordinateY();
-
-        // Check if corX and corY are within their valid ranges
-        if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
-            location.setCoordinateX(itemLogDTO.getCoordinateX());
-            location.setCoordinateY(itemLogDTO.getCoordinateY());
-            System.out.println("Coordinates set successfully.");
-        } else {
-            throw new ItemController.CoordinateOutOfRangeException("Coordinates are out of valid range.");
-        }
-    }
+//    private void validateAndSetCoordinates(Location location, ItemLogDTO itemLogDTO) throws ItemController.InvalidCoordinateException, ItemController.CoordinateOutOfRangeException {
+//        double corX = itemLogDTO.getLocation().getCoordinateX();
+//        double corY = itemLogDTO.getLocation().getCoordinateY();
+//
+//        // Check if corX and corY are within their valid ranges
+//        if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
+//            location.setCoordinateX(itemLogDTO.getLocation().getCoordinateX());
+//            location.setCoordinateY(itemLogDTO.getLocation().getCoordinateY());
+//            System.out.println("Coordinates set successfully.");
+//        } else {
+//            throw new ItemController.CoordinateOutOfRangeException("Coordinates are out of valid range.");
+//        }
+//    }
 
     private Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
         long scoreTime = System.currentTimeMillis();
         Origin origin = new Origin();
         origin.setCreatedAt(scoreTime);
         origin.setDescription(itemLogDTO.getDescriptionOrigin());
-        origin.setSupportingDocuments(qrCodeGenerator.generateProductDescription(itemLogDTO.getProductId(), itemLogDTO.getAddress(), scoreTime));
+        origin.setSupportingDocuments(qrCodeGenerator.generateProductDescription(itemLogDTO.getProductId(), itemLogDTO.getLocation().getAddress(), scoreTime));
         origin.setEmail(user.getEmail());
         origin.setFullNameManufacturer(user.getFirstName() + " " + user.getLastName());
         origin.setOrg_name(user.getOrg_name());
@@ -250,7 +256,7 @@ public class ItemService {
         long scoreTime = System.currentTimeMillis();
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
             ItemLog itemLog = new ItemLog();
-            itemLog.setAddress(itemLogDTO.getAddress());
+            itemLog.setAddress(itemLogDTO.getLocation().getAddress());
             itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
             itemLog.setEvent_id(eventTypeRepository.findOneByEventId(1)); // tạo mới
             itemLog.setStatus(1);
@@ -266,29 +272,32 @@ public class ItemService {
         return itemLogs;
     }
 
-    private double parseCoordinate(String coordinate) throws ItemController.InvalidCoordinateException {
-        if (coordinate == null || coordinate.isEmpty()) {
-            throw new ItemController.InvalidCoordinateException("Coordinate is null or empty");
-        }
-        try {
-            return Double.parseDouble(coordinate);
-        } catch (NumberFormatException e) {
-            throw new ItemController.InvalidCoordinateException("Coordinate format is invalid: " + coordinate);
-        }
-    }
-
-    public ResponseEntity<?> findByProductId(int productId) {
-        List<Item> itemList = itemRepository.findByProductId(productId);
-        if (itemList == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body(itemList);
-
-        }
-    }
+//    private double parseCoordinate(String coordinate) throws ItemController.InvalidCoordinateException {
+//        if (coordinate == null || coordinate.isEmpty()) {
+//            throw new ItemController.InvalidCoordinateException("Coordinate is null or empty");
+//        }
+//        try {
+//            return Double.parseDouble(coordinate);
+//        } catch (NumberFormatException e) {
+//            throw new ItemController.InvalidCoordinateException("Coordinate format is invalid: " + coordinate);
+//        }
+//    }
+//
+//    public ResponseEntity<?> findByProductId(int productId) {
+//        List<Item> itemList = itemRepository.findByProductId(productId);
+//        if (itemList == null) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.OK).body(itemList);
+//
+//        }
+//    }
 
     public ResponseEntity<?> viewLineItem(String productRecognition) {
         try {
+            if(productRecognition.length() < 10){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
+            }
             Item item = itemRepository.findByProductRecognition(productRecognition);
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
@@ -338,6 +347,7 @@ public class ItemService {
             originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
             originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
+
             originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
             originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
             originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
@@ -432,12 +442,12 @@ public class ItemService {
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
             if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
-            if (checkOwner(authorized.getAssign_person_mail(), item.getCurrentOwner())) {
-                if (item.getStatus() == 0) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This product has been authorized!");
+            if (checkOwner(authorized.getAssignPersonMail(), item.getCurrentOwner())) {
+                if(!authorized.getAuthorizedEmail().equals(authorized.getAssignPersonMail())){
+                    return addEventAuthorized(authorized, item);
+                }else{
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mail authorized not same mail assign person");
                 }
-                return addEventAuthorized(authorized, item);
-
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not the owner");
             }
@@ -486,16 +496,17 @@ public class ItemService {
         return itemRepository.findByProductRecognition(productRecognition);
     }
 
-    public ItemLog getItemLogs(int itemLogId) {
-        return itemLogRepository.getItemLogs(itemLogId);
-    }
+//    public ItemLog getItemLogs(int itemLogId) {
+//        return itemLogRepository.getItemLogs(itemLogId);
+//    }
 
     public ResponseEntity<String> addEventAuthorized(AuthorizedDTO authorized, Item item) {
         if (authorized == null || item == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authored or Item is null");
         }
         try {
-            Location savedLocation = locationRepository.save(authorized.getLocation());
+
+            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
@@ -509,8 +520,8 @@ public class ItemService {
             long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
             if(timeDifference > threeDaysInMillis) {
                 Authorized authorizedSaved = authorizedRepository.save(new Authorized(
-                        authorized.getAuthorized_name(),
-                        authorized.getAuthorized_email(),
+                        authorized.getAuthorizedName(),
+                        authorized.getAuthorizedEmail(),
                         itemIndex.getParty().getPartyFullName(),
                         item.getCurrentOwner(),
                         savedLocation,
@@ -552,9 +563,9 @@ public class ItemService {
                 ));
                 // Gửi thông báo email
                 ClientSdi sdi = new ClientSdi();
-                sdi.setEmail(authorized.getAuthorized_email());
-                sdi.setUsername(authorized.getAuthorized_name());
-                sdi.setName(authorized.getAuthorized_name());
+                sdi.setEmail(authorized.getAuthorizedEmail());
+                sdi.setUsername(authorized.getAuthorizedName());
+                sdi.setName(authorized.getAuthorizedName());
                 clientService.notification(sdi);
                 return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
             }
@@ -742,15 +753,19 @@ public class ItemService {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
                     // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
                     ItemLog itemLog = new ItemLog();
-                    Location locationSaved = new Location();
-                    locationSaved.setAddress(abortDTO.getLocation().getAddress());
-                    locationSaved.setCity(abortDTO.getLocation().getCity());
-                    locationSaved.setWard(abortDTO.getLocation().getWard());
-                    locationSaved.setDistrict(abortDTO.getLocation().getDistrict());
-                    locationSaved.setCountry(abortDTO.getLocation().getCountry());
-                    locationSaved.setCoordinateX(abortDTO.getLocation().getCoordinateX());
-                    locationSaved.setCoordinateY(abortDTO.getLocation().getCoordinateY());
-                    locationRepository.save(locationSaved);
+//                    Location locationSaved = new Location();
+//                    locationSaved.setAddress(abortDTO.getLocation().getAddress());
+//                    locationSaved.setCity(abortDTO.getLocation().getCity());
+//                    locationSaved.setWard(abortDTO.getLocation().getWard());
+//                    locationSaved.setDistrict(abortDTO.getLocation().getDistrict());
+//                    locationSaved.setCountry(abortDTO.getLocation().getCountry());
+//                    locationSaved.setCoordinateX(abortDTO.getLocation().getCoordinateX());
+//                    locationSaved.setCoordinateY(abortDTO.getLocation().getCoordinateY());
+
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
+
+
+                  //  locationRepository.save(locationSaved);
                     Party partySaved = new Party();
                     partySaved.setPartyFullName(item.getCurrentOwner());
                     partySaved.setEmail(item.getCurrentOwner());
@@ -760,7 +775,7 @@ public class ItemService {
                     List<Point> pointList = pointService.getPointList(pointLogs);
                     double pointY = pointService.lagrangeInterpolate(pointList, pointX);
                     Point point = new Point(pointX, pointY);
-                    itemLogRepository.save(new ItemLog(item,abortDTO.getLocation().getAddress(),partySaved,locationSaved,
+                    itemLogRepository.save(new ItemLog(item,abortDTO.getLocation().getAddress(),partySaved,savedLocation,
                             System.currentTimeMillis(), abortDTO.getDescription(),null, eventTypeRepository.findOneByEventId(5),
                             1,abortDTO.getImageItemLog(),point.toString()));
 
@@ -778,6 +793,14 @@ public class ItemService {
         }
     }
 
+    public ResponseEntity<?> getItemByEventType(int eventType) {
+        List<Item> item = itemRepository.getItemByEventType(eventType);
+        if (item.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Item found for eventType: " + eventType);
+        } else {
+            return ResponseEntity.ok(item);
+        }
+    }
 
 //    private ItemDTO convertToItemDTO(Item item) {
 //        ItemDTO dto = new ItemDTO();

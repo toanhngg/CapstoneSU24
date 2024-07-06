@@ -1,6 +1,7 @@
 package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.model.Item;
+import fpt.CapstoneSU24.model.ItemLog;
 import fpt.CapstoneSU24.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +52,11 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Query("UPDATE Item i SET i.status = 0 , i.currentOwner = :currentOwner WHERE i.itemId = :itemId")
     void updateStatusAndCurrent(@Param("itemId") int itemId, @Param("currentOwner") String currentOwner);
 
+    @Query("SELECT i FROM Item i " +
+            "JOIN ItemLog il ON i.itemId = il.item.itemId " +
+            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId) " +
+            "AND il.event_id.eventId = :eventType")
+    List<Item> getItemByEventType(@Param("eventType") int eventType);
 
 //    @Modifying
 //    @Transactional
