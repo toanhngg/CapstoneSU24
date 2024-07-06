@@ -98,21 +98,31 @@ public class ItemService {
      * default data startDate and endDate equal 0 (need insert 2 data)
      * */
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
+        Page<Item> items;
+        Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
+                req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
+                        PageRequest.of(req.getPageNumber(), req.getPageSize());
         try {
-            Page<Item> items;
-            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
-                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
-                            PageRequest.of(req.getPageNumber(), req.getPageSize());
-//        Page<Item> items = jsonReq.getString("type") == null? itemRepository.findAll(pageable) : jsonReq.getString("type").equals("desc") ? itemRepository.sortItemsByCreatedAtDesc(pageable) :  itemRepository.sortItemsByCreatedAtAsc(pageable);
-            if(req.getStartDate() != 0 && req.getEndDate() != 0){
-                items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
-            }else{
-                items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
+
+            if(req.getEventTypeId() != 0){
+                    if(req.getStartDate() != 0 && req.getEndDate() != 0){
+                        items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
+                    }else{
+                        items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getEventTypeId(), pageable);
+                    }
+            }else {
+                if(req.getStartDate() != 0 && req.getEndDate() != 0){
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
+                }else{
+                    items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
+                }
             }
             return ResponseEntity.status(200).body(items.map(itemMapper::itemToItemViewDTOResponse));
-        } catch (Exception e) {
+        } catch (Exception ex) {
+
             return ResponseEntity.status(500).body("Error when fetching data");
         }
+
     }
 
     public ResponseEntity<?> exportListItem(FilterByTimeStampRequest req) throws IOException {

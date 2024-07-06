@@ -25,9 +25,15 @@ public class FilterSearchItemRequest {
     private String type;
     @NotNull(message = "The productRecognition is not null")
     private String productRecognition;
+    @NotNull(message = "The eventTypeId is not null")
+    private Integer eventTypeId;
 
     public String getProductRecognition() {
         return productRecognition;
+    }
+
+    public Integer getEventTypeId() {
+        return eventTypeId;
     }
 
     public Integer getProductId() {
