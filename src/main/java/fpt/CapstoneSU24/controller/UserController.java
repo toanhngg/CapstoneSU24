@@ -62,6 +62,10 @@ public class UserController {
     public ResponseEntity<String> updateUserDescriptions(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
         return  userService.updateUserDescriptions(userUpdateRequests);
     }
+    @PutMapping("/updateUserStatus")
+    public ResponseEntity<String> updateUserStatus(@RequestBody List<B03_GetDataGridDTO> userUpdateRequests) {
+        return  userService.updateUserDescriptions(userUpdateRequests);
+    }
 
     //get Role
     @GetMapping("/getRoleByUserId")

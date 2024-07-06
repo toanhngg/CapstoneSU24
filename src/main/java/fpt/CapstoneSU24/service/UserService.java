@@ -276,7 +276,7 @@ public class UserService {
             int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
             int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
 
-            if(status !=1 & status != 2)
+            if(status !=1 & status != 2 )
             {
                 return false;
             }
@@ -327,6 +327,19 @@ public class UserService {
             }
         }
         return ResponseEntity.ok("User descriptions updated successfully.");
+    }
+    public ResponseEntity<String> updateUserStatus(List<B03_GetDataGridDTO> userUpdateRequests) {
+        for (B03_GetDataGridDTO updateRequest : userUpdateRequests) {
+            Optional<User> optionalUser = userRepository.findById(updateRequest.getUserId());
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                user.setStatus(updateRequest.getStatus());
+                userRepository.save(user);
+            } else {
+                return ResponseEntity.badRequest().body("User with ID " + updateRequest.getUserId() + " not found.");
+            }
+        }
+        return ResponseEntity.ok("User status  updated successfully.");
     }
 
     //get Role
