@@ -8,7 +8,6 @@ import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.service.CloudinaryService;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
-
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public abstract class UserMapper {
     @Autowired

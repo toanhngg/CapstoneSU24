@@ -20,8 +20,13 @@ import java.util.List;
 
 @Service
 public class CategoryService {
+    private final  CategoryRepository categoryRepository;
+
     @Autowired
-    CategoryRepository categoryRepository;
+    public CategoryService(CategoryRepository categoryRepository){
+        this.categoryRepository = categoryRepository;
+    }
+
     public ResponseEntity findAll() {
         List<Category> categoryList = categoryRepository.findAll();
         return ResponseEntity.ok(categoryList);

@@ -164,7 +164,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity findProductDetailById(IdRequest req) {
+    public ResponseEntity<?> findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {

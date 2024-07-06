@@ -20,22 +20,22 @@ public class CategoryController {
     }
 
     @GetMapping("/findAll")
-    public ResponseEntity findAll() {
+    public ResponseEntity<?> findAll() {
         return categoryService.findAll();
     }
 
     @PostMapping("/addCategory")
-    public ResponseEntity addCategory(@Valid @RequestBody CreateCategoryRequest req) {
+    public ResponseEntity<?> addCategory(@Valid @RequestBody CreateCategoryRequest req) {
         return categoryService.addCategory(req);
     }
 
     @PostMapping("/editCategory")
-    public ResponseEntity editCategory(@Valid @RequestBody EditCategoryRequest req) {
+    public ResponseEntity<?> editCategory(@Valid @RequestBody EditCategoryRequest req) {
         return categoryService.editCategory(req);
     }
 
     @PostMapping("/deleteById")
-    public ResponseEntity deleteById(@Valid @RequestBody IdRequest req) {
+    public ResponseEntity<?> deleteById(@Valid @RequestBody IdRequest req) {
         return categoryService.deleteById(req);
     }
     @PostMapping("/search")

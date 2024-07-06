@@ -28,6 +28,7 @@ public class ProductController {
         return productService.addProduct(req);
     }
 
+
 //    - có thêm trường product Id
 //    - nếu không ko edit image (images, avatar) thì để là ""
     @PostMapping("/editProduct")

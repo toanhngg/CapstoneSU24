@@ -3,35 +3,40 @@ package fpt.CapstoneSU24.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.CapstoneSU24.model.Location;
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class AuthorizedDTO {
-    private int authorized_id;
+    private int authorizedId;
 
     @NotBlank(message = "Authorized name is required")
-    @Size(max = 20, message = "Authorized name must be less than 20 characters")
-    private String authorized_name;
+    @Size(max = 5, message = "Authorized name must be less than 5 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
+            message = "Authorized name must not contain special characters")
+    private String authorizedName;
 
     @NotBlank(message = "Authorized email is required")
     @Email(message = "Authorized email should be valid")
-    private String authorized_email;
+    private String authorizedEmail;
 
     @NotBlank(message = "Assign person is required")
-    @Size(max = 20, message = "Assign person must be less than 20 characters")
-    private String assign_person;
+    @Size(max = 5, message = "Assign person must be less than 5 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
+            message = "AAssign person must not contain special characters")
+    private String assignPerson;
 
     @NotBlank(message = "Assign person email is required")
     @Email(message = "Assign person email should be valid")
-    private String assign_person_mail;
+    private String assignPersonMail;
 
-    @NotNull(message = "Location is required")
-    private Location location;
+    private LocationDTO location;
 
-   // @NotBlank(message = "Description is required")
-    @Size(max = 100, message = "Description must be less than 500 characters")
+    // @NotBlank(message = "Description is required")
+    @Size(max = 50, message = "Description must be less than 50 characters")
     private String description;
 
     @NotBlank(message = "Phone number is required")
@@ -43,16 +48,6 @@ public class AuthorizedDTO {
 
 
 
-    public AuthorizedDTO(int authorized_id, String authorized_name, String authorized_email, String assign_person, String assign_person_mail, Location location, String description, String phoneNumber, String productRecognition) {
-        this.authorized_id = authorized_id;
-        this.authorized_name = authorized_name;
-        this.authorized_email = authorized_email;
-        this.assign_person = assign_person;
-        this.assign_person_mail = assign_person_mail;
-        this.location = location;
-        this.description = description;
-        this.phoneNumber = phoneNumber;
-        this.productRecognition = productRecognition;
-    }
+
 
 }

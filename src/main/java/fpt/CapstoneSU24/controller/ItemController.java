@@ -61,10 +61,10 @@ public class ItemController {
     }
 
 
-    @GetMapping("/findAllItemByProductId")
-    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
-        return itemService.findByProductId(ProductId);
-    }
+//    @GetMapping("/findAllItemByProductId")
+//    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
+//        return itemService.findByProductId(ProductId);
+//    }
 
 
     //list all item_log by product_recogine
@@ -148,5 +148,11 @@ public class ItemController {
     public ResponseEntity<?> abortItem(@RequestBody AbortDTO abortDTO ){
         return itemService.abortItem(abortDTO);
     }
+
+    @GetMapping(value = "/getItemByEventType")
+    public ResponseEntity<?> getItemByEventType(int eventType){
+        return itemService.getItemByEventType(eventType);
+    }
+
 }
 

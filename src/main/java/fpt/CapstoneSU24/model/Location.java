@@ -26,10 +26,6 @@ public class Location {
     @Column(name = "ward", columnDefinition = "nvarchar(100)")
     private String ward;
 
-
-//    @Column(name = "coordinates", columnDefinition = "nvarchar(50)")
-//    private String coordinates;
-
     public Location() {
 
     }
@@ -43,6 +39,9 @@ public class Location {
         this.coordinateY = coordinateY;
         this.district = district;
         this.ward = ward;
+    }
+
+    public Location(Location location) {
     }
 
     public int getLocationId() {

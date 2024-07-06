@@ -19,7 +19,8 @@ public class AbortDTO {
     private String address;
     @JsonIgnore
     private Party party;
-    private Location location;
+
+    private LocationDTO location;
     @JsonIgnore
     private long timeStamp;
     private String description;

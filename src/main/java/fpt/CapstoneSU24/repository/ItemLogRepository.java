@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Override
@@ -36,6 +37,9 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
 
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId desc")
     List<ItemLog> getItemLogsByItemId(@Param("itemId") Integer itemId);
+
+    Optional<ItemLog> findFirstByItem_ItemIdOrderByItemLogIdDesc(Integer itemId);
+
 
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId asc")
     List<ItemLog> getItemLogsByItemIdAsc(@Param("itemId") Integer itemId);

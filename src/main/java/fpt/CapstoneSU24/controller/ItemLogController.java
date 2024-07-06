@@ -1,8 +1,8 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.dto.AbortDTO;
 import fpt.CapstoneSU24.dto.EditItemLogDTO;
 import fpt.CapstoneSU24.dto.EventItemLogDTO;
+import fpt.CapstoneSU24.model.ItemLog;
 import fpt.CapstoneSU24.service.ItemLogService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +35,17 @@ public class ItemLogController {
     @PostMapping(value = "/editItemLog")
     public ResponseEntity<?> editItemLog(@Valid @RequestBody EditItemLogDTO dataEditDTO){
         return itemLogService.editItemLog(dataEditDTO);
+    }
+//    @GetMapping(value = "getItemLogsByItemId")
+//    public ResponseEntity<?>  getItemLogsByItemId(@RequestParam int itemId){
+//        return itemLogService.getItemLogsByItemId(itemId);
+//    }
+    @GetMapping(value = "/getEventByItemId")
+    public ResponseEntity<?>  getEventByItemId(@RequestParam int itemId){
+        return itemLogService.getEventByItemId(itemId);
+    }
+    @GetMapping(value = "/getLocationItemId")
+    public ResponseEntity<?>  getLocationItemId(@RequestParam int itemId){
+        return itemLogService.getLocationItemId(itemId);
     }
 }

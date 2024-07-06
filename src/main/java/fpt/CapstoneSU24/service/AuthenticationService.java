@@ -37,38 +37,41 @@ import java.util.Map;
 
 @Service
 public class AuthenticationService {
+
     private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    LocationRepository locationRepository;
-    @Autowired
-    AuthTokenRepository authTokenRepository;
-    @Autowired
-    private EmailService mailService;
-    @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private OTPService otpService;
-    @Autowired
-    private OTPRepository otpRepository;
-    @Autowired
-    private ClientService clientService;
-
+    private final RoleRepository roleRepository;
+    private final LocationRepository locationRepository;
+    private final AuthTokenRepository authTokenRepository;
+    private final EmailService mailService;
+    private final JwtService jwtService;
+    private final ClientService clientService;
+    private final OTPService otpService;
+    private final OTPRepository otpRepository;
     public AuthenticationService(
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
-            PasswordEncoder passwordEncoder
-    ) {
+            PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository,
+            LocationRepository locationRepository,
+            AuthTokenRepository authTokenRepository,
+            EmailService mailService,JwtService jwtService,
+            ClientService clientService,
+            OTPService otpService,
+            OTPRepository otpRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
+        this.locationRepository = locationRepository;
+        this.authTokenRepository = authTokenRepository;
+        this.mailService = mailService;
+        this.jwtService = jwtService;
+        this.clientService= clientService;
+        this.otpService = otpService;
+        this.otpRepository = otpRepository;
     }
 
     public ResponseEntity signup(RegisterRequest input) {
