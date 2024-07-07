@@ -3,6 +3,8 @@ package fpt.CapstoneSU24.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class OriginDTO {
@@ -18,5 +20,5 @@ public class OriginDTO {
     private double CoordinateX;
     private double CoordinateY;
     private String AddressOrigin;
-    private String Image;
+    private List<String> Image;
 }

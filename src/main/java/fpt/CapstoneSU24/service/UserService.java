@@ -8,8 +8,12 @@ import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.mapper.UserMapper;
-import fpt.CapstoneSU24.model.*;
-import fpt.CapstoneSU24.repository.*;
+import fpt.CapstoneSU24.model.Certificate;
+import fpt.CapstoneSU24.model.Role;
+import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.repository.AuthTokenRepository;
+import fpt.CapstoneSU24.repository.CertificateRepository;
+import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import jakarta.mail.MessagingException;
@@ -23,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -38,29 +43,29 @@ import java.util.*;
 
 @Service
 public class UserService {
-    private final UserRepository userRepository;
-    private final CloudinaryService cloudinaryService;
-    private final CertificateRepository certificateRepository;
-    private final EmailService mailService;
-    private final SpringTemplateEngine springTemplateEngine;
-    private final DocumentGenerator documentGenerator;
-    private final UserMapper userMapper;
+    @Autowired
+    private AuthTokenRepository authTokenRepository;
 
     @Autowired
-    public UserService(CloudinaryService cloudinaryService,
-                          UserRepository userRepository, EmailService mailService,
-                          CertificateRepository certificateRepository,
-                          SpringTemplateEngine springTemplateEngine,
-                          DocumentGenerator documentGenerator,
-                          UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.certificateRepository = certificateRepository;
-        this.mailService = mailService;
-        this.springTemplateEngine = springTemplateEngine;
-        this.documentGenerator = documentGenerator;
-        this.cloudinaryService = cloudinaryService;
-        this.userMapper = userMapper;
-    }
+    private UserRepository userRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private CertificateRepository certificateRepository;
+
+    @Autowired
+    private EmailService mailService;
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+
+    @Autowired
+    private DocumentGenerator documentGenerator;
+    @Autowired
+    private UserMapper userMapper;
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
         UserProfileDTO userProfileDTO = null;
@@ -83,21 +88,21 @@ public class UserService {
             if (currentUser != null) {
 /*                AuthToken authToken = authTokenRepository.findOneById(currentUser.getUserId());
                 if (authToken != null) {*/
-                    userProfileDTO = new UserProfileDTO();
-                    userProfileDTO.setEmail(currentUser.getEmail());
-                    userProfileDTO.setRole(currentUser.getRole());
-                    userProfileDTO.setFirstName(currentUser.getFirstName());
-                    userProfileDTO.setLastName(currentUser.getLastName());
-                    userProfileDTO.setDescription(currentUser.getDescription());
-                    userProfileDTO.setPhone(currentUser.getPhone());
-                    userProfileDTO.setStatus(currentUser.getStatus());
-                    userProfileDTO.setAddress(currentUser.getLocation().getAddress());
-                    userProfileDTO.setCity(currentUser.getLocation().getCity());
-                    userProfileDTO.setCountry(currentUser.getLocation().getCountry());
-                    //cloudinaryService.getImageUrl: In: Key của ảnh(đã upload len, xem trong db), Out: Đuong dan cua anh
-                    userProfileDTO.setProfileIMG(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
-                    userProfileDTO.setWard(currentUser.getLocation().getWard());
-                    userProfileDTO.setDistrict(currentUser.getLocation().getDistrict());
+                userProfileDTO = new UserProfileDTO();
+                userProfileDTO.setEmail(currentUser.getEmail());
+                userProfileDTO.setRole(currentUser.getRole());
+                userProfileDTO.setFirstName(currentUser.getFirstName());
+                userProfileDTO.setLastName(currentUser.getLastName());
+                userProfileDTO.setDescription(currentUser.getDescription());
+                userProfileDTO.setPhone(currentUser.getPhone());
+                userProfileDTO.setStatus(currentUser.getStatus());
+                userProfileDTO.setAddress(currentUser.getLocation().getAddress());
+                userProfileDTO.setCity(currentUser.getLocation().getCity());
+                userProfileDTO.setCountry(currentUser.getLocation().getCountry());
+                //cloudinaryService.getImageUrl: In: Key của ảnh(đã upload len, xem trong db), Out: Đuong dan cua anh
+                userProfileDTO.setProfileIMG(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
+                userProfileDTO.setWard(currentUser.getLocation().getWard());
+                userProfileDTO.setDistrict(currentUser.getLocation().getDistrict());
 
                 if (userId > 0 && !isAdmin) {
                     if (checkUser == null || (checkUser.getUserId() != userId)) {
@@ -113,21 +118,21 @@ public class UserService {
         }
         return userProfileDTO;
     }
-public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
-    try {
-        Page<User> users;
-        Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
-                req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
-                        PageRequest.of(req.getPageNumber(), req.getPageSize());
-        users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
-        return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
-    } catch (Exception e) {
-        return ResponseEntity.status(500).body("Error when fetching data");
+    public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
+        try {
+            Page<User> users;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+            users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
+            return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
     }
-}
     public ResponseEntity<?> getDetailUser(IdRequest req) {
         try {
-              User user = userRepository.findOneByUserId(req.getId());
+            User user = userRepository.findOneByUserId(req.getId());
             return ResponseEntity.status(200).body(userMapper.usersToUserViewDetailDTO(user));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");

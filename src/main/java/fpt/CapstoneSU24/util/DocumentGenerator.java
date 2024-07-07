@@ -12,10 +12,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DocumentGenerator {
@@ -83,8 +88,8 @@ public class DocumentGenerator {
             // Create PdfDocument
             PdfDocument pdf = new PdfDocument(writer);
             // Set landscape orientation
-            pdf.setDefaultPageSize(PageSize.A4.rotate());
-            PageSize pageSize = PageSize.A4.rotate();
+            pdf.setDefaultPageSize(PageSize.A4);
+            PageSize pageSize = PageSize.A4;
             pdf.setDefaultPageSize(pageSize);
 
             // Convert HTML to PDF
@@ -109,6 +114,15 @@ public class DocumentGenerator {
 //        System.out.println("PDF created successfully!");
 //    }
 
+//    public static void main(String[] args) {
+//        String htmlContent = "<html>...your HTML content here...</html>";
+//        try {
+//            byte[] imageBytes = generateImageFromHtml(htmlContent);
+//            // Do something with the byte array, like save to a file or send as a response
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
     public byte[] getCertificate(byte[] pdfData) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);

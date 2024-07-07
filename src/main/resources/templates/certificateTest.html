@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #e0e0e0;
+        }
+
+        .certificate {
+            width: 100%;
+            max-width: 750px; /* Giới hạn chiều rộng của giấy chứng nhận */
+            padding: 20px;
+            border: 10px solid #79abdb;
+            background: white;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .border {
+            border: 5px solid #413b3b;
+            padding: 10px;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 700px; /* Giới hạn chiều rộng của nội dung */
+        }
+
+        .content {
+            padding: 10px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .header {
+            margin-bottom: 10px;
+        }
+
+        .header img {
+            max-height: 100px;
+            max-width: 100%;
+        }
+
+        h1 {
+            font-size: 2em;
+            line-height: 1.2;
+            color: #333;
+            margin: 10px 0;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: #333;
+            margin: 10px 0;
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .description {
+            font-size: 0.9em;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 700px; /* Giới hạn chiều rộng của chân trang */
+        }
+
+        .signature {
+            margin-left: auto; /* Đẩy chữ ký sang bên phải */
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .signature p {
+            font-size: 0.9em;
+            border-top: 1px solid #333;
+            width: 120px;
+            text-align: center;
+            color: #333;
+            margin: 10px;
+            cursor: pointer; /* Chỉ định con trỏ nhấp chuột */
+        }
+
+        .signature img {
+            max-width: 100px;
+            max-height: 50px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+        }
+
+        #qrContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #qrcode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        #qrcode img {
+            width: 150px;
+            height: auto;
+        }
+
+        #qrText {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        #imageProduct {
+            display: none; /* Ẩn hình ảnh sản phẩm */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="certificate">
+    <div class="border">
+        <div class="content">
+            <div class="header">
+                <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1720282981/vh0iojreqjm4tbie80nn.png" alt="Logo">
+            </div>
+            <h1>ATTESTATION DE CONFORMITÉ</h1>
+            <h2>SẢN PHẨM</h2>
+            <p class="subtitle">Sản phẩm được cung cấp bởi</p>
+            <h3>Xin chào, TraceOrigin</h3>
+            <p class="description">
+                Mã sản phẩm: <span>123456</span>
+            </p>
+            <p class="description">
+                Mã tạo: <span>78910</span>
+            </p>
+            <p class="description">
+                Ngày sản xuất: <span>2024-07-07</span>
+            </p>
+            <p class="description">
+                Chúng tôi là TraceOrigin.
+                Toàn bộ quy trình của sản phẩm này đã được ghi lại và đảm bảo minh bạch.
+            </p>
+            <p class="description">
+                Để biết thêm thông tin, vui lòng truy cập:
+                <a href="https://trace-origin.netlify.app">https://trace-origin.netlify.app</a>.
+            </p>
+            <p class="description">Hà Nội, ngày 7 tháng 7 năm 2024</p>
+            <div id="qrContainer">
+                <div id="qrcode">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=YwZmJlYjM0" alt="QR Code">
+                    <div id="qrText">Quét QR để xem thêm về sản phẩm</div>
+                </div>
+            </div>
+            <canvas id="signatureCanvas" width="300" height="150"></canvas>
+            <button id="clearButton">Xóa</button>
+            <button id="saveButton">Lưu chữ ký</button>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="signature">
+            <p>Chữ ký</p>
+            <img id="signatureImg" src="#" alt="Chữ ký">
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        draw(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDrawing) {
+            draw(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop);
+        }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+        isDrawing = false;
+    });
+
+    document.getElementById('clearButton').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('signatureImg').src = '#';
+    });
+
+    document.getElementById('saveButton').addEventListener('click', () => {
+        const dataUrl = canvas.toDataURL();
+        document.getElementById('signatureImg').src = dataUrl;
+    });
+
+    function draw(x, y) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#000';
+        ctx.lineCap = 'round';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+</script>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.controller.ItemController;
 import fpt.CapstoneSU24.dto.*;
+import fpt.CapstoneSU24.dto.CertificateInfor.InformationCert;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
@@ -9,9 +10,11 @@ import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.mapper.ItemMapper;
 import fpt.CapstoneSU24.mapper.AbortMapper;
 import fpt.CapstoneSU24.mapper.LocationMapper;
+import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
+import fpt.CapstoneSU24.util.DataUtils;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,9 +35,10 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -61,6 +65,7 @@ public class ItemService {
     private final ItemMapper itemMapper;
     private final AbortMapper abortMapper;
     private final LocationMapper locationMapper;
+    private final ProductMapper productMapper;
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
                        OriginRepository originRepository, ItemRepository itemRepository,
@@ -70,7 +75,8 @@ public class ItemService {
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
-                       AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper) {
+                       AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper,
+                       ProductMapper productMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -92,11 +98,8 @@ public class ItemService {
         this.itemMapper = itemMapper;
         this.abortMapper = abortMapper;
         this.locationMapper = locationMapper;
+        this.productMapper = productMapper;
     }
-    /*
-     * type is sort type: "desc" or "asc"
-     * default data startDate and endDate equal 0 (need insert 2 data)
-     * */
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
         try {
             Page<Item> items;
@@ -227,10 +230,24 @@ public class ItemService {
             item.setStatus(1);
             item.setOrigin(saveOrigin);
             item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
-            Context context = new Context();
 
+            InformationCert informationCert = new InformationCert();
+            Map<String, Object> props = new HashMap<>();
+            props.put("orgName", user.getOrg_name());
+            props.put("itemName", item.getProduct().getProductName());
+            props.put("supportingDocuments", item.getOrigin().getSupportingDocuments());
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String formattedDate = Instant.ofEpochMilli(scoreTime).atZone(ZoneId.systemDefault()).format(formatter);
+            props.put("createAt", formattedDate);
+            props.put("productRecognition", item.getProductRecognition());
+            informationCert.setProps(props);
+
+            Context context = new Context();
+            context.setVariables(informationCert.getProps());
             String html = templateEngine.process(Const.TEMPLATE_FILE_NAME.CERTIFICATE, context);
             byte[] cert = documentGenerator.generatePdfFromHtml(html);
+           // byte[] cert = documentGenerator.generateImageFromHtml(html);
             String certLink = cloudinaryService.uploadPdfToCloudinary(cert, "trace_origin_cert_of+" + productRecog);
             item.setCertificateLink(certLink);
             items.add(item);
@@ -338,6 +355,7 @@ public class ItemService {
 
     public ResponseEntity<?> viewOrigin(int itemLogId) {
         try {
+            Page<Product> products = null;
             ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
             if (itemLog == null) return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
 
@@ -356,13 +374,10 @@ public class ItemService {
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
             originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
             // Integer productId = itemLog.getItem().getProduct().getProductId();
-            ImageProduct imageProduct = imageProductRepository.findByproductId(itemLog.getItem().getProduct().getProductId());
-            if (imageProduct == null) {
-                originDTO.setImage(null);
-            } else {
-                String img = imageProduct.getFilePath();
-                originDTO.setImage(img);
-            }
+            int productId = itemLog.getItem().getProduct().getProductId();
+            List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
+                    .stream().map(cloudinaryService::getImageUrl).toList();
+            originDTO.setImage(imageProducts);
             return new ResponseEntity<>(originDTO, HttpStatus.OK);
         } catch (Exception ex) {
             logService.logError(ex);
