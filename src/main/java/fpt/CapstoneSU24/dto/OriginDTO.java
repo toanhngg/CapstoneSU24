@@ -14,11 +14,12 @@ public class OriginDTO {
     private String Phone;
     private String FullName;
     private long CreateAt;
+    private LocationDTO locationDTO;
     private String DescriptionProduct;
     private String DescriptionOrigin;
     private int Warranty;
-    private double CoordinateX;
-    private double CoordinateY;
-    private String AddressOrigin;
+   // private double CoordinateX;
+   // private double CoordinateY;
+  //  private String AddressOrigin;
     private List<String> Image;
 }

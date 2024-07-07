@@ -365,16 +365,18 @@ public class ItemService {
             originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
             originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
-
-            originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-            originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-            originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
+            originDTO.setLocationDTO(locationMapper.locationToLocationDto(itemLog.getItem().getOrigin().getLocation()));
+          //  originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
+          //  originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
+          //  originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
             originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
             originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
             originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
             // Integer productId = itemLog.getItem().getProduct().getProductId();
             int productId = itemLog.getItem().getProduct().getProductId();
+//            List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
+//                    .stream().map(cloudinaryService::getImageUrl).toList();
             List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
                     .stream().map(cloudinaryService::getImageUrl).toList();
             originDTO.setImage(imageProducts);
