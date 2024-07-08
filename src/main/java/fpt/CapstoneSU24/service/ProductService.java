@@ -27,18 +27,27 @@ import java.util.List;
 
 @Service
 public class ProductService {
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final ImageProductRepository imageProductRepository;
+    private final ItemRepository itemRepository;
+    private final CloudinaryService cloudinaryService;
+    private final ProductMapper productMapper;
+
     @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private CloudinaryService cloudinaryService;
-    @Autowired
-    private ImageProductRepository imageProductRepository;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private ProductMapper productMapper;
+    public ProductService(ProductRepository productRepository,
+                             CategoryRepository categoryRepository,
+                             ImageProductRepository imageProductRepository, ItemRepository itemRepository,
+                             CloudinaryService cloudinaryService,ProductMapper productMapper) {
+        this.productRepository = productRepository;
+        this.imageProductRepository = imageProductRepository;
+        this.itemRepository = itemRepository;
+        this.cloudinaryService = cloudinaryService;
+        this.categoryRepository = categoryRepository;
+        this.productMapper = productMapper;
+
+
+    }
 
     public ResponseEntity addProduct(AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -163,6 +172,7 @@ public class ProductService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");
         }
     }
+
 
     public ResponseEntity<?> findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

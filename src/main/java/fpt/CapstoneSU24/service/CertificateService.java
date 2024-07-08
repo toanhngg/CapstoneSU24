@@ -196,11 +196,11 @@ public class CertificateService {
         if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 1 && currentUser.getStatus() != 8) {
             try {
                 String fullFilePath = "";
-                for (int i = 0; i < req.getFile().size(); i++) {
-                    MultipartFile file = cloudinaryService.convertBase64ToImgFile(req.getFile().get(i));
+                for (int i = 0; i < req.getImages().size(); i++) {
+                    MultipartFile file = cloudinaryService.convertBase64ToImgFile(req.getImages().get(i));
                     String fileName = cloudinaryService.uploadImageAndGetPublicId(file, "");
                     // if we need more cert => add "." at between them like "abc123.dcf123" (2 abc123, dcf123 => 2 images)
-                    fullFilePath += (i == req.getFile().size() - 1) ? fileName : fileName + ".";
+                    fullFilePath += (i == req.getImages().size() - 1) ? fileName : fileName + ".";
                 }
                 Certificate newCertificate = new Certificate();
                 newCertificate.setCertificateName(req.getName());

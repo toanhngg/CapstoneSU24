@@ -14,7 +14,7 @@ public class CreateCertificateRequest {
     @Size(max = 100, message = "Name must be less than 100 characters")
     public String name;
     @NotNull(message = "file is not null")
-    public List<String> file;
+    public List<String> images;
     @NotNull(message = "Issuance date is required")
     public long issuanceDate;
     @NotBlank(message = "Issuance authority is required")
@@ -29,8 +29,8 @@ public class CreateCertificateRequest {
         this.name = name;
     }
 
-    public List<String> getFile() {
-        return file;
+    public List<String> getImages() {
+        return images;
     }
 
     public long getIssuanceDate() {

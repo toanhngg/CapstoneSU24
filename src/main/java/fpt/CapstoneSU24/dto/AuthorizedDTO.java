@@ -44,6 +44,7 @@ public class AuthorizedDTO {
     private String phoneNumber;
 
     @NotBlank(message = "Product recognition is required")
+    @Size(max = 10, message = "ProductRecognition must be 10 characters")
     private String productRecognition;
 
 

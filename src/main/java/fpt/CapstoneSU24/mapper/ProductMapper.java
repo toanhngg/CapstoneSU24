@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.mapper;
 
 import fpt.CapstoneSU24.dto.ProductDTOResponse;
 import fpt.CapstoneSU24.dto.ProductDetailDTOResponse;
+import fpt.CapstoneSU24.dto.ProductImageDTOResponse;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
@@ -45,6 +46,12 @@ public abstract class ProductMapper {
 
     public abstract ProductDetailDTOResponse productToProductDetailDTOResponse(Product product);
 
+
+
+    @Mapping(source = "productId", target = "productId")
+    @Mapping(target = "listImages", ignore = true) // Ignore avatar for now, we'll set it manually
+    public abstract ProductImageDTOResponse productToProductImageDTOResponse(Product product);
+
     @AfterMapping
     protected void setAvatar(Product product, @MappingTarget ProductDTOResponse productDTO) {
         ImageProduct imageProduct = imageProductRepository.findAllByFilePath("avatar/"+product.getProductId());
@@ -62,6 +69,12 @@ public abstract class ProductMapper {
     @AfterMapping
     protected void setListImages(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
         List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(product.getProductId()).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());
+        productDTO.setListImages(imageProducts);
+    }
+    @AfterMapping
+    protected void setListImagesItem(Product product, @MappingTarget ProductImageDTOResponse productDTO) {
+        List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(
+                product.getProductId()).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());
         productDTO.setListImages(imageProducts);
     }
 //    @AfterMapping

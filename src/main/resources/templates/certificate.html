@@ -1,145 +1,215 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
-    <link href='https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Open+Sans:wght@300;400&display=swap' rel='stylesheet' type='text/css'/>
-
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <style>
-        /*@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Open+Sans:wght@300;400&display=swap');*/
-
         body {
-            /*font-family: 'Open Sans', sans-serif;*/
+            font-family: 'Roboto', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: max-content;
+            height: 100vh;
             margin: 0;
             background-color: #e0e0e0;
-            padding-bottom: 20px;
-        }
-        .certificate {
-            width: 90%;
-            max-width: 100%;
-            padding: 30px;
-            border: 20px solid #79abdb;
-            background: white;
-            position: relative;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            background-size: cover;
         }
 
-        .company-logo {
-            position: absolute;
-            top: 20px; /* Điều chỉnh vị trí từ trên xuống */
-            left: 20px; /* Điều chỉnh vị trí từ trái sang */
-            width: 100px; /* Điều chỉnh chiều rộng */
-            height: auto; /* Điều chỉnh chiều cao tự động */
-            z-index: 10; /* Đảm bảo logo hiển thị phía trước */
+        .certificate {
+            width: 100%;
+            max-width: 750px; /* Giới hạn chiều rộng của giấy chứng nhận */
+            padding: 20px;
+            border: 10px solid #79abdb;
+            background: white;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
         }
 
         .border {
-            border: 10px solid #413b3b;
-            padding: 20px;
-            height: 100%;
+            border: 5px solid #413b3b;
+            padding: 10px;
             box-sizing: border-box;
-            position: relative;
         }
 
         .content {
-            border: 2px solid #fff;
-            padding: 30px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            margin-bottom: 10px;
+            height: 100px;
+        }
+
+        .header img {
+            max-height: 100px;
+            max-width: 100%;
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 2em;
+            line-height: 1.2;
             color: #333;
-            margin-bottom: 0;
+            margin: 10px 0;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
         }
 
         h2 {
-            font-size: 1.5em;
+            font-size: 1.2em;
             color: #666;
-            margin: 10px 0 20px 0;
+            margin: 10px 0;
         }
 
         .subtitle {
-            font-size: 1.2em;
+            font-size: 1em;
             color: #333;
-            margin: 0 0 20px 0;
+            margin: 10px 0;
         }
 
         h3 {
-            font-size: 2.2em;
+            font-size: 1.5em;
             color: #333;
-            margin: 20px 0;
+            margin: 10px 0;
             font-family: 'Dancing Script', cursive;
         }
 
         .description {
-            font-size: 1em;
+            font-size: 0.9em;
             color: #555;
-            margin: 20px 0;
+            margin: 10px 0;
         }
 
         .footer {
             display: flex;
             justify-content: space-between;
-            margin-top: 80px;
+            margin-top: 20px;
         }
 
+        .signature2 {
+            margin-left: 50px;
+        }
+        .signature {
+            margin-right: 50px;
+        }
+
+        #qrContainer {
+            margin-top: 20px;
+          position: relative; /* Vị trí tương đối */
+        }
+
+        #qrcode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #qrcode img {
+            width: 100px;
+            height: auto;
+        }
+
+        #qrText {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        #imageProduct {
+            display: none; /* Ẩn hình ảnh sản phẩm */
+        }
+        .descriptionContainer{
+margin-left: 100px;
+        }
+        .signature img {
+            max-width: 100px;
+            max-height: 50px;
+            margin-top: 10px;
+        }
         .signature p {
-            font-size: 1em;
-            border-top: 1px solid #333;
-            width: 200px;
             text-align: center;
             color: #333;
-            margin-right: 190px;
-            margin-top: 35px;
+            margin-right: 60px;
+            margin-top: 60px;
             margin-bottom: 20px;
         }
         .signature2 p {
-            font-size: 1em;
-            border-top: 1px solid #333;
-            width: 200px;
+            text-align: center;
             text-align: center;
             color: #333;
-            margin-left: 190px;
-            margin-top: 35px;
+            margin-left: 60px;
+            margin-top: 60px;
             margin-bottom: 20px;
 
         }
     </style>
 </head>
-
 <body>
 <div class="certificate">
-    <img src="https://e7.pngegg.com/pngimages/779/61/png-clipart-logo-idea-cute-eagle-leaf-logo-thumbnail.png" alt="Company Logo" class="company-logo">
     <div class="border">
         <div class="content">
-            <h1>CERTIFICATE</h1>
-            <h2>OF ACHIEVEMENT</h2>
-            <p class="subtitle">This certificate is proudly presented to</p>
-            <h3>Name Surname</h3>
+            <div class="header">
+                <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1720328835/wmukpv0a5xwk1d4gom1g.jpg" alt="Logo">
+            </div>
+            <h1>GIẤY CHỨNG NHẬN</h1>
+            <h2>SẢN PHẨM</h2>
+<!--            <p class="subtitle">Sản phẩm được cung cấp bởi</p>-->
+
+            <h3 th:text="${itemName}"></h3>
+
+            <p>Xin chào, bạn</p>
+
+            <p class="description" th:text="${'Mã sản phẩm: ' + productRecognition}"></p>
+            <p class="description" th:text="${'Mã tạo: ' + supportingDocuments}"></p>
+            <p class="description" th:text="${'Nhà sản xuất : ' + orgName}"></p>
+            <p class="description" th:text="${'Ngày sản xuất: ' + createAt}"></p>
             <p class="description">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin bibendum diam purus, vitae condimentum ipsum scelerisque eu. Suspendisse id elementum diam. Nulla rhoncus nulla nisl, non posuere massa accumsan quis. Donec ut augue blandit, fermentum purus eget, vehicula odio.
+                Chúng tôi là TraceOrigin. Chúng tôi đã được ủy quyền từ ____
+                để có thể ghi lại những thông tin trong quãng đời của sản phẩm.
+                Toàn bộ quy trình của sản phẩm này đã được ghi lại và đảm bảo minh bạch.
             </p>
-            <!--            <div class="badge">-->
-            <!--                <div class="badge-text">TOP</div>-->
-            <!--                <div class="badge-text">BRAND</div>-->
-            <!--                <div class="badge-text">AWARD</div>-->
-            <!--            </div>-->
-            <table style="margin: 0 auto;">
-                <tr>
-                    <td class="signature">
-                        <p>Signature</p>
-                    </td>
-                    <td class="signature2">
-                        <p>Signature</p>
-                    </td>
-                </tr>
-            </table>
+            <p class="description">
+                Để biết thêm thông tin, vui lòng truy cập:
+                <a href="https://trace-origin.netlify.app">https://trace-origin.netlify.app</a>.
+            </p>
+            <p class="description">
+                Thông tin liên hệ : </a>
+            </p>
+            <div style="display: flex;">
+                <div id="qrContainer">
+                    <div id="qrcode">
+<!--                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=YwZmJlYjM0" alt="QR Code"></div>-->
+                    <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=' + ${productRecognition}" alt="QR Code">
+
+                </div>
+
+                <div id="qrText">Quét QR để xem thêm về sản phẩm</div>
+                </div>
+                <div>
+                    <div style="margin-left: 90px">
+                        <p>Hà Nội, ngày 7 tháng 7 năm 2024</p>
+                        <table style="margin: 0 auto;">
+                            <tr>
+                                <td class="signature">
+                                    <p>Signature</p>
+                                </td>
+                                <td class="signature2">
+                                    <p>Signature</p>
+                                </td>
+                            </tr>
+                        </table>
+
+
+                        <!--                        <img src="https://via.placeholder.com/100" alt="Chữ ký">-->
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="imageProduct"></div>
         </div>
     </div>
 </div>
