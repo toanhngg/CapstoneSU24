@@ -4,15 +4,15 @@ import java.util.List;
 
 public class ListCertificateDTOResponse {
     private int certId;
-    private String certificateName;
+    private String name;
     private String issuingAuthority;
     private List<String> images;
     private long issuanceDate;
     private String note;
 
-    public ListCertificateDTOResponse(int certId, String certificateName, String issuingAuthority, List<String> images, long issuanceDate, String note) {
+    public ListCertificateDTOResponse(int certId, String name, String issuingAuthority, List<String> images, long issuanceDate, String note) {
         this.certId = certId;
-        this.certificateName = certificateName;
+        this.name = name;
         this.issuingAuthority = issuingAuthority;
         this.images = images;
         this.issuanceDate = issuanceDate;
@@ -35,12 +35,12 @@ public class ListCertificateDTOResponse {
         this.certId = certId;
     }
 
-    public String getCertificateName() {
-        return certificateName;
+    public String getName() {
+        return name;
     }
 
-    public void setCertificateName(String certificateName) {
-        this.certificateName = certificateName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getIssuingAuthority() {

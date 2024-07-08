@@ -59,4 +59,9 @@ public CertificateController( CertificateService certificateService){
     public ResponseEntity<?> SendRequestVerifyCert() throws IOException {
         return certificateService.sendRequestVerifyCert();
     }
+    @GetMapping("/getCertificateById")
+    public ResponseEntity<?> getCertificateById(@Valid @RequestBody IdRequest req)
+    {
+        return certificateService.getCertificateById(req);
+    }
 }
