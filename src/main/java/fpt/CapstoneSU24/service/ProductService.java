@@ -4,6 +4,7 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.model.ImageProduct;
+import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.*;
@@ -87,6 +88,10 @@ public class ProductService {
     public ResponseEntity editProduct(EditProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        List<Item> items = itemRepository.findAllByProductId(req.getProductId());
+        if(items.size() == 0){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't edit because the product have item");
+        }
         if (currentUser.getRole().getRoleId() == 2) {
             try {
                 Product product = productRepository.findOneByProductId(req.getProductId());
@@ -102,8 +107,6 @@ public class ProductService {
                 product.setDescription(req.getDescription());
                 product.setWarranty(req.getWarranty());
                 product.setCreateAt(System.currentTimeMillis());
-//                product.setManufacturer(currentUser);
-//                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
                 productRepository.save(product);
                 //save image
                 if (!req.getImages().isEmpty()) {
@@ -203,6 +206,10 @@ public class ProductService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         Product productDelete = productRepository.findOneByProductId(req.getId());
+        List<Item> items = itemRepository.findAllByProductId(req.getId());
+        if(items.size() != 0){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't edit because the product have item");
+        }
         if(productDelete != null){
             if (productDelete.getManufacturer().getUserId() == currentUser.getUserId()) {
                 if (itemRepository.findAllByProductId(req.getId()).isEmpty()) {

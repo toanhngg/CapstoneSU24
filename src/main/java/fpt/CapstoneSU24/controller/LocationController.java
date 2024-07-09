@@ -1,8 +1,10 @@
 package fpt.CapstoneSU24.controller;
 
 
+import fpt.CapstoneSU24.dto.payload.PhoneRequest;
 import fpt.CapstoneSU24.dto.payload.VerifyAddressRequest;
 import fpt.CapstoneSU24.dto.payload.VerifyDDAddressRequest;
+import fpt.CapstoneSU24.service.LocationService;
 import fpt.CapstoneSU24.service.OpenCageDataService;
 import jakarta.validation.Valid;
 import org.json.JSONArray;
@@ -16,10 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class LocationController {
 
     private final OpenCageDataService openCageDataService;
+    private final LocationService locationService;
 
     @Autowired
-    public LocationController(OpenCageDataService openCageDataService){
+    public LocationController(OpenCageDataService openCageDataService, LocationService locationService){
         this.openCageDataService = openCageDataService;
+        this.locationService = locationService;
     }
 
     @Value("${key.open.cage.data}")
@@ -45,5 +49,9 @@ public class LocationController {
             }else{
                 return ResponseEntity.status(200).body(result.toString());
             }
+    }
+    @GetMapping("/viewAllLocationByManufacture")
+    public ResponseEntity<?> viewAllLocationByManufacture() {
+       return locationService.viewAllLocationByManufacture();
     }
 }
