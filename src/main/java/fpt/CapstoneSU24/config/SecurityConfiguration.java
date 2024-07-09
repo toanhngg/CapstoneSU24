@@ -87,7 +87,8 @@ public class SecurityConfiguration {
                                 "/api/certificate/getListCertificateByManuId",
                                 "/api/user/getDetailUser",
                                 "/api/user/getAllUser",
-                                "/api/auth/checkMailExist"
+                                "/api/auth/checkMailExist",
+                                "/api/category/search"
 
 
                         ).permitAll()

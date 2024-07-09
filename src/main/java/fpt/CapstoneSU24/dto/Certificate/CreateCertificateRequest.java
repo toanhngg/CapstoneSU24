@@ -1,9 +1,6 @@
 package fpt.CapstoneSU24.dto.Certificate;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,14 +8,17 @@ import java.util.List;
 
 public class CreateCertificateRequest {
     @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must be less than 100 characters")
+    @Pattern(regexp = "^\\w+(\\s+\\w+)+$",
+            message = "name must contain at least two words")
     public String name;
     @NotNull(message = "file is not null")
     public List<String> images;
+    @Min(value = 0, message = "Must be greater than or equal to zero")
     @NotNull(message = "Issuance date is required")
     public long issuanceDate;
     @NotBlank(message = "Issuance authority is required")
-    @Size(max = 100, message = "Issuance authority must be less than 100 characters")
+    @Pattern(regexp = "^\\w+(\\s+\\w+)+$",
+            message = "name must contain at least two words")
     public String issuanceAuthority;
 
     public String getName() {
