@@ -11,8 +11,6 @@ public class FilterSearchForCategoryRequest {
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
     @NotNull(message = "The pageNumber is required")
     private int pageNumber;
-    @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
-            message = "name must not contain special characters")
     @NotNull(message = "The name is not null")
     private String name;
     public int getPageSize() {
