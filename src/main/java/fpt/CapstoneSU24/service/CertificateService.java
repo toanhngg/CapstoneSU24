@@ -153,6 +153,30 @@ public class CertificateService {
         }
         return ResponseEntity.status(500).body("your account is not allowed for this action");
     }
+
+    public ResponseEntity<?> ViewCertByManufacturerId(IdRequest req) {
+            try {
+                // check status user
+                if(userRepository.findOneByUserId(req.getId()).getStatus() != 0){
+                    List<Certificate> certificates = certificateRepository.findByManufacturer_userId(req.getId());
+                    List<ListCertificateDTOResponse> certificateListDTOList = new ArrayList<>();
+                    for (Certificate c : certificates) {
+                        String[] parts = c.getImages().split("\\.");
+                        List<String> list = new ArrayList<>();
+                        for (String part : parts) {
+                            list.add(cloudinaryService.getImageUrl(part));
+                        }
+                        certificateListDTOList.add(new ListCertificateDTOResponse(c.getCertificateId(), c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate(), c.getNote()));
+                    }
+                    return ResponseEntity.ok(certificateListDTOList);
+                }
+                return ResponseEntity.status(500).body("the manufacturer doesn't verify yet");
+
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body("error");
+            }
+        }
+
     public ResponseEntity<?> sendRequestVerifyCert() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();

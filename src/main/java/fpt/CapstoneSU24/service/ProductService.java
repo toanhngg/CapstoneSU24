@@ -1,14 +1,11 @@
 package fpt.CapstoneSU24.service;
 
 
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.dto.payload.AddProductRequest;
-import fpt.CapstoneSU24.dto.payload.EditProductRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchProductRequest;
-import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,6 +148,23 @@ public class ProductService {
                 products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
             }
             return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToProductDTOResponse));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
+        }
+    }
+
+    public ResponseEntity ViewProductByManufacturerId(FilterSearchProductByIdRequest req) {
+        try {
+            Page<Product> products = null;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                products = productRepository.findAllProductWithDate(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
+            } else {
+                products = productRepository.findAllProduct(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToViewProductDTOResponse));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
         }
