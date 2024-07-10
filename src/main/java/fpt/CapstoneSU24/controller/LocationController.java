@@ -1,7 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
 
-import fpt.CapstoneSU24.dto.payload.PhoneRequest;
 import fpt.CapstoneSU24.dto.payload.VerifyAddressRequest;
 import fpt.CapstoneSU24.dto.payload.VerifyDDAddressRequest;
 import fpt.CapstoneSU24.service.LocationService;
