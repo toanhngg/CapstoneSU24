@@ -194,7 +194,11 @@ public class ProductService {
     public ResponseEntity<?> findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
+        Product p = productRepository.findOneByProductId(req.getId());
+        if(p == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product id isn't exist");
+        }
+        if (p.getManufacturer().getUserId() == currentUser.getUserId()) {
             Product product = productRepository.findOneByProductId(req.getId());
             return ResponseEntity.status(HttpStatus.OK).body(productMapper.productToProductDetailDTOResponse(product));
         } else {
@@ -208,17 +212,13 @@ public class ProductService {
         Product productDelete = productRepository.findOneByProductId(req.getId());
         List<Item> items = itemRepository.findAllByProductId(req.getId());
         if(items.size() != 0){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't edit because the product have item");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't delete because the product have item");
         }
         if(productDelete != null){
             if (productDelete.getManufacturer().getUserId() == currentUser.getUserId()) {
-                if (itemRepository.findAllByProductId(req.getId()).isEmpty()) {
                     imageProductRepository.deleteByProductId(req.getId());
                     productRepository.deleteOneByProductId(req.getId());
                     return ResponseEntity.status(HttpStatus.OK).body("delete product success");
-                } else {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product can't delete because product have instants");
-                }
 
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");

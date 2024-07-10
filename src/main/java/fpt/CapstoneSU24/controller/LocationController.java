@@ -50,8 +50,8 @@ public class LocationController {
                 return ResponseEntity.status(200).body(result.toString());
             }
     }
-    @GetMapping("/viewAllLocationByManufacture")
-    public ResponseEntity<?> viewAllLocationByManufacture() {
-       return locationService.viewAllLocationByManufacture();
+    @GetMapping("/viewAllLocationByManufacturer")
+    public ResponseEntity<?> viewAllLocationByManufacturer() {
+       return locationService.viewAllLocationByManufacturer();
     }
 }

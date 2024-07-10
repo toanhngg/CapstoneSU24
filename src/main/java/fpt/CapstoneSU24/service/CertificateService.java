@@ -54,6 +54,9 @@ public class CertificateService {
     public ResponseEntity<?> getListCertificateByManuId(IdRequest req) {
         try {
             List<Certificate> certificates = certificateRepository.findByManufacturer_userId(req.getId());
+            if(certificates.size() == 0){
+                return ResponseEntity.status(500).body("id is not exist");
+            }
             List<ListCertificateDTOResponse> certificateListDTOList = new ArrayList<>();
             for (Certificate c : certificates) {
                 String[] parts = c.getImages().split("\\.");
@@ -66,7 +69,7 @@ public class CertificateService {
 
             return ResponseEntity.ok(certificateListDTOList);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("id is not exist");
+            return ResponseEntity.status(500).body("error when fetch data");
         }
     }
 

@@ -118,7 +118,7 @@ public class UserService {
         }
         return userProfileDTO;
     }
-    public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
+    public ResponseEntity<?> viewAllManufacturer(FilterSearchManufacturerRequest req) {
         try {
             Page<User> users;
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
@@ -133,6 +133,9 @@ public class UserService {
     public ResponseEntity<?> getDetailUser(IdRequest req) {
         try {
             User user = userRepository.findOneByUserId(req.getId());
+            if(user == null){
+                return ResponseEntity.status(500).body("user id is not exist");
+            }
             return ResponseEntity.status(200).body(userMapper.usersToUserViewDetailDTO(user));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");

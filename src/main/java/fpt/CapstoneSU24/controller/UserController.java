@@ -31,9 +31,9 @@ public class UserController {
     }
 
 
-    @PostMapping("/getAllUser")
-    public ResponseEntity<?> getAllUser(@Valid @RequestBody FilterSearchManufacturerRequest req) {
-        return userService.getAllUser(req);
+    @PostMapping("/viewAllManufacturer")
+    public ResponseEntity<?> viewAllManufacturer(@Valid @RequestBody FilterSearchManufacturerRequest req) {
+        return userService.viewAllManufacturer(req);
     }
     @PostMapping("/getDetailUser")
     public ResponseEntity<?> getDetailUser(@Valid @RequestBody IdRequest req) {

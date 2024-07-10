@@ -34,7 +34,7 @@ public class LocationService {
         this.locationMapper = locationMapper;
 
     }
-    public ResponseEntity<?> viewAllLocationByManufacture(){
+    public ResponseEntity<?> viewAllLocationByManufacturer(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         List<Location> locations = locationRepository.findAllByPhone(currentUser.getPhone());
