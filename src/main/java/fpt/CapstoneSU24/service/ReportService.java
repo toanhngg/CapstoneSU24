@@ -100,7 +100,7 @@ public class ReportService {
         reportDetailDto.setReportId(report.getReportId());
         reportDetailDto.setCode(report.getCode());
         reportDetailDto.setComponent(componentName);
-        reportDetailDto.setCreateBy(report.getCreateBy());
+        reportDetailDto.setCreateBy(report.getCreateBy().getEmail());
         String getReportDate = epochDate.dateTimeToString(epochDate.epochToDate(report.getCreateOn()), "dd-MM-yyyy");
         reportDetailDto.setCreateOn(getReportDate);
         reportDetailDto.setPriority(report.getPriority());

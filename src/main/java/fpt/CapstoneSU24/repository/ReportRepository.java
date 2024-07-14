@@ -10,8 +10,8 @@ import org.springframework.data.repository.query.Param;
 public interface ReportRepository extends JpaRepository<Report, Integer> {
 
     @Query("SELECT r FROM Report r " +
-            "WHERE (:code IS NULL OR :code = '' OR r.code = :code) " +
-            "AND (:title IS NULL OR :title = '' OR r.title = :title) " +
+            "WHERE (:code IS NULL OR :code = '' OR r.code LIKE %:code%) " +
+            "AND (:title IS NULL OR :title = '' OR r.title LIKE %:title%) " +
             "AND (:reportBy = -1 OR r.reportTo.userId = :reportBy) " +
             "AND (:type = -1 OR r.type = :type) " +
             "AND (:status = -1 OR r.status = :status) " +
