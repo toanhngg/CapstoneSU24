@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.service;
 
+import fpt.CapstoneSU24.dto.TextDTO;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.LocationMapper;
 import fpt.CapstoneSU24.model.Category;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LocationService {
@@ -42,5 +44,20 @@ public class LocationService {
             return ResponseEntity.status(HttpStatus.OK).body(locationMapper.locationToViewAllLocationDTOResponse(locations));
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("don't have any location");
+    }
+    public ResponseEntity<?> getAllDistinctCity() {
+        List<String> allLocation = locationRepository.findDistinctCities();
+        List<TextDTO> locations = allLocation.stream()
+                .map(city -> {
+                    TextDTO dto = new TextDTO();
+                    dto.setText(city);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        if (!locations.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(locations);
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Don't have any location");
     }
 }

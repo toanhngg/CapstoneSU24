@@ -13,6 +13,9 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Integer> {
 
+        @Query("SELECT DISTINCT l.city FROM Location l")
+        List<String> findDistinctCities();
+
         @Query("SELECT l FROM Location l " +
                 "LEFT JOIN ItemLog i ON i.location.locationId = l.locationId " +
                 "WHERE i.itemLogId = :id")

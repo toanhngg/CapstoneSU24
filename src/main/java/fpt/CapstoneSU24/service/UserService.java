@@ -20,10 +20,7 @@ import jakarta.mail.MessagingException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +37,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserService {
@@ -146,47 +145,79 @@ public class UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
 
-        if ( userProfileDTO.getRole().getRoleId() != 1) {
+        if (userProfileDTO.getRole().getRoleId() != 1) {
             return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
+        Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
 
-        //Convert Date
+        // Convert Date
         Long timestampFrom = userRequestDTO.getDateFrom() != null ?
                 userRequestDTO.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
         Long timestampTo = userRequestDTO.getDateTo() != null ?
                 userRequestDTO.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
 
+        // Apply filters using stream and filter methods
+        List<User> users = userRepository.findAll();
+        Stream<User> userStream = users.stream();
 
-        //Chia Page
-        Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
-        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
+        if (userRequestDTO.getEmail() != null && !userRequestDTO.getEmail().isEmpty()) {
+            userStream = userStream.filter(user -> user.getEmail().equals(userRequestDTO.getEmail()));
+        }
+        if (userRequestDTO.getRoleId() != null) {
+            userStream = userStream.filter(user -> user.getRole().getRoleId() == (/*userRequestDTO.getRoleId()*/ 2));
+        }
+        if (userRequestDTO.getCity() != "") {
+            userStream = userStream.filter(user -> user.getLocation().getCity().equals(userRequestDTO.getCity()));
+        }
+        if (userRequestDTO.getStatus() != "") {
+            if(Integer.valueOf(userRequestDTO.getStatus()) == -1)
+            {
+                userStream = userStream.filter(user -> (user.getStatus() != 1 && user.getStatus() != 2 ));
+            }else {
+                userStream = userStream.filter(user -> user.getStatus() == Integer.valueOf(userRequestDTO.getStatus()));
+            }
+        }
+        if (timestampFrom != null) {
+            userStream = userStream.filter(user -> user.getCreateAt() >= timestampFrom);
+        }
+        if (timestampTo != null) {
+            userStream = userStream.filter(user -> user.getCreateAt() <= timestampTo);
+        }
 
-        //mapping DTO
+        List<User> filteredUsers = userStream.collect(Collectors.toList());
+
+        // Paginate filtered results
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredUsers.size());
+        Page<User> userPage = new PageImpl<>(filteredUsers.subList(start, end), pageable, filteredUsers.size());
+
+        // Map to DTO
         Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
-            B03_GetDataGridDTO B03_GetDataGridDTO = new B03_GetDataGridDTO();
-            B03_GetDataGridDTO.setUserId(user.getUserId());
-            B03_GetDataGridDTO.setEmail(user.getEmail());
-            B03_GetDataGridDTO.setRoleId(user.getRole().getRoleId());
-            B03_GetDataGridDTO.setRoleName(user.getRole().getRoleName());
-            B03_GetDataGridDTO.setName(user.getFirstName() + " " + user.getLastName());
-            B03_GetDataGridDTO.setDescription(user.getDescription());
-            B03_GetDataGridDTO.setPhone(user.getPhone());
-            B03_GetDataGridDTO.setStatus(user.getStatus());
-            B03_GetDataGridDTO.setCreateOn(new Date(user.getCreateAt() * 1000L));
-            B03_GetDataGridDTO.setUsername(user.getUsername());
-            B03_GetDataGridDTO.setAddress(user.getLocation().getAddress());
-            B03_GetDataGridDTO.setCountry(user.getLocation().getCountry());
-            B03_GetDataGridDTO.setDistrict(user.getLocation().getDistrict());
-            B03_GetDataGridDTO.setWard(user.getLocation().getWard());
-            B03_GetDataGridDTO.setCity(user.getLocation().getCity());
-
-            return B03_GetDataGridDTO;
+            B03_GetDataGridDTO dto = new B03_GetDataGridDTO();
+            dto.setUserId(user.getUserId());
+            dto.setEmail(user.getEmail());
+            dto.setRoleId(user.getRole().getRoleId());
+            dto.setRoleName(user.getRole().getRoleName());
+            dto.setName(user.getFirstName() + " " + user.getLastName());
+            dto.setDescription(user.getDescription());
+            dto.setPhone(user.getPhone());
+            dto.setStatus(user.getStatus());
+            dto.setCreateOn(new Date(user.getCreateAt() * 1000L));
+            dto.setUsername(user.getUsername());
+            dto.setAddress(user.getLocation().getAddress());
+            dto.setCountry(user.getLocation().getCountry());
+            dto.setDistrict(user.getLocation().getDistrict());
+            dto.setWard(user.getLocation().getWard());
+            dto.setCity(user.getLocation().getCity());
+            return dto;
         });
 
         return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
+
     public ResponseEntity<Role> getRoleByUserId(int userId) {
         User user = userRepository.findOneByUserId(userId);
         if (user != null) {

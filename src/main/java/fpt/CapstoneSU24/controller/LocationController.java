@@ -53,4 +53,9 @@ public class LocationController {
     public ResponseEntity<?> viewAllLocationByManufacturer() {
        return locationService.viewAllLocationByManufacturer();
     }
+
+    @GetMapping("/getAllCity")
+    public ResponseEntity<?> getAllDistinctCity() {
+        return locationService.getAllDistinctCity();
+    }
 }
