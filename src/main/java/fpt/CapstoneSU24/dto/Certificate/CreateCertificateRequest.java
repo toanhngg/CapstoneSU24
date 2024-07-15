@@ -8,8 +8,6 @@ import java.util.List;
 
 public class CreateCertificateRequest {
     @NotBlank(message = "Name is required")
-    @Pattern(regexp = "^\\w+(\\s+\\w+)+$",
-            message = "name must contain at least two words")
     public String name;
     @NotNull(message = "file is not null")
     public List<String> images;
@@ -17,8 +15,6 @@ public class CreateCertificateRequest {
     @NotNull(message = "Issuance date is required")
     public long issuanceDate;
     @NotBlank(message = "Issuance authority is required")
-    @Pattern(regexp = "^\\w+(\\s+\\w+)+$",
-            message = "name must contain at least two words")
     public String issuanceAuthority;
 
     public String getName() {
