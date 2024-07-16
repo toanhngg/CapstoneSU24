@@ -90,7 +90,9 @@ public class SecurityConfiguration {
                                 "/api/auth/checkMailExist",
                                 "/api/category/search",
                                 "/api/product/ViewProductByManufacturerId",
-                                "/api/certificate/ViewCertByManufacturerId"
+                                "/api/certificate/ViewCertByManufacturerId",
+                                "/api/elk/getNumberVisitsAllTime",
+                                "/api/elk/getNumberVisitsDiagram"
 
 
                         ).permitAll()

@@ -276,6 +276,17 @@
 	<!--			<artifactId>jaybird</artifactId>-->
 	<!--			<version>4.0.8.java11</version>-->
 	<!--		</dependency>-->
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-high-level-client</artifactId>
+			<version>7.17.9</version>
+		</dependency>
+		<!-- Elasticsearch Low Level REST Client -->
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-client</artifactId>
+			<version>7.17.9</version>
+		</dependency>
 	</dependencies>
 
 	<build>

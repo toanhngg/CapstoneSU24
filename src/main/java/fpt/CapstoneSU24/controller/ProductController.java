@@ -56,6 +56,5 @@ public class ProductController {
     @PostMapping("/deleteProductById")
     public ResponseEntity<?> deleteProductById(@Valid @RequestBody IdRequest req) {
         return productService.deleteProductById(req);
-
     }
 }
