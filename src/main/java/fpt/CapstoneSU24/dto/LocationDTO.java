@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LocationDTO {
-    @NotBlank(message = "The address is required")
+   // @NotBlank(message = "The address is required")
 //    @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
 //            message = "The address must not contain special characters")
     @Size(min = 5, max = 200, message = "The address must be between 5 and 200 characters")
@@ -37,12 +37,12 @@ public class LocationDTO {
             message = "The ward must not contain special characters")
     private String ward;
 
-    @NotBlank(message = "The coordinateX is required")
+    //@NotBlank(message = "The coordinateX is required")
     @DecimalMin(value = "-90.0", message = "Longitude must be greater than or equal to -90.0")
     @DecimalMax(value = "90.0", message = "Longitude must be less than or equal to 90.0")
     private double coordinateX;
 
-    @NotBlank(message = "The coordinateY is required")
+   // @NotBlank(message = "The coordinateY is required")
     @DecimalMin(value = "-180.0", message = "Longitude must be greater than or equal to -180.0")
     @DecimalMax(value = "180.0", message = "Longitude must be less than or equal to 180.0")
     private double coordinateY;

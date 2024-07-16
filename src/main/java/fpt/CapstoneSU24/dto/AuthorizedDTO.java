@@ -11,9 +11,10 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 public class AuthorizedDTO {
+    @JsonIgnore
     private int authorizedId;
 
-    @NotBlank(message = "Authorized name is required")
+  //  @NotBlank(message = "Authorized name is required")
     @Size(max = 5, message = "Authorized name must be less than 5 characters")
     @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
             message = "Authorized name must not contain special characters")
@@ -23,7 +24,8 @@ public class AuthorizedDTO {
     @Email(message = "Authorized email should be valid")
     private String authorizedEmail;
 
-    @NotBlank(message = "Assign person is required")
+    @JsonIgnore
+    //@NotBlank(message = "Assign person is required")
     @Size(max = 5, message = "Assign person must be less than 5 characters")
     @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
             message = "AAssign person must not contain special characters")
@@ -39,7 +41,7 @@ public class AuthorizedDTO {
     @Size(max = 50, message = "Description must be less than 50 characters")
     private String description;
 
-    @NotBlank(message = "Phone number is required")
+    //@NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Phone number should be valid")
     private String phoneNumber;
 

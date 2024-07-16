@@ -12,7 +12,7 @@ public class ItemLogDetailResponse {
     private String partyFullname;
     private String sender;
     private String receiver;
-    private String PartyPhoneNumber;
+    private String partyPhoneNumber;
     private String addressInParty;
     private double coordinateX;
     private double coordinateY;

@@ -81,7 +81,7 @@ public class ItemLogService {
             Location savedLocation = locationRepository.save(location);
 
             // Retrieve authorized entity
-            Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorized_id());
+            Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorizedId());
 
             // Create and save Party
             Party party = new Party();
@@ -147,8 +147,8 @@ public class ItemLogService {
             ItemLogDetailResponse detailResponse = new ItemLogDetailResponse();
             detailResponse.setItemLogId(itemlogDetail.getItemLogId());
             detailResponse.setEventType(itemlogDetail.getEvent_id().getEvent_type());
-            detailResponse.setSender(itemlogDetail.getAuthorized().getAssign_person_mail());
-            detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorized_email());
+            detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
+            detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
             detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());
             detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
             detailResponse.setAddressInParty(itemlogDetail.getAddress());

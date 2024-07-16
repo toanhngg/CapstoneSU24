@@ -5,7 +5,10 @@ import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.service.*;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,18 +51,6 @@ public class ItemController {
 //            throw new InvalidCoordinateException("Invalid coordinate: " + coordinate);
 //        }
 //    }
-    public static class InvalidCoordinateException extends Exception {
-        public InvalidCoordinateException(String message) {
-            super(message);
-        }
-    }
-
-    public static class CoordinateOutOfRangeException extends Exception {
-        public CoordinateOutOfRangeException(String message) {
-            super(message);
-        }
-    }
-
 
 //    @GetMapping("/findAllItemByProductId")
 //    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
@@ -80,7 +71,7 @@ public class ItemController {
     }
 
     @GetMapping("/getCertificate")
-    public ResponseEntity<?> getCertificate(@RequestBody CurrentOwnerCheckDTO req) {
+    public ResponseEntity<?> getCertificate( @Valid @RequestBody CurrentOwnerCheckDTO req) {
          return itemService.getCertificate(req);
     }
 
@@ -107,23 +98,30 @@ public class ItemController {
         return itemService.authorize(authorized);
     }
 
-    @PostMapping(value = "/checkAuthorized")
-    public ResponseEntity<Boolean> checkAuthorized(@RequestParam String productRecognition)  {
+    @PostMapping(value = "/checkEventAuthorized")
+    public ResponseEntity<Boolean> checkEventAuthorized(@RequestParam String productRecognition)  {
         if(productRecognition.isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         }
-        return itemService.checkAuthorized(productRecognition);
+        return itemService.checkEventAuthorized(productRecognition);
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
     }
-
+//    @PostMapping(value = "/checkAuthorized")
+//    public ResponseEntity<Boolean> checkAuthorized(@Valid @RequestBody CurrentOwnerCheckDTO req)  {
+//        return itemService.checkAuthorized(req);
+//    }
+    @PostMapping(value = "/check")
+    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheckDTO req)  {
+        return itemService.check(req);
+    }
     //API check CurrentOwner
-    @PostMapping(value = "/checkCurrentOwner")
-    public ResponseEntity<Boolean> checkCurrentOwner(@Valid @RequestBody CurrentOwnerCheckDTO req) {
-        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
-        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
-        return itemService.checkCurrentOwner(req);
-    }
+//    @PostMapping(value = "/checkCurrentOwner")
+//    public ResponseEntity<Boolean> checkCurrentOwner(@Valid @RequestBody CurrentOwnerCheckDTO req) {
+//        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
+//        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
+//        return itemService.checkCurrentOwner(req);
+//    }
 
     @PostMapping(value = "/sendCurrentOwnerOTP")
     public ResponseEntity<?> sendCurrentOwnerOTP(@Valid @RequestBody CurrentOwnerCheckDTO req) {

@@ -181,12 +181,13 @@ margin-left: 100px;
             <div style="display: flex;">
                 <div id="qrContainer">
                     <div id="qrcode">
-<!--                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=YwZmJlYjM0" alt="QR Code"></div>-->
-                    <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=' + ${productRecognition}" alt="QR Code">
+                        <div id="qrText">Quét QR để xem thêm về sản phẩm</div>
+
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=YwZmJlYjM0" alt="QR Code"></div>
+<!--                    <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=' + ${productRecognition}" alt="QR Code">-->
 
                 </div>
 
-                <div id="qrText">Quét QR để xem thêm về sản phẩm</div>
                 </div>
                 <div>
                     <div style="margin-left: 90px">
