@@ -97,14 +97,11 @@ public class ItemService {
         this.locationMapper = locationMapper;
         this.authorizedMapper = authorizedMapper;
     }
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
+    private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
         try {
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-searchItem");
-            log.info(logEntry.toString());
+            log.info("item-searchItem");
             Page<Item> items;
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
@@ -122,10 +119,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> exportListItem(FilterByTimeStampRequest req) throws IOException {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-exportListItem");
-        log.info(logEntry.toString());
+        log.info("item-exportListItem");
         if (req.isValidDates()) {
             //  JSONObject jsonReq = new JSONObject(req);
             List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
@@ -140,10 +134,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-addItem");
-        logService.info(logEntry.toString());
+        log.info("item-addItem");
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -275,10 +266,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> viewLineItem(String productRecognition) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-viewLineItem");
-        logService.info(logEntry.toString());
+        log.info("item-viewLineItem");
         try {
             if(productRecognition.length() < 10){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
@@ -323,10 +311,8 @@ public class ItemService {
 
     public ResponseEntity<?> viewOrigin(int itemLogId) {
         try {
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-viewOrigin");
-            logService.info(logEntry.toString());
+            log.info("item-viewOrigin");
+
             Page<Product> products = null;
             ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
             if (itemLog == null) return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
@@ -355,10 +341,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-getCertificate");
-        logService.info(logEntry.toString());
+        log.info("item-getCertificate");
 
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
@@ -398,10 +381,8 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> confirmCurrentOwner(SendOTP otp, String productRecognition) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-confirmCurrentOwner");
-        logService.info(logEntry.toString());
+        log.info("item-confirmCurrentOwner");
+
         Item item = itemRepository.findByProductRecognition(productRecognition); // B1
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
@@ -419,10 +400,7 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-checkEventAuthorized");
-        logService.info(logEntry.toString());
+        log.info("item-checkEventAuthorized");
 
         Item item = findByProductRecognition(productRecognition); // B1
         if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
@@ -436,10 +414,7 @@ public class ItemService {
 
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-authorize");
-            logService.info(logEntry.toString());
+            log.info("item-authorize");
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
             if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
@@ -481,10 +456,7 @@ public class ItemService {
 //    }
 //
     public ResponseEntity<Integer> check(CurrentOwnerCheckDTO req) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-check");
-        logService.info(logEntry.toString());
+        log.info("item-check");
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
@@ -601,10 +573,7 @@ public class ItemService {
 
     public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {
         try {
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-sendCurrentOwnerOTP");
-            logService.info(logEntry.toString());
+            log.info("item-sendCurrentOwnerOTP");
 
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
@@ -643,10 +612,7 @@ public class ItemService {
 
     public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
         try {
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-sendOTP");
-            logService.info(logEntry.toString());
+            log.info("item-sendOTP");
 
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
@@ -703,10 +669,7 @@ public class ItemService {
              // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
              // - Insert bảng party => Sau khi nhận mới trở thành party
              */
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-confirmOTP");
-            logService.info(logEntry.toString());
+            log.info("item-confirmOTP");
 
             Item item = itemRepository.findByProductRecognition(productRecognition); // B1
             if (item == null) {
@@ -774,11 +737,7 @@ public class ItemService {
 
     public ResponseEntity<String> abortItem(AbortDTO abortDTO) {
         try {
-
-            JSONObject logEntry = new JSONObject();
-            logEntry.put("timestamp", Instant.now().toString());
-            logEntry.put("event", "item-abortItem");
-            logService.info(logEntry.toString());
+            log.info("item-abortItem");
 
             Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
             long timeInsert = System.currentTimeMillis();
@@ -826,10 +785,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getItemByEventType(int eventType) {
-        JSONObject logEntry = new JSONObject();
-        logEntry.put("timestamp", Instant.now().toString());
-        logEntry.put("event", "item-getItemByEventType");
-        log.info(logEntry.toString());
+        log.info("item-getItemByEventType");
         List<Item> item = itemRepository.getItemByEventType(eventType);
         if (item.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Item found for eventType: " + eventType);

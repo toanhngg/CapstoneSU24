@@ -80,7 +80,10 @@ public class Location {
         return coordinateX;
     }
 
-    public void setCoordinateX(double coordinateX) {
+    public void setCoordinateX(Double coordinateX) {
+        if (coordinateX == null) {
+            this.coordinateX = 0.0; // Thiết lập mặc định là 0
+        }
         this.coordinateX = coordinateX;
     }
 
@@ -88,8 +91,11 @@ public class Location {
         return coordinateY;
     }
 
-    public void setCoordinateY(double coordinateY) {
-        this.coordinateY = coordinateY;
+    public void setCoordinateY(Double coordinateY) {
+        if (coordinateY == null) {
+            this.coordinateY = 0.0; // Thiết lập mặc định là 0
+        }
+        this.coordinateY = coordinateX;
     }
 
     public String getDistrict() {

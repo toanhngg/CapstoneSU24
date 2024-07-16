@@ -7,6 +7,8 @@ import fpt.CapstoneSU24.dto.Point;
 import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,9 +52,11 @@ public class ItemLogService {
         this.itemService = itemService;
         this.logService = logService;
     }
+    private static final Logger log = LoggerFactory.getLogger(ItemLogService.class);
 
     public ResponseEntity<?> addItemLog(EventItemLogDTO itemLogDTO) {
         try {
+            log.info("itemlog-addItemLog");
             // Retrieve item by product recognition
             Item item = itemRepository.findByProductRecognition(itemLogDTO.getProductRecognition());
             if (item == null) {
@@ -141,6 +145,8 @@ public class ItemLogService {
 
     public ResponseEntity<?> getItemLogDetail(int itemLogId) {
         try {
+            log.info("itemlog-getItemLogDetail");
+
             ItemLog itemlogDetail = itemLogRepository.getItemLogsById(itemLogId);
             if(itemlogDetail == null)
                 return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
@@ -163,6 +169,8 @@ public class ItemLogService {
     }
 
     public ResponseEntity<?> editItemLog( EditItemLogDTO dataEditDTO) {
+        log.info("itemlog-editItemLog");
+
         ItemLog itemlogDetail = itemLogRepository.findById((Integer)dataEditDTO.getItemLogId())
                 .orElseThrow(() -> new RuntimeException("ItemLog not found"));
         Item item = itemRepository.getReferenceById(itemlogDetail.getItem().getItemId());
@@ -222,10 +230,13 @@ public class ItemLogService {
 //    }
 
     public ResponseEntity<?> getEventByItemId(int itemId) {
+        log.info("itemlog-getEventByItemId");
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getEvent_id().getEventId())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId));
     }
     public ResponseEntity<?> getLocationItemId(int itemId) {
+        log.info("itemlog-getLocationItemId");
+
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getLocation())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Location found for itemId: " + itemId));
     }

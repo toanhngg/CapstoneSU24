@@ -86,7 +86,8 @@ public class SecurityConfiguration {
                                 "api/category/findAll",
                                 "/api/certificate/getListCertificateByManuId",
                                 "/api/user/getDetailUser",
-                                "/api/user/getAllUser"
+                                "/api/user/getAllUser",
+                                "api/item/getItemByEventType"
 
 
                         ).permitAll()
