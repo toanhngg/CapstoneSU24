@@ -92,7 +92,7 @@ public class ClientService implements ClientRepository {
                otpService.updateOTPCode(sdi.getEmail(), codeOTP,expiryTime);
            }
             // tam cmt de test cho do bi spam
-         // mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_SENDOTP);
+          mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_SENDOTP);
             return true;
         } catch (Exception ex) {
             logService.logError(ex);

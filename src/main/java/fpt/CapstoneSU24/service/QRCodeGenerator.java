@@ -70,6 +70,7 @@ public final ProductRepository productRepository;
         }
         return hexString.toString();
     }
+
     public String generateProductCode(int productId) {
         Product product = productRepository.findOneByProductId(productId);
         // Lấy UUID ngẫu nhiên

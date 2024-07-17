@@ -32,6 +32,7 @@ public class ItemLogController {
         if(itemLogId < 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ItemLogId is not null");
         return itemLogService.getItemLogDetail(itemLogId);
     }
+
     @PostMapping(value = "/editItemLog")
     public ResponseEntity<?> editItemLog(@Valid @RequestBody EditItemLogDTO dataEditDTO){
         return itemLogService.editItemLog(dataEditDTO);

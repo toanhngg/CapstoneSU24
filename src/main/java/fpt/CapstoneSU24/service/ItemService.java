@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.service;
 
+import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.controller.ItemController;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.CertificateInfor.InformationCert;
@@ -7,10 +8,7 @@ import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.exception.LogService;
-import fpt.CapstoneSU24.mapper.ItemMapper;
-import fpt.CapstoneSU24.mapper.AbortMapper;
-import fpt.CapstoneSU24.mapper.LocationMapper;
-import fpt.CapstoneSU24.mapper.ProductMapper;
+import fpt.CapstoneSU24.mapper.*;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
@@ -18,6 +16,8 @@ import fpt.CapstoneSU24.util.DataUtils;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -66,6 +66,8 @@ public class ItemService {
     private final AbortMapper abortMapper;
     private final LocationMapper locationMapper;
     private final ProductMapper productMapper;
+    private final AuthorizedMapper authorizedMapper;
+
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
                        OriginRepository originRepository, ItemRepository itemRepository,
@@ -76,7 +78,7 @@ public class ItemService {
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
                        AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper,
-                       ProductMapper productMapper) {
+                       ProductMapper productMapper, AuthorizedMapper authorizedMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -99,18 +101,17 @@ public class ItemService {
         this.abortMapper = abortMapper;
         this.locationMapper = locationMapper;
         this.productMapper = productMapper;
+        this.authorizedMapper = authorizedMapper;
     }
-    /*
-     * type is sort type: "desc" or "asc"
-     * default data startDate and endDate equal 0 (need insert 2 data)
-     * */
+    private static final Logger log = LoggerFactory.getLogger(ItemService.class);
+
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
+        log.info("item-searchItem");
         Page<Item> items;
         Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
                 req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
                         PageRequest.of(req.getPageNumber(), req.getPageSize());
         try {
-
             if(req.getEventTypeId() != 0){
                     if(req.getStartDate() != 0 && req.getEndDate() != 0){
                         items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
@@ -133,6 +134,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> exportListItem(FilterByTimeStampRequest req) throws IOException {
+        log.info("item-exportListItem");
         if (req.isValidDates()) {
             //  JSONObject jsonReq = new JSONObject(req);
             List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
@@ -147,6 +149,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
+        log.info("item-addItem");
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -165,7 +168,6 @@ public class ItemService {
     private ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
         try {
             User user = userRepository.getReferenceById(currentUser.getUserId());
-
             // Lưu địa chỉ
           //  Location location = createLocation(itemLogDTO);
            // validateAndSetCoordinates(location, itemLogDTO);
@@ -191,31 +193,6 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
-
-//    private Location createLocation(ItemLogDTO itemLogDTO) {
-//        Location location = new Location();
-//        location.setAddress(itemLogDTO.getLocation().getAddress());
-//        location.setCity(itemLogDTO.getLocation().getCity());
-//        location.setCountry(itemLogDTO.getLocation().getCountry());
-//        location.setDistrict(itemLogDTO.getLocation().getDistrict());
-//        location.setWard(itemLogDTO.getLocation().getWard());
-//
-//        return location;
-//    }
-
-//    private void validateAndSetCoordinates(Location location, ItemLogDTO itemLogDTO) throws ItemController.InvalidCoordinateException, ItemController.CoordinateOutOfRangeException {
-//        double corX = itemLogDTO.getLocation().getCoordinateX();
-//        double corY = itemLogDTO.getLocation().getCoordinateY();
-//
-//        // Check if corX and corY are within their valid ranges
-//        if ((-90.0 <= corX && corX <= 90.0) && (-180.0 <= corY && corY <= 180.0)) {
-//            location.setCoordinateX(itemLogDTO.getLocation().getCoordinateX());
-//            location.setCoordinateY(itemLogDTO.getLocation().getCoordinateY());
-//            System.out.println("Coordinates set successfully.");
-//        } else {
-//            throw new ItemController.CoordinateOutOfRangeException("Coordinates are out of valid range.");
-//        }
-//    }
 
     private Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
         long scoreTime = System.currentTimeMillis();
@@ -303,28 +280,8 @@ public class ItemService {
         return itemLogs;
     }
 
-//    private double parseCoordinate(String coordinate) throws ItemController.InvalidCoordinateException {
-//        if (coordinate == null || coordinate.isEmpty()) {
-//            throw new ItemController.InvalidCoordinateException("Coordinate is null or empty");
-//        }
-//        try {
-//            return Double.parseDouble(coordinate);
-//        } catch (NumberFormatException e) {
-//            throw new ItemController.InvalidCoordinateException("Coordinate format is invalid: " + coordinate);
-//        }
-//    }
-//
-//    public ResponseEntity<?> findByProductId(int productId) {
-//        List<Item> itemList = itemRepository.findByProductId(productId);
-//        if (itemList == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.OK).body(itemList);
-//
-//        }
-//    }
-
     public ResponseEntity<?> viewLineItem(String productRecognition) {
+        log.info("item-viewLineItem");
         try {
             if(productRecognition.length() < 10){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
@@ -369,6 +326,8 @@ public class ItemService {
 
     public ResponseEntity<?> viewOrigin(int itemLogId) {
         try {
+            log.info("item-viewOrigin");
+
             Page<Product> products = null;
             ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
             if (itemLog == null) return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
@@ -380,17 +339,11 @@ public class ItemService {
             originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
             originDTO.setLocationDTO(locationMapper.locationToLocationDto(itemLog.getItem().getOrigin().getLocation()));
-          //  originDTO.setCoordinateY(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-          //  originDTO.setCoordinateX(itemLog.getItem().getOrigin().getLocation().getCoordinateY());
-          //  originDTO.setAddressOrigin(itemLog.getItem().getOrigin().getLocation().getAddress());
             originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
             originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
             originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
-            // Integer productId = itemLog.getItem().getProduct().getProductId();
             int productId = itemLog.getItem().getProduct().getProductId();
-//            List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
-//                    .stream().map(cloudinaryService::getImageUrl).toList();
             List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
                     .stream().map(cloudinaryService::getImageUrl).toList();
             originDTO.setImage(imageProducts);
@@ -403,6 +356,8 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
+        log.info("item-getCertificate");
+
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
@@ -441,6 +396,8 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> confirmCurrentOwner(SendOTP otp, String productRecognition) {
+        log.info("item-confirmCurrentOwner");
+
         Item item = itemRepository.findByProductRecognition(productRecognition); // B1
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
@@ -457,7 +414,9 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<Boolean> checkAuthorized(String productRecognition) {
+    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
+        log.info("item-checkEventAuthorized");
+
         Item item = findByProductRecognition(productRecognition); // B1
         if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
@@ -470,6 +429,7 @@ public class ItemService {
 
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {
+            log.info("item-authorize");
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
             if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
@@ -490,24 +450,48 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<Boolean> checkCurrentOwner(CurrentOwnerCheckDTO req) {
+//    public ResponseEntity<Boolean> checkCurrentOwner(CurrentOwnerCheckDTO req) {
+//        JSONObject jsonReq = new JSONObject(req);
+//        String email = jsonReq.getString("email");
+//        String productRecognition = jsonReq.getString("productRecognition");
+//
+//        logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
+//        Item item = findByProductRecognition(productRecognition);
+//        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+//        try{
+//            if (checkOwner(email, item.getCurrentOwner())) {
+//                    return ResponseEntity.ok(true);
+//            } else {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+//            }
+//        }catch (Exception e){
+//            logService.logError(e);
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+//        }
+//    }
+//
+    public ResponseEntity<Integer> check(CurrentOwnerCheckDTO req) {
+        log.info("item-check");
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
-
-        logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
         Item item = findByProductRecognition(productRecognition);
-        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
+        logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
+
+        if (item.getStatus() == 0) ResponseEntity.ok(0);
         try{
             if (checkOwner(email, item.getCurrentOwner())) {
-                    return ResponseEntity.ok(true);
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+                return ResponseEntity.ok(1); // is CurrentOwner
+            }
+            if (list.get(0).getAuthorized().getAuthorizedEmail().equals(req.getEmail())) {
+                return ResponseEntity.ok(2); // is Authorized
             }
         }catch (Exception e){
             logService.logError(e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+            return ResponseEntity.ok(3); // Exception
         }
+        return  ResponseEntity.ok(4);
     }
 
     public boolean checkOwner(String email, String emailCurrentOwner) {
@@ -532,6 +516,7 @@ public class ItemService {
 //    }
 
     public ResponseEntity<String> addEventAuthorized(AuthorizedDTO authorized, Item item) {
+
         if (authorized == null || item == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authored or Item is null");
         }
@@ -550,15 +535,9 @@ public class ItemService {
 
             long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
             if(timeDifference > threeDaysInMillis) {
-                Authorized authorizedSaved = authorizedRepository.save(new Authorized(
-                        authorized.getAuthorizedName(),
-                        authorized.getAuthorizedEmail(),
-                        itemIndex.getParty().getPartyFullName(),
-                        item.getCurrentOwner(),
-                        savedLocation,
-                        authorized.getPhoneNumber(),
-                        authorized.getDescription()
-                ));
+                Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
+                authorizedEntity.setLocation(savedLocation);
+                Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                 Point point = null;
 
@@ -609,6 +588,8 @@ public class ItemService {
 
     public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {
         try {
+            log.info("item-sendCurrentOwnerOTP");
+
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
             String productRecognition = jsonReq.getString("productRecognition");
@@ -646,6 +627,8 @@ public class ItemService {
 
     public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
         try {
+            log.info("item-sendOTP");
+
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
             String productRecognition = jsonReq.getString("productRecognition");
@@ -665,17 +648,17 @@ public class ItemService {
             if (itemIndex.getAuthorized() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
             }
-            System.out.println(itemIndex.getAuthorized().getAuthorized_email());
-            System.out.println(email);
+           // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
+            //System.out.println(email);
             // Kiểm tra xem email có đúng là current owner không
-            if (!(itemIndex.getAuthorized().getAuthorized_email()).equals(email)) {
+            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
             }
             // Tạo đối tượng ClientSdi và gửi email OTP
             ClientSdi sdi = new ClientSdi();
-            sdi.setEmail(itemIndex.getAuthorized().getAuthorized_email());
-            sdi.setUsername(itemIndex.getAuthorized().getAuthorized_name());
-            sdi.setName(itemIndex.getAuthorized().getAuthorized_name());
+            sdi.setEmail(itemIndex.getAuthorized().getAuthorizedEmail());
+            sdi.setUsername(itemIndex.getAuthorized().getAuthorizedName());
+            sdi.setName(itemIndex.getAuthorized().getAuthorizedName());
 
             boolean emailSent = clientService.createMailAndSaveSQL(sdi);
 
@@ -701,6 +684,8 @@ public class ItemService {
              // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
              // - Insert bảng party => Sau khi nhận mới trở thành party
              */
+            log.info("item-confirmOTP");
+
             Item item = itemRepository.findByProductRecognition(productRecognition); // B1
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
@@ -717,17 +702,17 @@ public class ItemService {
             }
 
             // Kiểm tra xem email có đúng là current owner không
-            if (!(itemIndex.getAuthorized().getAuthorized_email()).equals(otp.getEmail())) {
+            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(otp.getEmail())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
             }
             boolean check = clientService.checkOTPinSQL(otp.getEmail().trim(), otp.getOtp().trim());
                 if (check) {
                     int status = 1;
-                    itemRepository.updateItemStatusAndCurrentOwnwe((long) item.getItemId(), status, itemIndex.getAuthorized().getAuthorized_email());
+                    itemRepository.updateItemStatusAndCurrentOwnwe((long) item.getItemId(), status, itemIndex.getAuthorized().getAuthorizedEmail());
                     Party party = partyRepository.save(new Party(
                             itemIndex.getAuthorized().getDescription(),
-                            itemIndex.getAuthorized().getAuthorized_email(),
-                            itemIndex.getAuthorized().getAuthorized_name(),
+                            itemIndex.getAuthorized().getAuthorizedEmail(),
+                            itemIndex.getAuthorized().getAuthorizedName(),
                             itemIndex.getAuthorized().getPhoneNumber()
                     ));
 
@@ -767,6 +752,7 @@ public class ItemService {
 
     public ResponseEntity<String> abortItem(AbortDTO abortDTO) {
         try {
+            log.info("item-abortItem");
 
             Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
             long timeInsert = System.currentTimeMillis();
@@ -783,16 +769,7 @@ public class ItemService {
                     if (item.getStatus() == 0)
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
                     // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
-                    ItemLog itemLog = new ItemLog();
-//                    Location locationSaved = new Location();
-//                    locationSaved.setAddress(abortDTO.getLocation().getAddress());
-//                    locationSaved.setCity(abortDTO.getLocation().getCity());
-//                    locationSaved.setWard(abortDTO.getLocation().getWard());
-//                    locationSaved.setDistrict(abortDTO.getLocation().getDistrict());
-//                    locationSaved.setCountry(abortDTO.getLocation().getCountry());
-//                    locationSaved.setCoordinateX(abortDTO.getLocation().getCoordinateX());
-//                    locationSaved.setCoordinateY(abortDTO.getLocation().getCoordinateY());
-
+                   // ItemLog itemLog = new ItemLog();
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
 
 
@@ -825,6 +802,7 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getItemByEventType(int eventType) {
+        log.info("item-getItemByEventType");
         List<Item> item = itemRepository.getItemByEventType(eventType);
         if (item.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Item found for eventType: " + eventType);
@@ -832,23 +810,4 @@ public class ItemService {
             return ResponseEntity.ok(item);
         }
     }
-
-//    private ItemDTO convertToItemDTO(Item item) {
-//        ItemDTO dto = new ItemDTO();
-//        dto.setProductRecognition(item.getProductRecognition());
-//        return dto;
-//    }
-
-//    public static class InvalidCoordinateException extends Exception {
-//        public InvalidCoordinateException(String message) {
-//            super(message);
-//        }
-//    }
-//
-//    public static class CoordinateOutOfRangeException extends Exception {
-//        public CoordinateOutOfRangeException(String message) {
-//            super(message);
-//        }
-//    }
-
 }
