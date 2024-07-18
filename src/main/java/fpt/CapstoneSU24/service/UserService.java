@@ -338,7 +338,7 @@ public class UserService {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
+    }   
 
     public ResponseEntity<UserProfileDTO> getUserByUserID(String req)  {
         JSONObject jsonReq = new JSONObject(req);

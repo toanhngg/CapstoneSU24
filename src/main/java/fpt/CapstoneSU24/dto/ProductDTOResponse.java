@@ -5,12 +5,23 @@ public class ProductDTOResponse {
     private String productName;
     private String description;
     private String avatar;
+    private int status;
 
-    public ProductDTOResponse(int productId, String productName, String description, String avatar) {
+    public ProductDTOResponse(int productId, String productName, String description, String avatar, int status) {
         this.productId = productId;
         this.productName = productName;
         this.description = description;
         this.avatar = avatar;
+        this.status = status;
+    }
+
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
     }
 
     public String getProductName() {
@@ -37,11 +48,11 @@ public class ProductDTOResponse {
         this.avatar = avatar;
     }
 
-    public int getProductId() {
-        return productId;
+    public int getStatus() {
+        return status;
     }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
+    public void setStatus(int status) {
+        this.status = status;
     }
 }

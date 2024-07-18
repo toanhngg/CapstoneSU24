@@ -93,8 +93,9 @@ public class SecurityConfiguration {
                                 "/api/product/ViewProductByManufacturerId",
                                 "/api/certificate/ViewCertByManufacturerId",
                                 "/api/elk/getNumberVisitsAllTime",
-                                "/api/elk/getNumberVisitsDiagram"
-
+                                "/api/elk/getNumberVisitsDiagram",
+                                "/api/item/check",
+                                "/api/user/getManufacturerByProductId"
 
                         ).permitAll()
                         .anyRequest().authenticated())

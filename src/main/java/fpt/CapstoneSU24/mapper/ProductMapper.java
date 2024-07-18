@@ -12,6 +12,8 @@ import fpt.CapstoneSU24.repository.ItemRepository;
 import fpt.CapstoneSU24.service.CloudinaryService;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ public abstract class ProductMapper {
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "description", target = "description")
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
+    @Mapping(target = "status", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract ProductDTOResponse productToProductDTOResponse(Product product);
     @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
@@ -65,6 +68,12 @@ public abstract class ProductMapper {
         ImageProduct imageProduct = imageProductRepository.findAllByFilePath("avatar/"+product.getProductId());
         if (imageProduct != null) {
             productDTO.setAvatar(cloudinaryService.getImageUrl(imageProduct.getFilePath()));
+        }
+        List<Item> items = itemRepository.findAllByProductId(product.getProductId());
+        if(items.size() == 0){
+            productDTO.setStatus(0);
+        }else{
+            productDTO.setStatus(1);
         }
     }
     @AfterMapping

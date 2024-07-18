@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
+import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
@@ -31,19 +32,22 @@ public class ProductService {
     private final ItemRepository itemRepository;
     private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Autowired
     public ProductService(ProductRepository productRepository,
                              CategoryRepository categoryRepository,
                              ImageProductRepository imageProductRepository, ItemRepository itemRepository,
-                             CloudinaryService cloudinaryService,ProductMapper productMapper) {
+                             CloudinaryService cloudinaryService,ProductMapper productMapper, UserRepository userRepository, UserMapper userMapper) {
         this.productRepository = productRepository;
         this.imageProductRepository = imageProductRepository;
         this.itemRepository = itemRepository;
         this.cloudinaryService = cloudinaryService;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
-
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
 
     }
 
@@ -199,8 +203,7 @@ public class ProductService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product id isn't exist");
         }
         if (p.getManufacturer().getUserId() == currentUser.getUserId()) {
-            Product product = productRepository.findOneByProductId(req.getId());
-            return ResponseEntity.status(HttpStatus.OK).body(productMapper.productToProductDetailDTOResponse(product));
+            return ResponseEntity.status(HttpStatus.OK).body(productMapper.productToProductDetailDTOResponse(p));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");
         }
@@ -225,5 +228,9 @@ public class ProductService {
             }
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not exist product id="+ req.getId());
+    }
+    public ResponseEntity getManufacturerByProductId(IdRequest req) {
+        User user = userRepository.findUserByProductId(req.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(userMapper.usersToUserViewDetailDTO(user));
     }
 }

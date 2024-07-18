@@ -24,16 +24,12 @@ public class ProductController {
     public ResponseEntity<?> addProduct(@Valid @RequestBody AddProductRequest req) {
         return productService.addProduct(req);
     }
-
-
 //    - có thêm trường product Id
 //    - nếu không ko edit image (images, avatar) thì để là ""
     @PostMapping("/editProduct")
     public ResponseEntity<?> editProduct(@Valid @RequestBody EditProductRequest req) {
         return productService.editProduct(req);
     }
-
-
     @PostMapping("/findAllProductByManufacturerId")
     public ResponseEntity<?> findAllProductByManufacturerId(@Valid @RequestBody FilterSearchProductRequest req) {
         return productService.findAllProductByManufacturerId(req);
@@ -46,15 +42,17 @@ public class ProductController {
     @PostMapping("/findImgByProductId")
     public ResponseEntity<?> findImgByProductId(@Valid @RequestBody IdRequest req) {
         return productService.findImgByProductId(req);
-
     }
     @PostMapping("/findProductDetailById")
     public ResponseEntity<?> findProductDetailById(@Valid @RequestBody IdRequest req) {
         return productService.findProductDetailById(req);
-
     }
     @PostMapping("/deleteProductById")
     public ResponseEntity<?> deleteProductById(@Valid @RequestBody IdRequest req) {
         return productService.deleteProductById(req);
+    }
+    @PostMapping("/getManufacturerByProductId")
+    public ResponseEntity<?> getManufacturerByProductId(@Valid @RequestBody IdRequest req) {
+        return productService.getManufacturerByProductId(req);
     }
 }

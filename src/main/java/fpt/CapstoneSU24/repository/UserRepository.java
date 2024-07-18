@@ -51,7 +51,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                              @Param("dateFrom") Long dateFrom,
                              @Param("dateTo") Long dateTo,
                              Pageable pageable);*/
+    @Query("SELECT u " +
+            "FROM User u " +
+            "LEFT JOIN Product p ON u.userId = p.manufacturer.userId " +
+            "WHERE p.productId = :id")
+    User findUserByProductId(@Param("id") int id);
+
     @Query("SELECT o FROM User o WHERE o.org_name LIKE :orgName AND o.status = 1")
     Page<User> findAllUser(@Param("orgName") String orgName, Pageable pageable);
+
 }
 
