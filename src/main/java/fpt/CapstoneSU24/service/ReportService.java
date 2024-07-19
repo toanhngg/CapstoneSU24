@@ -8,6 +8,8 @@ import fpt.CapstoneSU24.model.Report;
 import fpt.CapstoneSU24.repository.ReportRepository;
 import fpt.CapstoneSU24.util.DataUtils;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,6 +33,7 @@ public class ReportService {
         this.epochDate = epochDate;
         this.reportRepository = reportRepository;
     }
+    private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
 
     public Page<B02_GetListReport> getListReports(String code,

@@ -9,6 +9,8 @@ import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,9 +45,8 @@ public class ProductService {
         this.cloudinaryService = cloudinaryService;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
-
-
     }
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
     public ResponseEntity<?> addProduct(AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -72,6 +73,8 @@ public class ProductService {
                 //save ava
                 String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
+                System.out.println("productAdd"+currentUser.getOrg_name());
+                log.info("productAdd");
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("add product successfully");
             } catch (Exception e) {

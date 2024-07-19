@@ -1,8 +1,5 @@
 package fpt.CapstoneSU24.service;
 
-import fpt.CapstoneSU24.controller.AuthenticationController;
-import fpt.CapstoneSU24.controller.ItemController;
-import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.CertificateInfor.InformationCert;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
@@ -13,7 +10,6 @@ import fpt.CapstoneSU24.mapper.*;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
-import fpt.CapstoneSU24.util.DataUtils;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -505,14 +501,16 @@ public class ItemService {
 //    }
 
     public ResponseEntity<String> addEventAuthorized(AuthorizedDTO authorized, Item item) {
-
         if (authorized == null || item == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authored or Item is null");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authorized or Item is null");
         }
-        try {
-            HttpClient client = HttpClient.newHttpClient();
-            String email = authorized.getAuthorizedEmail(); // Assuming authorized is defined and accessible
 
+        try {
+            // Reuse HttpClient instance if used elsewhere
+            HttpClient client = HttpClient.newHttpClient();
+            String email = authorized.getAuthorizedEmail();
+
+            // Validate email
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
                     .POST(HttpRequest.BodyPublishers.ofString("email=" + email))
@@ -520,74 +518,82 @@ public class ItemService {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String responseBody = response.body();
 
-            System.out.println(response.body());
-if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
-    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
-    List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-    if (list.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
-    }
-    ItemLog itemIndex = list.get(0);
+            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not exist!");
+            }
 
-    long timeInsert = System.currentTimeMillis();
+            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
+            List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
-    long timeDifference = timeInsert - itemIndex.getTimeStamp();
+            if (itemLogs.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item logs not found");
+            }
 
-            long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
-            if(timeDifference > threeDaysInMillis) {
+            ItemLog itemIndex = itemLogs.get(0);
+            if (itemIndex.getEvent_id().getEventId() == 3)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The item is in an authorized state and cannot be authorized again");
+            else if (itemIndex.getEvent_id().getEventId() == 2)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The product is in delivery status");
+
+            long timeInsert = System.currentTimeMillis();
+            long timeDifference = timeInsert - itemIndex.getTimeStamp();
+
+            if (timeDifference > TimeUnit.DAYS.toMillis(3)) {
                 Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
                 authorizedEntity.setLocation(savedLocation);
                 Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
-        Point point = null;
+                Point point = null;
 
-        if (authorized.getLocation().getAddress() != null &&
-                authorized.getLocation().getCountry() != null &&
-                authorized.getLocation().getCoordinateX() != 0 &&
-                authorized.getLocation().getWard() != null &&
-                authorized.getLocation().getDistrict() != null &&
-                authorized.getLocation().getCity() != null &&
-                authorized.getLocation().getCoordinateY() != 0 &&
-                authorized.getDescription() != null) {
+                if (isLocationValid(authorized.getLocation())) {
+                    double pointX = pointService.generateX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                    point = new Point(pointX, pointY);
+                }
 
-            double pointX = pointService.generateX();
-            List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-            List<Point> pointList = pointService.getPointList(pointLogs);
-            double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                itemLogRepository.save(new ItemLog(
+                        item,
+                        itemIndex.getAddress(),
+                        itemIndex.getParty(),
+                        itemIndex.getLocation(),
+                        timeInsert,
+                        authorized.getDescription(),
+                        authorizedSaved,
+                        new EventType(3),
+                        1,
+                        null,
+                        point != null ? point.toString() : null
+                ));
 
-            point = new Point(pointX, pointY);
-        }
+                // Send email notification
+                ClientSdi sdi = new ClientSdi();
+                sdi.setEmail(authorized.getAuthorizedEmail());
+                sdi.setUsername(authorized.getAuthorizedName());
+                sdi.setName(authorized.getAuthorizedName());
+                clientService.notification(sdi);
 
-        itemLogRepository.save(new ItemLog(
-                item,
-                itemIndex.getAddress(), // cai nay lay cua item log trc no => address luu dia chi thi la o ben location bang Authoried
-                itemIndex.getParty(),
-                itemIndex.getLocation(),
-                timeInsert,
-                authorized.getDescription(),
-                authorizedSaved,
-                new EventType(3),  // 3 indicates authorization event
-                1,
-                null,
-                point != null ? point.toString() : null
-        ));
-        // Gửi thông báo email
-        ClientSdi sdi = new ClientSdi();
-        sdi.setEmail(authorized.getAuthorizedEmail());
-        sdi.setUsername(authorized.getAuthorizedName());
-        sdi.setName(authorized.getAuthorizedName());
-        clientService.notification(sdi);
-        return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
-    }
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You can not authorized product when create now!");
+                return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
+            }
 
-}
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not exist!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot authorize product at this time!");
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
         }
+    }
+
+    private boolean isLocationValid(LocationDTO location) {
+        return location.getAddress() != null &&
+                location.getCountry() != null &&
+                location.getCoordinateX() != 0 &&
+                location.getWard() != null &&
+                location.getDistrict() != null &&
+                location.getCity() != null &&
+                location.getCoordinateY() != 0;
     }
 
     public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {

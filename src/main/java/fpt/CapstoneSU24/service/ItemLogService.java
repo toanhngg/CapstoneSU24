@@ -75,66 +75,67 @@ public class ItemLogService {
             ItemLog itemLogToCheck = list.get(0);
             if (itemLogToCheck.getAuthorized() == null)
                 return new ResponseEntity<>("The product needs to be in an authorized state to be able to add a carrier.", HttpStatus.BAD_REQUEST);
+            if (itemLogToCheck.getEvent_id().getEventId() == 2)
+                return new ResponseEntity<>("The product is in shipping status .", HttpStatus.BAD_REQUEST);
 
-            if (itemLogToCheck.getEvent_id().getEventId() == 2) {
-                Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
+            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
 
-                System.out.println(itemLogToCheck.getAuthorized().getAuthorizedId());
-                // Retrieve authorized entity
-                Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorizedId());
+            System.out.println(itemLogToCheck.getAuthorized().getAuthorizedId());
+            // Retrieve authorized entity
+            Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorizedId());
 
-                // Create and save Party
-                Party party = new Party();
-                if (itemLogDTO.getEventId() != 2) {
-                    if (itemLogDTO.getTransportId() == 0) {
-                        return new ResponseEntity<>("Please choose a carrier.", HttpStatus.BAD_REQUEST);
-                    }
-                    Transport transport = transportRepository.getReferenceById(itemLogDTO.getTransportId());
-                    party.setEmail(transport.getTransportEmail());
-                    party.setPartyFullName(transport.getTransportName());
-                    party.setPhoneNumber(transport.getTransportContact());
-                    party.setDescription(itemLogDTO.getDescriptionItemLog());
-                    System.out.println("transport-" + transport.getTransportEmail());
-                    log.info("transport-" + transport.getTransportEmail());
-
-                } else {
-                    party.setEmail("");
-                    party.setPartyFullName("");
-                    party.setPhoneNumber("");
-                    party.setDescription("Khác");
+            // Create and save Party
+            Party party = new Party();
+            if (itemLogDTO.getEventId() == 2) {
+                if (itemLogDTO.getTransportId() == 0) {
+                    return new ResponseEntity<>("Please choose a carrier.", HttpStatus.BAD_REQUEST);
                 }
-                Party savedParty = partyRepository.save(party);
+                Transport transport = transportRepository.getReferenceById(itemLogDTO.getTransportId());
+                party.setEmail(transport.getTransportEmail());
+                party.setPartyFullName(transport.getTransportName());
+                party.setPhoneNumber(transport.getTransportContact());
+                party.setDescription(itemLogDTO.getDescriptionItemLog());
+                System.out.println("transport-" + transport.getTransportEmail());
+                log.info("transport" + transport.getTransportId());
 
-                // Create and save ItemLog
-                ItemLog itemLog = new ItemLog();
-                itemLog.setAddress(itemLogDTO.getLocation().getAddress());
-                itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-                itemLog.setAuthorized(authorized);
-                itemLog.setStatus(0);
-                itemLog.setTimeStamp(System.currentTimeMillis());
-                itemLog.setItem(item);
-                itemLog.setLocation(savedLocation);
-                itemLog.setParty(savedParty);
-                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
-
-                // Additional validation
-                if (itemLogDTO.getLocation().getAddress() != null &&
-                        itemLogDTO.getLocation().getCity() != null &&
-                        itemLogDTO.getLocation().getCountry() != null &&
-                        itemLogToCheck.getItem() != null) {
-
-                    double pointX = pointService.generateX();
-                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                    List<Point> pointList = pointService.getPointList(pointLogs);
-                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-                    Point point = new Point(pointX, pointY);
-                    itemLog.setPoint(point.toString());
-                }
-
-                itemLogRepository.save(itemLog);
-                return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
+            } else {
+                party.setEmail("");
+                party.setPartyFullName("");
+                party.setPhoneNumber("");
+                party.setDescription("Khác");
             }
-            return new ResponseEntity<>("The product is in shipping status .", HttpStatus.BAD_REQUEST);
+            Party savedParty = partyRepository.save(party);
+
+            // Create and save ItemLog
+            ItemLog itemLog = new ItemLog();
+            itemLog.setAddress(itemLogDTO.getLocation().getAddress());
+            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+            itemLog.setAuthorized(authorized);
+            itemLog.setStatus(0);
+            itemLog.setTimeStamp(System.currentTimeMillis());
+            itemLog.setItem(item);
+            itemLog.setLocation(savedLocation);
+            itemLog.setParty(savedParty);
+            itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
+
+            // Additional validation
+            if (itemLogDTO.getLocation().getAddress() != null &&
+                    itemLogDTO.getLocation().getCity() != null &&
+                    itemLogDTO.getLocation().getCountry() != null &&
+                    itemLogToCheck.getItem() != null) {
+
+                double pointX = pointService.generateX();
+                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                List<Point> pointList = pointService.getPointList(pointLogs);
+                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                Point point = new Point(pointX, pointY);
+                itemLog.setPoint(point.toString());
+            }
+
+
+            itemLogRepository.save(itemLog);
+            return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
+
 
         } catch (Exception ex) {
             logService.logError(ex);
