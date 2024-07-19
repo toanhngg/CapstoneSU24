@@ -1,6 +1,8 @@
 package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.controller.AuthenticationController;
+import fpt.CapstoneSU24.controller.ItemController;
+import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.CertificateInfor.InformationCert;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
@@ -11,6 +13,7 @@ import fpt.CapstoneSU24.mapper.*;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
+import fpt.CapstoneSU24.util.DataUtils;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,6 +70,9 @@ public class ItemService {
     private final ItemMapper itemMapper;
     private final AbortMapper abortMapper;
     private final LocationMapper locationMapper;
+    private final ProductMapper productMapper;
+    private final AuthorizedMapper authorizedMapper;
+
     private final AuthorizedMapper authorizedMapper;
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
@@ -77,7 +83,8 @@ public class ItemService {
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
-                       AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper,AuthorizedMapper authorizedMapper) {
+                       AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper,
+                       ProductMapper productMapper, AuthorizedMapper authorizedMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -99,22 +106,30 @@ public class ItemService {
         this.itemMapper = itemMapper;
         this.abortMapper = abortMapper;
         this.locationMapper = locationMapper;
+        this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
+        log.info("item-searchItem");
+        Page<Item> items;
+        Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
+                req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
+                        PageRequest.of(req.getPageNumber(), req.getPageSize());
         try {
-            log.info("item-searchItem");
-            Page<Item> items;
-            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
-                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
-                            PageRequest.of(req.getPageNumber(), req.getPageSize());
-//        Page<Item> items = jsonReq.getString("type") == null? itemRepository.findAll(pageable) : jsonReq.getString("type").equals("desc") ? itemRepository.sortItemsByCreatedAtDesc(pageable) :  itemRepository.sortItemsByCreatedAtAsc(pageable);
-            if(req.getStartDate() != 0 && req.getEndDate() != 0){
-                items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
-            }else{
-                items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
+            if(req.getEventTypeId() != 0){
+                    if(req.getStartDate() != 0 && req.getEndDate() != 0){
+                        items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
+                    }else{
+                        items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getEventTypeId(), pageable);
+                    }
+            }else {
+                if(req.getStartDate() != 0 && req.getEndDate() != 0){
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
+                }else{
+                    items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
+                }
             }
             return ResponseEntity.status(200).body(items.map(itemMapper::itemToItemViewDTOResponse));
         } catch (Exception e) {
@@ -123,7 +138,6 @@ public class ItemService {
     }
 
     public ResponseEntity<?> exportListItem(FilterByTimeStampRequest req) throws IOException {
-        log.info("item-exportListItem");
         if (req.isValidDates()) {
             //  JSONObject jsonReq = new JSONObject(req);
             List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
@@ -138,7 +152,6 @@ public class ItemService {
     }
 
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
-        log.info("item-addItem");
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -534,11 +547,11 @@ if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
 
     long timeDifference = timeInsert - itemIndex.getTimeStamp();
 
-    long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
-    if (timeDifference > threeDaysInMillis) {
-        Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
-        authorizedEntity.setLocation(savedLocation);
-        Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
+            long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
+            if(timeDifference > threeDaysInMillis) {
+                Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
+                authorizedEntity.setLocation(savedLocation);
+                Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
         Point point = null;
 

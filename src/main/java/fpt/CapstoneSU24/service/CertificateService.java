@@ -54,6 +54,9 @@ public class CertificateService {
     public ResponseEntity<?> getListCertificateByManuId(IdRequest req) {
         try {
             List<Certificate> certificates = certificateRepository.findByManufacturer_userId(req.getId());
+            if(certificates.size() == 0){
+                return ResponseEntity.status(500).body("id is not exist");
+            }
             List<ListCertificateDTOResponse> certificateListDTOList = new ArrayList<>();
             for (Certificate c : certificates) {
                 String[] parts = c.getImages().split("\\.");
@@ -66,7 +69,7 @@ public class CertificateService {
 
             return ResponseEntity.ok(certificateListDTOList);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("id is not exist");
+            return ResponseEntity.status(500).body("error when fetch data");
         }
     }
 
@@ -153,6 +156,30 @@ public class CertificateService {
         }
         return ResponseEntity.status(500).body("your account is not allowed for this action");
     }
+
+    public ResponseEntity<?> ViewCertByManufacturerId(IdRequest req) {
+            try {
+                // check status user
+                if(userRepository.findOneByUserId(req.getId()).getStatus() != 0){
+                    List<Certificate> certificates = certificateRepository.findByManufacturer_userId(req.getId());
+                    List<ListCertificateDTOResponse> certificateListDTOList = new ArrayList<>();
+                    for (Certificate c : certificates) {
+                        String[] parts = c.getImages().split("\\.");
+                        List<String> list = new ArrayList<>();
+                        for (String part : parts) {
+                            list.add(cloudinaryService.getImageUrl(part));
+                        }
+                        certificateListDTOList.add(new ListCertificateDTOResponse(c.getCertificateId(), c.getCertificateName(), c.getIssuingAuthority(), list, c.getIssuanceDate(), c.getNote()));
+                    }
+                    return ResponseEntity.ok(certificateListDTOList);
+                }
+                return ResponseEntity.status(500).body("the manufacturer doesn't verify yet");
+
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body("error");
+            }
+        }
+
     public ResponseEntity<?> sendRequestVerifyCert() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -196,11 +223,11 @@ public class CertificateService {
         if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() != 1 && currentUser.getStatus() != 8) {
             try {
                 String fullFilePath = "";
-                for (int i = 0; i < req.getFile().size(); i++) {
-                    MultipartFile file = cloudinaryService.convertBase64ToImgFile(req.getFile().get(i));
+                for (int i = 0; i < req.getImages().size(); i++) {
+                    MultipartFile file = cloudinaryService.convertBase64ToImgFile(req.getImages().get(i));
                     String fileName = cloudinaryService.uploadImageAndGetPublicId(file, "");
                     // if we need more cert => add "." at between them like "abc123.dcf123" (2 abc123, dcf123 => 2 images)
-                    fullFilePath += (i == req.getFile().size() - 1) ? fileName : fileName + ".";
+                    fullFilePath += (i == req.getImages().size() - 1) ? fileName : fileName + ".";
                 }
                 Certificate newCertificate = new Certificate();
                 newCertificate.setCertificateName(req.getName());

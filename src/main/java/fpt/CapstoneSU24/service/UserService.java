@@ -118,6 +118,18 @@ public class UserService {
         }
         return userProfileDTO;
     }
+    public ResponseEntity<?> viewAllManufacturer(FilterSearchManufacturerRequest req) {
+        try {
+            Page<User> users;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+            users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
+            return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
+    }
     public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
         try {
             Page<User> users;
@@ -133,6 +145,9 @@ public class UserService {
     public ResponseEntity<?> getDetailUser(IdRequest req) {
         try {
             User user = userRepository.findOneByUserId(req.getId());
+            if(user == null){
+                return ResponseEntity.status(500).body("user id is not exist");
+            }
             return ResponseEntity.status(200).body(userMapper.usersToUserViewDetailDTO(user));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");

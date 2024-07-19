@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Integer> {
 
@@ -15,6 +17,10 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
                 "LEFT JOIN ItemLog i ON i.location.locationId = l.locationId " +
                 "WHERE i.itemLogId = :id")
         Location findOneByItemLogId(@Param("id") int id);
+        @Query("SELECT l FROM Location l " +
+                "LEFT JOIN Origin i ON i.location.locationId = l.locationId " +
+                "WHERE i.phone = :phone")
+        List<Location> findAllByPhone(@Param("phone") String phone);
 
         @Modifying
         @Transactional

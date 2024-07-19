@@ -88,6 +88,14 @@ public class SecurityConfiguration {
                                 "/api/user/getDetailUser",
                                 "/api/user/getAllUser",
                                 "api/item/getItemByEventType",
+                                "/api/auth/checkMailExist",
+                                "/api/category/search",
+                                "/api/product/ViewProductByManufacturerId",
+                                "/api/certificate/ViewCertByManufacturerId",
+                                "/api/elk/getNumberVisitsAllTime",
+                                "/api/elk/getNumberVisitsDiagram",
+                                "/api/user/getAllUser",
+                                "api/item/getItemByEventType",
                                 "api/item/check",
                                 "api/item/checkEventAuthorized"
 

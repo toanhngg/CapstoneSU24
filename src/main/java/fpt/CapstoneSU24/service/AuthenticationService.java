@@ -105,7 +105,13 @@ public class AuthenticationService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("otp code is incorrect");
     }
-
+    public ResponseEntity checkMailExist(VerifyEmailRequest req) {
+            if (userRepository.findOneByEmail(req.getEmail()) == null) {
+                return ResponseEntity.status(HttpStatus.OK).body("mail doesn't exist in database");
+            }else{
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("mail exist in database");
+            }
+    }
     public ResponseEntity login(LoginRequest loginRequest, HttpServletResponse response) {
         User authenticatedUser = authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);

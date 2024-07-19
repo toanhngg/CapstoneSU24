@@ -1,9 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.dto.payload.AddProductRequest;
-import fpt.CapstoneSU24.dto.payload.EditProductRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchProductRequest;
-import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,11 @@ public class ProductController {
     public ResponseEntity<?> findAllProductByManufacturerId(@Valid @RequestBody FilterSearchProductRequest req) {
         return productService.findAllProductByManufacturerId(req);
     }
+    //tìm kiếm toàn bộ product theo id của manufacturer (không cần auth)
+    @PostMapping("/ViewProductByManufacturerId")
+    public ResponseEntity<?> ViewProductByManufacturerId(@Valid @RequestBody FilterSearchProductByIdRequest req) {
+        return productService.ViewProductByManufacturerId(req);
+    }
     @PostMapping("/findImgByProductId")
     public ResponseEntity<?> findImgByProductId(@Valid @RequestBody IdRequest req) {
         return productService.findImgByProductId(req);
@@ -54,6 +56,5 @@ public class ProductController {
     @PostMapping("/deleteProductById")
     public ResponseEntity<?> deleteProductById(@Valid @RequestBody IdRequest req) {
         return productService.deleteProductById(req);
-
     }
 }

@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.mapper;
 import fpt.CapstoneSU24.dto.ProductDTOResponse;
 import fpt.CapstoneSU24.dto.ProductDetailDTOResponse;
 import fpt.CapstoneSU24.dto.ProductImageDTOResponse;
+import fpt.CapstoneSU24.dto.ViewProductDTOResponse;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
@@ -31,7 +32,14 @@ public abstract class ProductMapper {
     @Mapping(source = "description", target = "description")
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract ProductDTOResponse productToProductDTOResponse(Product product);
-
+    @Mapping(source = "productId", target = "productId")
+    @Mapping(source = "productName", target = "productName")
+    @Mapping(source = "description", target = "description")
+    @Mapping(source = "dimensions", target = "dimensions")
+    @Mapping(source = "material", target = "material")
+    @Mapping(source = "weight", target = "weight")
+    @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
+    public abstract ViewProductDTOResponse productToViewProductDTOResponse(Product product);
     @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "dimensions", target = "dimensions")

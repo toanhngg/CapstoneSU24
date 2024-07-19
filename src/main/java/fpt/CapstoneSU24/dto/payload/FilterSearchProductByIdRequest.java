@@ -1,8 +1,13 @@
 package fpt.CapstoneSU24.dto.payload;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-public class FilterSearchProductRequest {
+public class FilterSearchProductByIdRequest {
+    @NotNull(message = "The id is required")
+    @Min(value = 1, message = "The id must be a positive number")
+    private Integer id;
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
     @NotNull(message = "The pageSize is required")
     private int pageSize;
@@ -21,6 +26,10 @@ public class FilterSearchProductRequest {
     private String categoryName;
     @NotNull(message = "The type is not null")
     private String type;
+
+    public Integer getId() {
+        return id;
+    }
 
     public String getCategoryName() {
         return categoryName;

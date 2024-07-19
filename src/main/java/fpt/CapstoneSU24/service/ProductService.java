@@ -1,14 +1,12 @@
 package fpt.CapstoneSU24.service;
 
 
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.model.ImageProduct;
+import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.dto.payload.AddProductRequest;
-import fpt.CapstoneSU24.dto.payload.EditProductRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchProductRequest;
-import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +86,10 @@ public class ProductService {
     public ResponseEntity editProduct(EditProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        List<Item> items = itemRepository.findAllByProductId(req.getProductId());
+        if(items.size() == 0){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't edit because the product have item");
+        }
         if (currentUser.getRole().getRoleId() == 2) {
             try {
                 Product product = productRepository.findOneByProductId(req.getProductId());
@@ -103,8 +105,6 @@ public class ProductService {
                 product.setDescription(req.getDescription());
                 product.setWarranty(req.getWarranty());
                 product.setCreateAt(System.currentTimeMillis());
-//                product.setManufacturer(currentUser);
-//                product.setCertificate(certificateRepository.findOneByCertificateId(req.getCertificateId()));
                 productRepository.save(product);
                 //save image
                 if (!req.getImages().isEmpty()) {
@@ -154,6 +154,23 @@ public class ProductService {
         }
     }
 
+    public ResponseEntity ViewProductByManufacturerId(FilterSearchProductByIdRequest req) {
+        try {
+            Page<Product> products = null;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                products = productRepository.findAllProductWithDate(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
+            } else {
+                products = productRepository.findAllProduct(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToViewProductDTOResponse));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
+        }
+    }
+
     public ResponseEntity findImgByProductId(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -175,7 +192,11 @@ public class ProductService {
     public ResponseEntity<?> findProductDetailById(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (productRepository.findOneByProductId(req.getId()).getManufacturer().getUserId() == currentUser.getUserId()) {
+        Product p = productRepository.findOneByProductId(req.getId());
+        if(p == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product id isn't exist");
+        }
+        if (p.getManufacturer().getUserId() == currentUser.getUserId()) {
             Product product = productRepository.findOneByProductId(req.getId());
             return ResponseEntity.status(HttpStatus.OK).body(productMapper.productToProductDetailDTOResponse(product));
         } else {
@@ -187,15 +208,15 @@ public class ProductService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         Product productDelete = productRepository.findOneByProductId(req.getId());
+        List<Item> items = itemRepository.findAllByProductId(req.getId());
+        if(items.size() != 0){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't delete because the product have item");
+        }
         if(productDelete != null){
             if (productDelete.getManufacturer().getUserId() == currentUser.getUserId()) {
-                if (itemRepository.findAllByProductId(req.getId()).isEmpty()) {
                     imageProductRepository.deleteByProductId(req.getId());
                     productRepository.deleteOneByProductId(req.getId());
                     return ResponseEntity.status(HttpStatus.OK).body("delete product success");
-                } else {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product can't delete because product have instants");
-                }
 
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("your account is not allowed for this action");

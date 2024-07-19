@@ -37,12 +37,16 @@ public CertificateController( CertificateService certificateService){
     {
         return certificateService.getListCertMe();
     }
+    @PostMapping("/ViewCertByManufacturerId")
+    public ResponseEntity<?> ViewCertByManufacturerId(@Valid @RequestBody IdRequest req)
+    {
+        return certificateService.ViewCertByManufacturerId(req);
+    }
     @PostMapping("/replyCertByAdmin")
     public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req)
     {
         return certificateService.replyCertByAdmin(req);
     }
-
     @PostMapping("/createCertificate")
     public ResponseEntity<?> createCertificate(@Valid @RequestBody CreateCertificateRequest req) throws IOException {
         return certificateService.createCertificate(req);

@@ -1,23 +1,23 @@
 package fpt.CapstoneSU24.dto.Certificate;
 
 public class CertificateListDTO {
-    private String certificateName;
+    private String name;
     private String certificateImage;
     private String issuanceDate;
     private String issuing_authority;
     private String manufacturerName;
     private String manufacturerId;
-    private String certificateId;
+    private String certId;
 
     public CertificateListDTO() {
     }
 
-    public String getCertificateName() {
-        return certificateName;
+    public String getName() {
+        return name;
     }
 
-    public void setCertificateName(String certificateName) {
-        this.certificateName = certificateName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getCertificateImage() {
@@ -60,11 +60,11 @@ public class CertificateListDTO {
         this.manufacturerId = manufacturerId;
     }
 
-    public String getCertificateId() {
-        return certificateId;
+    public String getCertId() {
+        return certId;
     }
 
-    public void setCertificateId(String certificateId) {
-        this.certificateId = certificateId;
+    public void setCertId(String certId) {
+        this.certId = certId;
     }
 }
