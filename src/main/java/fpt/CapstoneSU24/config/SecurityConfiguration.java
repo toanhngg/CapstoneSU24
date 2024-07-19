@@ -95,8 +95,9 @@ public class SecurityConfiguration {
                                 "/api/elk/getNumberVisitsAllTime",
                                 "/api/elk/getNumberVisitsDiagram",
                                 "/api/item/check",
-                                "/api/user/getManufacturerByProductId"
-
+                                "/api/user/getManufacturerByProductId",
+                                "/api/product/countRegisteredProduct",
+                                "/api/user/countRegisteredUser"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

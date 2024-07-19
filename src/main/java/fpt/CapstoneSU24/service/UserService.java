@@ -447,8 +447,11 @@ public class UserService {
             return ResponseEntity.status(500).body("Failed to upload image");
         }
     }
+    public ResponseEntity<?> countRegisteredUser() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.status(200).body(users.size());
 
-
+    }
 
 
 }

@@ -28,14 +28,14 @@ import java.util.Date;
 public class ELKService {
     RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
-                    new HttpHost("34.150.31.109", 9200, "http")
+                    new HttpHost("34.150.104.5", 9200, "http")
             )
     );
     public ResponseEntity<?> getNumberVisitsAllTime() throws IOException {
         try {
             SearchRequest searchRequest = new SearchRequest("logs-generic-default");
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(QueryBuilders.matchQuery("message", "item"));
+            searchSourceBuilder.query(QueryBuilders.prefixQuery("message", "item"));
             searchSourceBuilder.size(0);
             searchRequest.source(searchSourceBuilder);
 

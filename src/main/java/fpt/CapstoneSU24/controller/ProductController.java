@@ -5,10 +5,7 @@ import fpt.CapstoneSU24.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/product")
@@ -54,5 +51,9 @@ public class ProductController {
     @PostMapping("/getManufacturerByProductId")
     public ResponseEntity<?> getManufacturerByProductId(@Valid @RequestBody IdRequest req) {
         return productService.getManufacturerByProductId(req);
+    }
+    @GetMapping("/countRegisteredProduct")
+    public ResponseEntity<?> countRegisteredProduct() {
+        return productService.countRegisteredProduct();
     }
 }

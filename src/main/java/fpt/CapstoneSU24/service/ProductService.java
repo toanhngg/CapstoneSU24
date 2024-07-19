@@ -233,4 +233,8 @@ public class ProductService {
         User user = userRepository.findUserByProductId(req.getId());
         return ResponseEntity.status(HttpStatus.OK).body(userMapper.usersToUserViewDetailDTO(user));
     }
+    public ResponseEntity countRegisteredProduct() {
+       List<Product> products = productRepository.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(products.size());
+    }
 }

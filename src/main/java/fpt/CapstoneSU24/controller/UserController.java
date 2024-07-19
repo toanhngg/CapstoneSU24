@@ -95,6 +95,10 @@ public class UserController {
     public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {
         return userService.updateAvatar(file);
     }
+    @GetMapping("/countRegisteredUser")
+    public ResponseEntity<?> countRegisteredUser() {
+        return userService.countRegisteredUser();
+    }
 }
 
 
