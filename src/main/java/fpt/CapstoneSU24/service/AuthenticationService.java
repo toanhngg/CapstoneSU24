@@ -125,7 +125,7 @@ public class AuthenticationService {
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         System.out.println("jwt: " + jwtToken);
         log.info("User {} is attempting to log in.", loginRequest.getEmail());
-        return ResponseEntity.status(HttpStatus.OK).body("login successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(authenticatedUser.getRole().getRoleId());
     }
 
     public ResponseEntity sendEmailVerify(VerifyEmailRequest req) {

@@ -78,6 +78,7 @@ public class UserController {
     public ResponseEntity<User> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
+        currentUser.setProfileImage(userService.getUserProfile(authentication, -1).getProfileIMG());
         return ResponseEntity.ok(currentUser);
     }
 

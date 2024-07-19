@@ -78,6 +78,8 @@ public class ProductService {
                 //save ava
                 String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
+                String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "file3d/" + product.getProductId());
+                imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("add product successfully");
             } catch (Exception e) {

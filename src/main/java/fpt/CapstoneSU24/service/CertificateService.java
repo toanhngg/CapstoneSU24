@@ -247,4 +247,31 @@ public class CertificateService {
         }
         return new ResponseEntity<>("create certificate successfully", HttpStatus.OK);
     }
+
+    public ResponseEntity<?> getCertificateById(IdRequest req) {
+        try {
+            Certificate certificate = certificateRepository.findOneByCertificateId(req.getId());
+            if (certificate == null) {
+                return ResponseEntity.status(500).body("id is not exist");
+            }
+
+            List<String> imageUrls = new ArrayList<>();
+            for (String imageId : certificate.getImages().split("\\.")) {
+                imageUrls.add(cloudinaryService.getImageUrl(imageId));
+            }
+
+            ListCertificateDTOResponse certificateDTO = new ListCertificateDTOResponse(
+                    certificate.getCertificateId(),
+                    certificate.getCertificateName(),
+                    certificate.getIssuingAuthority(),
+                    imageUrls,
+                    certificate.getIssuanceDate(),
+                    certificate.getNote()
+            );
+
+            return ResponseEntity.ok(certificateDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("id is not exist");
+        }
+    }
 }
