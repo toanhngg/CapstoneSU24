@@ -5,6 +5,7 @@ import fpt.CapstoneSU24.dto.EventItemLogDTO;
 import fpt.CapstoneSU24.dto.ItemLogDetailResponse;
 import fpt.CapstoneSU24.dto.Point;
 import fpt.CapstoneSU24.exception.LogService;
+import fpt.CapstoneSU24.mapper.LocationMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ public class ItemLogService {
     private final PointService pointService;
     private final ItemService itemService;
     private final LogService logService;
+    private final LocationMapper locationMapper;
 
     @Autowired
     public ItemLogService(LocationRepository locationRepository,
@@ -40,7 +42,7 @@ public class ItemLogService {
                              ItemLogRepository itemLogRepository,
                              EventTypeRepository eventTypeRepository, TransportRepository transportRepository,
                              AuthorizedRepository authorizedRepository, PointService pointService,
-                             ItemService itemService,LogService logService) {
+                             ItemService itemService,LogService logService,LocationMapper locationMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -51,6 +53,7 @@ public class ItemLogService {
         this.pointService = pointService;
         this.itemService = itemService;
         this.logService = logService;
+        this.locationMapper = locationMapper;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemLogService.class);
 
@@ -76,13 +79,14 @@ public class ItemLogService {
             ItemLog itemLogToCheck = list.get(0);
 
             // Create and save Location
-            Location location = new Location();
-            location.setAddress(itemLogDTO.getAddress());
-            location.setCity(itemLogDTO.getCity());
-            location.setCountry(itemLogDTO.getCountry());
-            location.setCoordinateX(itemLogDTO.getCoordinateX());
-            location.setCoordinateY(itemLogDTO.getCoordinateY());
-            Location savedLocation = locationRepository.save(location);
+//            Location location = new Location();
+//            location.setAddress(itemLogDTO.getAddress());
+//            location.setCity(itemLogDTO.getCity());
+//            location.setCountry(itemLogDTO.getCountry());
+//            location.setCoordinateX(itemLogDTO.getCoordinateX());
+//            location.setCoordinateY(itemLogDTO.getCoordinateY());
+//            Location savedLocation = locationRepository.save(location);
+            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
 
             // Retrieve authorized entity
             Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorizedId());
@@ -108,7 +112,7 @@ public class ItemLogService {
 
             // Create and save ItemLog
             ItemLog itemLog = new ItemLog();
-            itemLog.setAddress(itemLogDTO.getAddress());
+            itemLog.setAddress(itemLogDTO.getLocation().getAddress());
             itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
             itemLog.setAuthorized(authorized);
             itemLog.setStatus(0);
@@ -119,10 +123,9 @@ public class ItemLogService {
             itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
 
             // Additional validation
-            if (itemLogDTO.getAddress() != null && !itemLogDTO.getAddress().isEmpty() &&
-                    itemLogDTO.getDescriptionItemLog() != null && !itemLogDTO.getDescriptionItemLog().isEmpty() &&
-                    itemLogDTO.getCity() != null && !itemLogDTO.getCity().isEmpty() &&
-                    itemLogDTO.getCountry() != null && !itemLogDTO.getCountry().isEmpty() &&
+            if (itemLogDTO.getLocation().getAddress() != null &&
+                    itemLogDTO.getLocation().getCity() != null  &&
+                    itemLogDTO.getLocation().getCountry() != null  &&
                     itemLogToCheck.getItem() != null) {
 
                 double pointX = pointService.generateX();

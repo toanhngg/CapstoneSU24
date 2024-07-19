@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 @Repository
-
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Override
     Page<Item> findAll(Pageable pageable);

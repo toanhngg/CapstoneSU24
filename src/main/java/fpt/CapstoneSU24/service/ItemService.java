@@ -32,6 +32,10 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -506,65 +510,80 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authored or Item is null");
         }
         try {
+            HttpClient client = HttpClient.newHttpClient();
+            String email = authorized.getAuthorizedEmail(); // Assuming authorized is defined and accessible
 
-            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
-            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-            if (list.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
-            }
-            ItemLog itemIndex = list.get(0);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
+                    .POST(HttpRequest.BodyPublishers.ofString("email=" + email))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
 
-            long timeInsert = System.currentTimeMillis();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            long timeDifference = timeInsert - itemIndex.getTimeStamp() ;
+            System.out.println(response.body());
+if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
+    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
+    List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+    if (list.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
+    }
+    ItemLog itemIndex = list.get(0);
 
-            long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
-            if(timeDifference > threeDaysInMillis) {
-                Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
-                authorizedEntity.setLocation(savedLocation);
-                Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
+    long timeInsert = System.currentTimeMillis();
 
-                Point point = null;
+    long timeDifference = timeInsert - itemIndex.getTimeStamp();
 
-                if (authorized.getLocation().getAddress() != null &&
-                        authorized.getLocation().getCountry() != null &&
-                        authorized.getLocation().getCoordinateX() != 0 &&
-                        authorized.getLocation().getWard() != null &&
-                        authorized.getLocation().getDistrict() != null &&
-                        authorized.getLocation().getCity() != null &&
-                        authorized.getLocation().getCoordinateY() != 0 &&
-                        authorized.getDescription() != null) {
+    long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
+    if (timeDifference > threeDaysInMillis) {
+        Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
+        authorizedEntity.setLocation(savedLocation);
+        Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
-                    double pointX = pointService.generateX();
-                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                    List<Point> pointList = pointService.getPointList(pointLogs);
-                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+        Point point = null;
 
-                    point = new Point(pointX, pointY);
-                }
+        if (authorized.getLocation().getAddress() != null &&
+                authorized.getLocation().getCountry() != null &&
+                authorized.getLocation().getCoordinateX() != 0 &&
+                authorized.getLocation().getWard() != null &&
+                authorized.getLocation().getDistrict() != null &&
+                authorized.getLocation().getCity() != null &&
+                authorized.getLocation().getCoordinateY() != 0 &&
+                authorized.getDescription() != null) {
 
-                itemLogRepository.save(new ItemLog(
-                        item,
-                        itemIndex.getAddress(), // cai nay lay cua item log trc no => address luu dia chi thi la o ben location bang Authoried
-                        itemIndex.getParty(),
-                        itemIndex.getLocation(),
-                        timeInsert,
-                        authorized.getDescription(),
-                        authorizedSaved,
-                        new EventType(3),  // 3 indicates authorization event
-                        1,
-                        null,
-                        point != null ? point.toString() : null
-                ));
-                // Gửi thông báo email
-                ClientSdi sdi = new ClientSdi();
-                sdi.setEmail(authorized.getAuthorizedEmail());
-                sdi.setUsername(authorized.getAuthorizedName());
-                sdi.setName(authorized.getAuthorizedName());
-                clientService.notification(sdi);
-                return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot authorize products once created!");
+            double pointX = pointService.generateX();
+            List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+            List<Point> pointList = pointService.getPointList(pointLogs);
+            double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+
+            point = new Point(pointX, pointY);
+        }
+
+        itemLogRepository.save(new ItemLog(
+                item,
+                itemIndex.getAddress(), // cai nay lay cua item log trc no => address luu dia chi thi la o ben location bang Authoried
+                itemIndex.getParty(),
+                itemIndex.getLocation(),
+                timeInsert,
+                authorized.getDescription(),
+                authorizedSaved,
+                new EventType(3),  // 3 indicates authorization event
+                1,
+                null,
+                point != null ? point.toString() : null
+        ));
+        // Gửi thông báo email
+        ClientSdi sdi = new ClientSdi();
+        sdi.setEmail(authorized.getAuthorizedEmail());
+        sdi.setUsername(authorized.getAuthorizedName());
+        sdi.setName(authorized.getAuthorizedName());
+        clientService.notification(sdi);
+        return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
+    }
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You can not authorized product when create now!");
+
+}
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not exist!");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());

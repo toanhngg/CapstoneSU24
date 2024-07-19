@@ -2,7 +2,11 @@ package fpt.CapstoneSU24.dto.payload;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class FilterSearchItemRequest {
     @Digits(integer = 5, fraction = 0, message = "Invalid digit format")
     @NotNull(message = "The productId is required")
