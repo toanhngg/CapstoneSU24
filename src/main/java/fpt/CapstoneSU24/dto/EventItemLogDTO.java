@@ -52,7 +52,6 @@ public class EventItemLogDTO {
     @Size(max = 100, message = "FullNameParty must be less than 100 characters")
     private String fullNameParty;
 
-    @JsonIgnore
     @Email(message = "EmailParty should be a valid email")
     private String emailParty;
 

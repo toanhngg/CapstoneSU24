@@ -73,7 +73,6 @@ public class ItemService {
     private final ProductMapper productMapper;
     private final AuthorizedMapper authorizedMapper;
 
-    private final AuthorizedMapper authorizedMapper;
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
                        OriginRepository originRepository, ItemRepository itemRepository,
@@ -112,7 +111,6 @@ public class ItemService {
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
-        log.info("item-searchItem");
         Page<Item> items;
         Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
                 req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
@@ -188,7 +186,6 @@ public class ItemService {
             itemRepository.saveAll(items);
             partyRepository.saveAll(parties);
             itemLogRepository.saveAll(itemLogs);
-            logService.info("Add successfully!");
             return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
         } catch (Exception ex) {
             logService.logError(ex);
@@ -283,8 +280,8 @@ public class ItemService {
     }
 
     public ResponseEntity<?> viewLineItem(String productRecognition) {
-        log.info("item-viewLineItem");
         try {
+            log.info("itemviewLineItem");
             if(productRecognition.length() < 10){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
             }
@@ -328,8 +325,6 @@ public class ItemService {
 
     public ResponseEntity<?> viewOrigin(int itemLogId) {
         try {
-            log.info("item-viewOrigin");
-
             Page<Product> products = null;
             ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
             if (itemLog == null) return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
@@ -358,8 +353,6 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
-        log.info("item-getCertificate");
-
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
@@ -398,8 +391,6 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> confirmCurrentOwner(SendOTP otp, String productRecognition) {
-        log.info("item-confirmCurrentOwner");
-
         Item item = itemRepository.findByProductRecognition(productRecognition); // B1
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
@@ -417,8 +408,6 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
-        log.info("item-checkEventAuthorized");
-
         Item item = findByProductRecognition(productRecognition); // B1
         if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
@@ -431,7 +420,6 @@ public class ItemService {
 
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {
-            log.info("item-authorize");
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
             if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
@@ -473,7 +461,6 @@ public class ItemService {
 //    }
 //
     public ResponseEntity<Integer> check(CurrentOwnerCheckDTO req) {
-        log.info("item-check");
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
@@ -605,8 +592,6 @@ if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
 
     public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {
         try {
-            log.info("item-sendCurrentOwnerOTP");
-
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
             String productRecognition = jsonReq.getString("productRecognition");
@@ -644,8 +629,6 @@ if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
 
     public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
         try {
-            log.info("item-sendOTP");
-
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
             String productRecognition = jsonReq.getString("productRecognition");
@@ -769,8 +752,6 @@ if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
 
     public ResponseEntity<String> abortItem(AbortDTO abortDTO) {
         try {
-            log.info("item-abortItem");
-
             Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
             long timeInsert = System.currentTimeMillis();
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
@@ -817,7 +798,6 @@ if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
     }
 
     public ResponseEntity<?> getItemByEventType(int eventType) {
-        log.info("item-getItemByEventType");
         List<Item> item = itemRepository.getItemByEventType(eventType);
         if (item.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Item found for eventType: " + eventType);

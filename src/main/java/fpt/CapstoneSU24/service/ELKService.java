@@ -28,7 +28,7 @@ import java.util.Date;
 public class ELKService {
     RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
-                    new HttpHost("34.150.31.109", 9200, "http")
+                    new HttpHost("34.150.104.5", 9200, "http")
             )
     );
     public ResponseEntity<?> getNumberVisitsAllTime() throws IOException {
