@@ -5,14 +5,12 @@ import fpt.CapstoneSU24.dto.EventItemLogDTO;
 import fpt.CapstoneSU24.dto.ItemLogDetailResponse;
 import fpt.CapstoneSU24.dto.Point;
 import fpt.CapstoneSU24.exception.LogService;
+import fpt.CapstoneSU24.mapper.LocationMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,6 +31,7 @@ public class ItemLogService {
     private final PointService pointService;
     private final ItemService itemService;
     private final LogService logService;
+    private final LocationMapper locationMapper;
 
     @Autowired
     public ItemLogService(LocationRepository locationRepository,
@@ -40,7 +39,7 @@ public class ItemLogService {
                              ItemLogRepository itemLogRepository,
                              EventTypeRepository eventTypeRepository, TransportRepository transportRepository,
                              AuthorizedRepository authorizedRepository, PointService pointService,
-                             ItemService itemService,LogService logService) {
+                             ItemService itemService,LogService logService,LocationMapper locationMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -51,12 +50,12 @@ public class ItemLogService {
         this.pointService = pointService;
         this.itemService = itemService;
         this.logService = logService;
+        this.locationMapper = locationMapper;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemLogService.class);
 
     public ResponseEntity<?> addItemLog(EventItemLogDTO itemLogDTO) {
         try {
-            log.info("itemlog-addItemLog");
             // Retrieve item by product recognition
             Item item = itemRepository.findByProductRecognition(itemLogDTO.getProductRecognition());
             if (item == null) {
@@ -74,67 +73,68 @@ public class ItemLogService {
             }
 
             ItemLog itemLogToCheck = list.get(0);
+            if (itemLogToCheck.getAuthorized() == null)
+                return new ResponseEntity<>("The product needs to be in an authorized state to be able to add a carrier.", HttpStatus.BAD_REQUEST);
 
-            // Create and save Location
-            Location location = new Location();
-            location.setAddress(itemLogDTO.getAddress());
-            location.setCity(itemLogDTO.getCity());
-            location.setCountry(itemLogDTO.getCountry());
-            location.setCoordinateX(itemLogDTO.getCoordinateX());
-            location.setCoordinateY(itemLogDTO.getCoordinateY());
-            Location savedLocation = locationRepository.save(location);
+            if (itemLogToCheck.getEvent_id().getEventId() == 2) {
+                Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
 
-            // Retrieve authorized entity
-            Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorizedId());
+                System.out.println(itemLogToCheck.getAuthorized().getAuthorizedId());
+                // Retrieve authorized entity
+                Authorized authorized = authorizedRepository.getReferenceById(itemLogToCheck.getAuthorized().getAuthorizedId());
 
-            // Create and save Party
-            Party party = new Party();
-            if (itemLogDTO.getEventId() == 2) {
-                if (itemLogDTO.getTransportId() == 0) {
-                    return new ResponseEntity<>("Please choose a carrier.", HttpStatus.BAD_REQUEST);
+                // Create and save Party
+                Party party = new Party();
+                if (itemLogDTO.getEventId() != 2) {
+                    if (itemLogDTO.getTransportId() == 0) {
+                        return new ResponseEntity<>("Please choose a carrier.", HttpStatus.BAD_REQUEST);
+                    }
+                    Transport transport = transportRepository.getReferenceById(itemLogDTO.getTransportId());
+                    party.setEmail(transport.getTransportEmail());
+                    party.setPartyFullName(transport.getTransportName());
+                    party.setPhoneNumber(transport.getTransportContact());
+                    party.setDescription(itemLogDTO.getDescriptionItemLog());
+                    System.out.println("transport-" + transport.getTransportEmail());
+                    log.info("transport-" + transport.getTransportEmail());
+
+                } else {
+                    party.setEmail("");
+                    party.setPartyFullName("");
+                    party.setPhoneNumber("");
+                    party.setDescription("Khác");
                 }
-                Transport transport = transportRepository.getReferenceById(itemLogDTO.getTransportId());
-                party.setEmail(transport.getTransportEmail());
-                party.setPartyFullName(transport.getTransportName());
-                party.setPhoneNumber(transport.getTransportContact());
-                party.setDescription(itemLogDTO.getDescriptionItemLog());
-            } else {
-                party.setEmail("");
-                party.setPartyFullName("");
-                party.setPhoneNumber("");
-                party.setDescription("Khác");
+                Party savedParty = partyRepository.save(party);
+
+                // Create and save ItemLog
+                ItemLog itemLog = new ItemLog();
+                itemLog.setAddress(itemLogDTO.getLocation().getAddress());
+                itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
+                itemLog.setAuthorized(authorized);
+                itemLog.setStatus(0);
+                itemLog.setTimeStamp(System.currentTimeMillis());
+                itemLog.setItem(item);
+                itemLog.setLocation(savedLocation);
+                itemLog.setParty(savedParty);
+                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
+
+                // Additional validation
+                if (itemLogDTO.getLocation().getAddress() != null &&
+                        itemLogDTO.getLocation().getCity() != null &&
+                        itemLogDTO.getLocation().getCountry() != null &&
+                        itemLogToCheck.getItem() != null) {
+
+                    double pointX = pointService.generateX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                    Point point = new Point(pointX, pointY);
+                    itemLog.setPoint(point.toString());
+                }
+
+                itemLogRepository.save(itemLog);
+                return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
             }
-            Party savedParty = partyRepository.save(party);
-
-            // Create and save ItemLog
-            ItemLog itemLog = new ItemLog();
-            itemLog.setAddress(itemLogDTO.getAddress());
-            itemLog.setDescription(itemLogDTO.getDescriptionItemLog());
-            itemLog.setAuthorized(authorized);
-            itemLog.setStatus(0);
-            itemLog.setTimeStamp(System.currentTimeMillis());
-            itemLog.setItem(item);
-            itemLog.setLocation(savedLocation);
-            itemLog.setParty(savedParty);
-            itemLog.setEvent_id(eventTypeRepository.findOneByEventId(itemLogDTO.getEventId()));
-
-            // Additional validation
-            if (itemLogDTO.getAddress() != null && !itemLogDTO.getAddress().isEmpty() &&
-                    itemLogDTO.getDescriptionItemLog() != null && !itemLogDTO.getDescriptionItemLog().isEmpty() &&
-                    itemLogDTO.getCity() != null && !itemLogDTO.getCity().isEmpty() &&
-                    itemLogDTO.getCountry() != null && !itemLogDTO.getCountry().isEmpty() &&
-                    itemLogToCheck.getItem() != null) {
-
-                double pointX = pointService.generateX();
-                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                List<Point> pointList = pointService.getPointList(pointLogs);
-                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-                Point point = new Point(pointX, pointY);
-                itemLog.setPoint(point.toString());
-            }
-
-            itemLogRepository.save(itemLog);
-            return new ResponseEntity<>("Add successfully.", HttpStatus.OK);
+            return new ResponseEntity<>("The product is in shipping status .", HttpStatus.BAD_REQUEST);
 
         } catch (Exception ex) {
             logService.logError(ex);
@@ -145,8 +145,6 @@ public class ItemLogService {
 
     public ResponseEntity<?> getItemLogDetail(int itemLogId) {
         try {
-            log.info("itemlog-getItemLogDetail");
-
             ItemLog itemlogDetail = itemLogRepository.getItemLogsById(itemLogId);
             if(itemlogDetail == null)
                 return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
@@ -169,8 +167,6 @@ public class ItemLogService {
     }
 
     public ResponseEntity<?> editItemLog( EditItemLogDTO dataEditDTO) {
-        log.info("itemlog-editItemLog");
-
         ItemLog itemlogDetail = itemLogRepository.findById((Integer)dataEditDTO.getItemLogId())
                 .orElseThrow(() -> new RuntimeException("ItemLog not found"));
         Item item = itemRepository.getReferenceById(itemlogDetail.getItem().getItemId());
@@ -230,13 +226,10 @@ public class ItemLogService {
 //    }
 
     public ResponseEntity<?> getEventByItemId(int itemId) {
-        log.info("itemlog-getEventByItemId");
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getEvent_id().getEventId())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId));
     }
     public ResponseEntity<?> getLocationItemId(int itemId) {
-        log.info("itemlog-getLocationItemId");
-
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getLocation())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Location found for itemId: " + itemId));
     }

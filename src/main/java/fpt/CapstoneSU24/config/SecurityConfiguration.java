@@ -95,6 +95,7 @@ public class SecurityConfiguration {
                                 "/api/elk/getNumberVisitsAllTime",
                                 "/api/elk/getNumberVisitsDiagram",
                                 "/api/item/check",
+                                "api/item/checkEventAuthorized",
                                 "/api/user/getManufacturerByProductId",
                                 "/api/product/countRegisteredProduct",
                                 "/api/user/countRegisteredUser"

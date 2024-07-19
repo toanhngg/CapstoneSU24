@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.controller.ItemController;
+import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.CertificateInfor.InformationCert;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
@@ -34,6 +35,10 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -106,7 +111,6 @@ public class ItemService {
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
-        log.info("item-searchItem");
         Page<Item> items;
         Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt")) :
                 req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
@@ -126,15 +130,12 @@ public class ItemService {
                 }
             }
             return ResponseEntity.status(200).body(items.map(itemMapper::itemToItemViewDTOResponse));
-        } catch (Exception ex) {
-
+        } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");
         }
-
     }
 
     public ResponseEntity<?> exportListItem(FilterByTimeStampRequest req) throws IOException {
-        log.info("item-exportListItem");
         if (req.isValidDates()) {
             //  JSONObject jsonReq = new JSONObject(req);
             List<Item> items = itemRepository.findByCreatedAtBetween(req.getStartDate(), req.getEndDate());
@@ -149,7 +150,6 @@ public class ItemService {
     }
 
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
-        log.info("item-addItem");
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -186,7 +186,6 @@ public class ItemService {
             itemRepository.saveAll(items);
             partyRepository.saveAll(parties);
             itemLogRepository.saveAll(itemLogs);
-            logService.info("Add successfully!");
             return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
         } catch (Exception ex) {
             logService.logError(ex);
@@ -281,8 +280,8 @@ public class ItemService {
     }
 
     public ResponseEntity<?> viewLineItem(String productRecognition) {
-        log.info("item-viewLineItem");
         try {
+            log.info("itemviewLineItem");
             if(productRecognition.length() < 10){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
             }
@@ -326,8 +325,6 @@ public class ItemService {
 
     public ResponseEntity<?> viewOrigin(int itemLogId) {
         try {
-            log.info("item-viewOrigin");
-
             Page<Product> products = null;
             ItemLog itemLog = itemLogRepository.getItemLogs(itemLogId);
             if (itemLog == null) return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
@@ -356,8 +353,6 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
-        log.info("item-getCertificate");
-
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
@@ -396,8 +391,6 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> confirmCurrentOwner(SendOTP otp, String productRecognition) {
-        log.info("item-confirmCurrentOwner");
-
         Item item = itemRepository.findByProductRecognition(productRecognition); // B1
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
@@ -415,8 +408,6 @@ public class ItemService {
     }
 
     public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
-        log.info("item-checkEventAuthorized");
-
         Item item = findByProductRecognition(productRecognition); // B1
         if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
@@ -429,7 +420,6 @@ public class ItemService {
 
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {
-            log.info("item-authorize");
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
             if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
@@ -471,7 +461,6 @@ public class ItemService {
 //    }
 //
     public ResponseEntity<Integer> check(CurrentOwnerCheckDTO req) {
-        log.info("item-check");
         JSONObject jsonReq = new JSONObject(req);
         String email = jsonReq.getString("email");
         String productRecognition = jsonReq.getString("productRecognition");
@@ -521,17 +510,29 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authored or Item is null");
         }
         try {
+            HttpClient client = HttpClient.newHttpClient();
+            String email = authorized.getAuthorizedEmail(); // Assuming authorized is defined and accessible
 
-            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
-            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-            if (list.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
-            }
-            ItemLog itemIndex = list.get(0);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
+                    .POST(HttpRequest.BodyPublishers.ofString("email=" + email))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
 
-            long timeInsert = System.currentTimeMillis();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            long timeDifference = timeInsert - itemIndex.getTimeStamp() ;
+            System.out.println(response.body());
+if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
+    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
+    List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+    if (list.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found list itemlog");
+    }
+    ItemLog itemIndex = list.get(0);
+
+    long timeInsert = System.currentTimeMillis();
+
+    long timeDifference = timeInsert - itemIndex.getTimeStamp();
 
             long threeDaysInMillis = TimeUnit.DAYS.toMillis(3);
             if(timeDifference > threeDaysInMillis) {
@@ -539,47 +540,50 @@ public class ItemService {
                 authorizedEntity.setLocation(savedLocation);
                 Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
-                Point point = null;
+        Point point = null;
 
-                if (authorized.getLocation().getAddress() != null &&
-                        authorized.getLocation().getCountry() != null &&
-                        authorized.getLocation().getCoordinateX() != 0 &&
-                        authorized.getLocation().getWard() != null &&
-                        authorized.getLocation().getDistrict() != null &&
-                        authorized.getLocation().getCity() != null &&
-                        authorized.getLocation().getCoordinateY() != 0 &&
-                        authorized.getDescription() != null) {
+        if (authorized.getLocation().getAddress() != null &&
+                authorized.getLocation().getCountry() != null &&
+                authorized.getLocation().getCoordinateX() != 0 &&
+                authorized.getLocation().getWard() != null &&
+                authorized.getLocation().getDistrict() != null &&
+                authorized.getLocation().getCity() != null &&
+                authorized.getLocation().getCoordinateY() != 0 &&
+                authorized.getDescription() != null) {
 
-                    double pointX = pointService.generateX();
-                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                    List<Point> pointList = pointService.getPointList(pointLogs);
-                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+            double pointX = pointService.generateX();
+            List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+            List<Point> pointList = pointService.getPointList(pointLogs);
+            double pointY = pointService.lagrangeInterpolate(pointList, pointX);
 
-                    point = new Point(pointX, pointY);
-                }
+            point = new Point(pointX, pointY);
+        }
 
-                itemLogRepository.save(new ItemLog(
-                        item,
-                        itemIndex.getAddress(), // cai nay lay cua item log trc no => address luu dia chi thi la o ben location bang Authoried
-                        itemIndex.getParty(),
-                        itemIndex.getLocation(),
-                        timeInsert,
-                        authorized.getDescription(),
-                        authorizedSaved,
-                        new EventType(3),  // 3 indicates authorization event
-                        1,
-                        null,
-                        point != null ? point.toString() : null
-                ));
-                // Gửi thông báo email
-                ClientSdi sdi = new ClientSdi();
-                sdi.setEmail(authorized.getAuthorizedEmail());
-                sdi.setUsername(authorized.getAuthorizedName());
-                sdi.setName(authorized.getAuthorizedName());
-                clientService.notification(sdi);
-                return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot authorize products once created!");
+        itemLogRepository.save(new ItemLog(
+                item,
+                itemIndex.getAddress(), // cai nay lay cua item log trc no => address luu dia chi thi la o ben location bang Authoried
+                itemIndex.getParty(),
+                itemIndex.getLocation(),
+                timeInsert,
+                authorized.getDescription(),
+                authorizedSaved,
+                new EventType(3),  // 3 indicates authorization event
+                1,
+                null,
+                point != null ? point.toString() : null
+        ));
+        // Gửi thông báo email
+        ClientSdi sdi = new ClientSdi();
+        sdi.setEmail(authorized.getAuthorizedEmail());
+        sdi.setUsername(authorized.getAuthorizedName());
+        sdi.setName(authorized.getAuthorizedName());
+        clientService.notification(sdi);
+        return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
+    }
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You can not authorized product when create now!");
+
+}
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not exist!");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -588,8 +592,6 @@ public class ItemService {
 
     public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {
         try {
-            log.info("item-sendCurrentOwnerOTP");
-
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
             String productRecognition = jsonReq.getString("productRecognition");
@@ -627,8 +629,6 @@ public class ItemService {
 
     public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
         try {
-            log.info("item-sendOTP");
-
             JSONObject jsonReq = new JSONObject(req);
             String email = jsonReq.getString("email");
             String productRecognition = jsonReq.getString("productRecognition");
@@ -752,8 +752,6 @@ public class ItemService {
 
     public ResponseEntity<String> abortItem(AbortDTO abortDTO) {
         try {
-            log.info("item-abortItem");
-
             Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
             long timeInsert = System.currentTimeMillis();
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
@@ -771,8 +769,6 @@ public class ItemService {
                     // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
                    // ItemLog itemLog = new ItemLog();
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
-
-
                   //  locationRepository.save(locationSaved);
                     Party partySaved = new Party();
                     partySaved.setPartyFullName(item.getCurrentOwner());
@@ -802,7 +798,6 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getItemByEventType(int eventType) {
-        log.info("item-getItemByEventType");
         List<Item> item = itemRepository.getItemByEventType(eventType);
         if (item.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Item found for eventType: " + eventType);
