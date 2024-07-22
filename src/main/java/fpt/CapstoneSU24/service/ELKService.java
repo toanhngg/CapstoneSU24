@@ -93,4 +93,66 @@ public class ELKService {
             }
             return ResponseEntity.status(200).body(newJsonArray.toString());
     }
+    public int getNumberTraceAllTime() throws IOException {
+        try {
+            SearchRequest searchRequest = new SearchRequest("logs-generic-default");
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.prefixQuery("message", "item"));
+            searchSourceBuilder.size(0);
+            searchRequest.source(searchSourceBuilder);
+
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            return (int) searchResponse.getHits().getTotalHits().value;
+        }catch (Exception e){
+            return 0;
+        }
+    }
+    public ResponseEntity<?> getNumberTraceDiagram() throws IOException {
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                .size(0)
+                .query(QueryBuilders.boolQuery()
+                        .filter(QueryBuilders.rangeQuery("@timestamp")
+                                .gte("now/d")
+                                .lte("now")
+                                .timeZone("GMT+7"))
+                        .filter(QueryBuilders.prefixQuery("message", "item"))
+                )
+                .aggregation(AggregationBuilders.dateHistogram("hourly_counts")
+                        .field("@timestamp")
+                        .fixedInterval(DateHistogramInterval.HOUR)
+                        .timeZone(ZoneId.of("GMT+7"))
+                );
+
+        searchRequest.indices("logs-generic-default").source(sourceBuilder);
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        JSONObject jsonObject = new JSONObject(searchResponse.toString());
+
+        JSONObject aggregations = jsonObject.getJSONObject("aggregations");
+        JSONObject dateHistogram = aggregations.getJSONObject("date_histogram#hourly_counts");
+        JSONArray buckets = dateHistogram.getJSONArray("buckets");
+        //convert date
+        JSONArray newJsonArray = new JSONArray();
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
+
+        for (int i = 0; i < buckets.length(); i++) {
+            JSONObject j = buckets.getJSONObject(i);
+            String keyAsString = j.getString("key_as_string");
+            try {
+                Date date = inputFormat.parse(keyAsString);
+                String formattedDate = outputFormat.format(date);
+
+                JSONObject newJsonObject = new JSONObject();
+                newJsonObject.put("formatted_date", formattedDate);
+                newJsonObject.put("doc_count", j.getInt("doc_count"));
+                newJsonObject.put("key", j.getLong("key"));
+
+                newJsonArray.put(newJsonObject);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return ResponseEntity.status(200).body(newJsonArray.toString());
+    }
 }

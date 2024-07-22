@@ -21,11 +21,19 @@ public class ELKController {
     @Autowired
     ELKService elkService;
     @GetMapping("/getNumberVisitsDiagram")
-    public ResponseEntity<?> findAll() throws IOException {
+    public ResponseEntity<?> getNumberVisitsDiagram() throws IOException {
         return elkService.getNumberVisitsDiagram();
     }
     @GetMapping("/getNumberVisitsAllTime")
     public ResponseEntity<?> getNumberVisitsAllTime() throws IOException {
         return elkService.getNumberVisitsAllTime();
+    }
+//    @GetMapping("/getNumberTraceAllTime")
+//    public ResponseEntity<?> getNumberTraceAllTime() throws IOException {
+//        return elkService.getNumberTraceAllTime();
+//    }
+    @GetMapping("/getNumberTraceDiagram")
+    public ResponseEntity<?> getNumberTraceDiagram() throws IOException {
+        return elkService.getNumberTraceDiagram();
     }
 }
