@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.repository;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.ItemLog;
 import fpt.CapstoneSU24.model.Product;
+import fpt.CapstoneSU24.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 //import org.springframework.data.jdbc.repository.query.Modifying;
@@ -117,4 +118,6 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query("SELECT i FROM Item i WHERE i.currentOwner = :currentOwner")
     List<Item> findByCurrentOwner(@Param("currentOwner") String currentOwner);
+    List<Item> findAllItemByCreatedAtBetween(long startDate, long endDate);
+
 }

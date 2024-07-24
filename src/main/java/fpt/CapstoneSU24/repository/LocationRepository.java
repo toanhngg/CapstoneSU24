@@ -1,6 +1,7 @@
 package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.model.Location;
+import fpt.CapstoneSU24.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -34,5 +35,16 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
                             @Param("district") String district,
                             @Param("ward") String ward);
 
+        @Query("SELECT l.district, COUNT(u) " +
+                "FROM User u " +
+                "LEFT JOIN Location l ON u.location.locationId = l.locationId " +
+                "WHERE l.city = :city " +
+                "GROUP BY l.district")
+        List<Object[]> countUsersByDistrictInCity(@Param("city") String city);
 
+        @Query("SELECT l.city, COUNT(u) " +
+                "FROM User u " +
+                "LEFT JOIN Location l ON u.location.locationId = l.locationId " +
+                "GROUP BY l.city")
+        List<Object[]> countUsersByCity();
 }

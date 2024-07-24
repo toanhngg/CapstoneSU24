@@ -29,4 +29,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer>  {
     @Modifying
     @Transactional
     void deleteOneByProductId(int productId);
+    List<Product> findAllProductByCreateAtBetween(long startDate, long endDate);
+
 }

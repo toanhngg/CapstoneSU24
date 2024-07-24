@@ -59,6 +59,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT o FROM User o WHERE o.org_name LIKE :orgName AND o.status = 1")
     Page<User> findAllUser(@Param("orgName") String orgName, Pageable pageable);
+    List<User> findAllUserByCreateAtBetween(long startDate, long endDate);
 
 }
 

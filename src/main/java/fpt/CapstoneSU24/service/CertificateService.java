@@ -113,7 +113,7 @@ public class CertificateService {
     public ResponseEntity<?> deleteCertCertId(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 0) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 1) {
             try {
                 Certificate c = certificateRepository.findOneByCertificateId(req.getId());
                 if(c != null){

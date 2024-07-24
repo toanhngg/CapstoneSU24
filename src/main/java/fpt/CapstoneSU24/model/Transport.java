@@ -13,19 +13,30 @@ public class Transport {
         private int transportId;
         @Column(name = "transport_name", columnDefinition = "nvarchar(100)")
         private String transportName;
+    @Column(name = "short_name", columnDefinition = "nvarchar(100)")
+    private String shortName;
         @Column(name = "transport_email", columnDefinition = "nvarchar(100)")
         private String transportEmail;
         @Column(name = "transport_contact", columnDefinition = "nvarchar(20)")
         private String transportContact;
 
-    public Transport(int transportId, String transportName, String transportEmail, String transportContact) {
+    public Transport(int transportId, String transportName, String shortName, String transportEmail, String transportContact) {
         this.transportId = transportId;
         this.transportName = transportName;
+        this.shortName = shortName;
         this.transportEmail = transportEmail;
         this.transportContact = transportContact;
     }
 
     public Transport() {
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
     }
 
     public int getTransportId() {

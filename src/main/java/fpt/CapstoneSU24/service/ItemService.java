@@ -805,4 +805,12 @@ if(response.body().equals("<span style='color:green'><b>Valid!</b>")) {
             return ResponseEntity.ok(item);
         }
     }
+    public JSONObject infoItemForMonitor(long startDate, long endDate) {
+        List<Item> monthlyItem = itemRepository.findAllItemByCreatedAtBetween(startDate, endDate);
+        List<Item> items = itemRepository.findAll();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("total", items.size());
+        jsonObject.put("monthly",monthlyItem.size());
+        return jsonObject;
+    }
 }

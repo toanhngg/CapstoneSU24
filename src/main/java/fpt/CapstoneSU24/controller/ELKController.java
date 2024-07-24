@@ -1,9 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.dto.payload.CreateCategoryRequest;
-import fpt.CapstoneSU24.dto.payload.EditCategoryRequest;
-import fpt.CapstoneSU24.dto.payload.FilterSearchForCategoryRequest;
-import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.service.CategoryService;
 import fpt.CapstoneSU24.service.ELKService;
 import jakarta.validation.Valid;
@@ -20,9 +17,9 @@ import java.io.IOException;
 public class ELKController {
     @Autowired
     ELKService elkService;
-    @GetMapping("/getNumberVisitsDiagram")
-    public ResponseEntity<?> getNumberVisitsDiagram() throws IOException {
-        return elkService.getNumberVisitsDiagram();
+    @PostMapping("/getNumberVisitsDiagram")
+    public ResponseEntity<?> getNumberVisitsDiagram(@Valid @RequestBody SelectedTimeRequest req) throws IOException {
+        return elkService.getNumberVisitsDiagram(req);
     }
     @GetMapping("/getNumberVisitsAllTime")
     public ResponseEntity<?> getNumberVisitsAllTime() throws IOException {

@@ -78,7 +78,7 @@ public class ProductService {
                 //save ava
                 String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
-                String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "file3d/" + product.getProductId());
+                String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getFile3D()), "file3d/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("add product successfully");
@@ -130,6 +130,10 @@ public class ProductService {
                 if (!req.getAvatar().isEmpty()) {
                     String filePathAvatar = cloudinaryService.updateImage("avatar/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getAvatar()));
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
+                }
+                if (!req.getFile3D().isEmpty()) {
+                    String filePathFile3D = cloudinaryService.updateImage("file3d/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getFile3D()));
+                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
                 }
 
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
@@ -238,5 +242,13 @@ public class ProductService {
     public ResponseEntity countRegisteredProduct() {
        List<Product> products = productRepository.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(products.size());
+    }
+    public JSONObject infoProductForMonitor(long startDate, long endDate) {
+        List<Product> monthlyProducts = productRepository.findAllProductByCreateAtBetween(startDate, endDate);
+        List<Product> products = productRepository.findAll();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("total", products.size());
+        jsonObject.put("monthly",monthlyProducts.size());
+        return jsonObject;
     }
 }

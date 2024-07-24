@@ -8,6 +8,8 @@ import fpt.CapstoneSU24.model.Location;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.CategoryRepository;
 import fpt.CapstoneSU24.repository.LocationRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,4 +45,22 @@ public class LocationService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("don't have any location");
     }
+   public JSONObject PieCityForMonitor(){
+       List<Object[]> results = locationRepository.countUsersByCity();
+       JSONArray jsonArray = new JSONArray();
+
+       for (Object[] result : results) {
+           String city = (String) result[0];
+           Long userCount = (Long) result[1];
+
+           JSONObject jsonObject = new JSONObject();
+           jsonObject.put("city", city);
+           jsonObject.put("userCount", userCount);
+
+           jsonArray.put(jsonObject);
+       }
+           JSONObject jsonObject = new JSONObject();
+       jsonObject.put("pieCity", jsonArray);
+       return jsonObject;
+   }
 }

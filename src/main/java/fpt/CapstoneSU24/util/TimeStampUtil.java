@@ -16,4 +16,11 @@ public class TimeStampUtil {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.format(date);
     }
+    public long convertTo10Digit(long timestamp13Digit) {
+        return timestamp13Digit / 1000;
+    }
+    public static long convertTo13Digit(long timestamp10Digit) {
+        return timestamp10Digit * 1000;
+    }
+
 }

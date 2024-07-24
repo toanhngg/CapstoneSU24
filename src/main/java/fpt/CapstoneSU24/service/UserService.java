@@ -9,13 +9,16 @@ import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.Certificate;
+import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.CertificateRepository;
+import fpt.CapstoneSU24.repository.ProductRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DocumentGenerator;
+import fpt.CapstoneSU24.util.TimeStampUtil;
 import jakarta.mail.MessagingException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,8 +39,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -48,7 +50,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private ProductRepository productRepository;
     @Autowired
     private CloudinaryService cloudinaryService;
     @Autowired
@@ -66,15 +69,17 @@ public class UserService {
     private DocumentGenerator documentGenerator;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    TimeStampUtil timeStampUtil;
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
         UserProfileDTO userProfileDTO = null;
-        boolean isAdmin =false;
+        boolean isAdmin = false;
         try {
             User currentUser;
             User checkUser = null;
 
-            if (authentication.getPrincipal() instanceof User){
+            if (authentication.getPrincipal() instanceof User) {
                 checkUser = (User) authentication.getPrincipal();
                 isAdmin = checkUser.getRole().getRoleId() == 1;
             }
@@ -118,22 +123,24 @@ public class UserService {
         }
         return userProfileDTO;
     }
+
     public ResponseEntity<?> viewAllManufacturer(FilterSearchManufacturerRequest req) {
         try {
             Page<User> users;
             Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
-            users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
+            users = userRepository.findAllUser("%" + req.getOrgName() + "%", pageable);
             return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");
         }
     }
+
     public ResponseEntity<?> getDetailUser(IdRequest req) {
         try {
             User user = userRepository.findOneByUserId(req.getId());
-            if(user == null){
+            if (user == null) {
                 return ResponseEntity.status(500).body("user id is not exist");
             }
             return ResponseEntity.status(200).body(userMapper.usersToUserViewDetailDTO(user));
@@ -146,7 +153,7 @@ public class UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
 
-        if ( userProfileDTO.getRole().getRoleId() != 1) {
+        if (userProfileDTO.getRole().getRoleId() != 1) {
             return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -187,6 +194,7 @@ public class UserService {
 
         return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
+
     public ResponseEntity<Role> getRoleByUserId(int userId) {
         User user = userRepository.findOneByUserId(userId);
         if (user != null) {
@@ -248,7 +256,7 @@ public class UserService {
     public ResponseEntity<String> updateStatus(int userId, int status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
-        if ( userProfileDTO.getRole().getRoleId() != 1) {
+        if (userProfileDTO.getRole().getRoleId() != 1) {
             return ResponseEntity.ok(null);
         }
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -276,8 +284,7 @@ public class UserService {
             int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
             int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
 
-            if(status !=1 & status != 2)
-            {
+            if (status != 1 & status != 2) {
                 return false;
             }
 
@@ -313,7 +320,6 @@ public class UserService {
     }
 
 
-
     //Update Table
     public ResponseEntity<String> updateUserDescriptions(List<B03_GetDataGridDTO> userUpdateRequests) {
         for (B03_GetDataGridDTO updateRequest : userUpdateRequests) {
@@ -338,9 +344,9 @@ public class UserService {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }   
+    }
 
-    public ResponseEntity<UserProfileDTO> getUserByUserID(String req)  {
+    public ResponseEntity<UserProfileDTO> getUserByUserID(String req) {
         JSONObject jsonReq = new JSONObject(req);
         int userId = jsonReq.has("userId") ? jsonReq.getInt("userId") : -1;
         UserProfileDTO currentUser;
@@ -348,18 +354,16 @@ public class UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 
-
-        if (userId > -1 || !(authentication.getPrincipal() instanceof User) ) {
+        if (userId > -1 || !(authentication.getPrincipal() instanceof User)) {
             currentUser = getUserProfile(authentication, userId);
             return ResponseEntity.ok(currentUser);
         }
 
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
 
-        if ( userProfileDTO.getRole().getRoleId() != 1) {
+        if (userProfileDTO.getRole().getRoleId() != 1) {
             return ResponseEntity.ok(userProfileDTO);
-        }
-        else if (userProfileDTO.getRole().getRoleId() == 1) {
+        } else if (userProfileDTO.getRole().getRoleId() == 1) {
             currentUser = getUserProfile(authentication, userId);
             return ResponseEntity.ok(currentUser);
         } else {
@@ -374,10 +378,9 @@ public class UserService {
     }
 
 
-
     public ResponseEntity generateDoc() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserProfileDTO userProfileDTO = getUserProfile(authentication,-1);
+        UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
         //kiem tra user ton tai va da ky hop dong chua
         if (userProfileDTO != null && userProfileDTO.getStatus() == 0) {
             String finalHtml;
@@ -427,6 +430,7 @@ public class UserService {
         }
 
     }
+
     public ResponseEntity<String> updateAvatar(MultipartFile file) {
         try {
 
@@ -436,7 +440,7 @@ public class UserService {
 
             User user = new User();
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if ((authentication.getPrincipal() instanceof User) ) {
+            if ((authentication.getPrincipal() instanceof User)) {
                 user = (User) authentication.getPrincipal();
                 //save key cua ảnh vào database
                 user.setProfileImage(url);
@@ -447,11 +451,19 @@ public class UserService {
             return ResponseEntity.status(500).body("Failed to upload image");
         }
     }
+
     public ResponseEntity<?> countRegisteredUser() {
         List<User> users = userRepository.findAll();
         return ResponseEntity.status(200).body(users.size());
 
     }
-
+    public JSONObject infoUserForMonitor(long startDate, long endDate) {
+        List<User> monthlyUser = userRepository.findAllUserByCreateAtBetween(startDate, endDate);
+        List<User> users = userRepository.findAll();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("total", users.size());
+        jsonObject.put("monthly",monthlyUser.size());
+        return jsonObject;
+    }
 
 }
