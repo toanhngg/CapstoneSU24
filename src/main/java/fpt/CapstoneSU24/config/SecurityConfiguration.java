@@ -98,6 +98,7 @@ public class SecurityConfiguration {
                                 "/api/item/check",
                                 "api/item/checkEventAuthorized",
                                 "/api/user/getManufacturerByProductId",
+                                "/api/user/searchAllManufacturer",
                                 "/api/product/countRegisteredProduct",
                                 "/api/user/countRegisteredUser",
                                 "/app/send/**",

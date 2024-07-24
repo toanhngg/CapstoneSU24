@@ -7,6 +7,7 @@ import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.OrgNameRequest;
 import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.Certificate;
 import fpt.CapstoneSU24.model.Product;
@@ -71,6 +72,7 @@ public class UserService {
     private UserMapper userMapper;
     @Autowired
     TimeStampUtil timeStampUtil;
+
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
         UserProfileDTO userProfileDTO = null;
@@ -457,6 +459,13 @@ public class UserService {
         return ResponseEntity.status(200).body(users.size());
 
     }
+
+    public ResponseEntity<?> searchAllManufacturer() {
+        List<User> users = userRepository.findAllManufacturer();
+        return ResponseEntity.status(200).body(userMapper.usersToUserViewDTOs(users));
+
+    }
+
     public JSONObject infoUserForMonitor(long startDate, long endDate) {
         List<User> monthlyUser = userRepository.findAllUserByCreateAtBetween(startDate, endDate);
         List<User> users = userRepository.findAll();

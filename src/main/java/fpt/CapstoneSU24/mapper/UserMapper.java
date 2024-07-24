@@ -8,6 +8,9 @@ import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.service.CloudinaryService;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public abstract class UserMapper {
     @Autowired
@@ -34,7 +37,11 @@ public abstract class UserMapper {
     @Mapping(source = "org_name", target = "org_name")
     @Mapping(target = "profileImage", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract UserViewDTO usersToUserViewDTOs(User users);
-
+    @Mapping(source = "userId", target = "userId")
+    @Mapping(source = "description", target = "description")
+    @Mapping(source = "org_name", target = "org_name")
+    @Mapping(target = "profileImage", ignore = true) // Ignore avatar for now, we'll set it manually
+    public abstract List<UserViewDTO> usersToUserViewDTOs(List<User> users);
     @AfterMapping
     protected void setAfter(User user, @MappingTarget UserVerifyDTOResponse userVerifyDTOResponse) {
         userVerifyDTOResponse.setProfileImage(cloudinaryService.getImageUrl(user.getProfileImage()));

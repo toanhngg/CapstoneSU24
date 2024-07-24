@@ -5,6 +5,7 @@ import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
+import fpt.CapstoneSU24.dto.payload.OrgNameRequest;
 import fpt.CapstoneSU24.dto.payload.UpdateStatusUserRequest;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
@@ -85,6 +86,10 @@ public class UserController {
     @PostMapping("/getContract")
     public ResponseEntity<?> generateDoc() {
         return userService.generateDoc();
+    }
+    @GetMapping("/searchAllManufacturer")
+    public ResponseEntity<?> searchManufacturer() {
+        return userService.searchAllManufacturer();
     }
 
 //    @PostMapping("/updateCertification")
