@@ -125,5 +125,25 @@ public class CloudinaryService {
             return  deleteImage(publicId) +  uploadImage(updateFile, publicId);
     }
 
+    public String uploadFileAndGetUrl(MultipartFile file, String customKey) throws IOException {
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = "";
+
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        String publicId = (customKey == null || customKey.isEmpty()) ? originalFilename : customKey + fileExtension;
+
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap(
+                        "resource_type", "auto",
+                        "public_id", publicId
+                ));
+
+        return uploadResult.get("secure_url").toString();
+    }
+
+
 
 }

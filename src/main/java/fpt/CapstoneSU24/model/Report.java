@@ -28,6 +28,10 @@ public class Report {
     private int priority;
     @Column(name = "createBy", columnDefinition = "nvarchar(250)")
     private String createBy;
+    @Column(name = "causeDetail", columnDefinition = "nvarchar(1000)")
+    private String causeDetail;
+    @Column(name = "responseDetail", columnDefinition = "nvarchar(1000)")
+    private String responseDetail;
     @ManyToOne
     @JoinColumn(name = "report_to_id")
     private User reportTo;
@@ -39,7 +43,7 @@ public class Report {
     public Report() {
     }
 
-    public Report(int reportId, long createOn, long updateOn, String code, String title, int type, int status, int priority, String createBy, User reportTo, int component, List<ImageReport> imageReports) {
+    public Report(int reportId, long createOn, long updateOn, String code, String title, int type, int status, int priority, String createBy, String causeDetail, String responseDetail, User reportTo, int component, List<ImageReport> imageReports) {
         this.reportId = reportId;
         this.createOn = createOn;
         this.updateOn = updateOn;
@@ -49,6 +53,8 @@ public class Report {
         this.status = status;
         this.priority = priority;
         this.createBy = createBy;
+        this.causeDetail = causeDetail;
+        this.responseDetail = responseDetail;
         this.reportTo = reportTo;
         this.component = component;
         this.imageReports = imageReports;
@@ -124,6 +130,22 @@ public class Report {
 
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
+    }
+
+    public String getCauseDetail() {
+        return causeDetail;
+    }
+
+    public void setCauseDetail(String causeDetail) {
+        this.causeDetail = causeDetail;
+    }
+
+    public String getResponseDetail() {
+        return responseDetail;
+    }
+
+    public void setResponseDetail(String responseDetail) {
+        this.responseDetail = responseDetail;
     }
 
     public User getReportTo() {
