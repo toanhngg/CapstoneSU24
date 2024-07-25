@@ -78,6 +78,7 @@ public class CloudinaryService {
         }
 
     }
+
     public String uploadPdfToCloudinary(byte[] pdfData, String fileName) throws IOException {
         try {
             Map uploadResult = cloudinary.uploader().upload(pdfData,
@@ -96,6 +97,14 @@ public class CloudinaryService {
             return null;
         }
     }
+    public MultipartFile convertBase64ToModel3DFile(String base64String) throws IOException {
+        try {
+            return convertBase64ToModel3DFile(base64String, "output_file.stl");
+        } catch (IOException e) {
+            System.err.println("Failed to create MultipartFile: " + e.getMessage());
+            return null;
+        }
+    }
 
     public static MultipartFile convertBase64ToMultipartFile(String base64String, String fileName) throws IOException {
         // Decode Base64 string to byte array
@@ -109,6 +118,19 @@ public class CloudinaryService {
                 new ByteArrayInputStream(decodedBytes)  // InputStream
         );
     }
+    public static MultipartFile convertBase64ToModel3DFile(String base64String, String fileName) throws IOException {
+        // Giải mã chuỗi Base64 thành mảng byte
+        byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+
+        // Tạo MultipartFile
+        return new MockMultipartFile(
+                fileName,
+                fileName,
+                "application/octet-stream",
+                new ByteArrayInputStream(decodedBytes)
+        );
+    }
+
 
     public String deleteImage(String publicId) {
         String logMsg = "";
