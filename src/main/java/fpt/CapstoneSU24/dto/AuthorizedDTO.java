@@ -15,7 +15,7 @@ public class AuthorizedDTO {
     private int authorizedId;
 
   //  @NotBlank(message = "Authorized name is required")
-    @Size(max = 5, message = "Authorized name must be less than 5 characters")
+    @Size(min = 5, message = "Authorized name must be less than 5 characters")
     @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
             message = "Authorized name must not contain special characters")
     private String authorizedName;

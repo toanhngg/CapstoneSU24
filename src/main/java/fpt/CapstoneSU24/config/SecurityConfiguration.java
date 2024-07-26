@@ -90,12 +90,16 @@ public class SecurityConfiguration {
                                 "/api/user/getAllUser",
                                 "api/item/getItemByEventType",
                                 "/api/auth/checkMailExist",
+                                "/api/auth/checkOrgNameExist",
                                 "/api/category/search",
                                 "/api/product/ViewProductByManufacturerId",
+                                "/api/product/findProductIdByName",
                                 "/api/certificate/ViewCertByManufacturerId",
                                 "/api/elk/getNumberVisitsAllTime",
                                 "/api/elk/getNumberVisitsDiagram",
-                                "/api/item/check",
+                                "/api/user/getAllUser",
+                                "api/item/getItemByEventType",
+                                "api/item/check",
                                 "api/item/checkEventAuthorized",
                                 "/api/user/getManufacturerByProductId",
                                 "/api/user/searchAllManufacturer",
@@ -104,7 +108,8 @@ public class SecurityConfiguration {
                                 "/app/send/**",
                                 "/app/topic/messages",
                                 "/topic/messages",
-                                "/ws/**"
+                                "/ws/**",
+                                "api/item/logMetrics"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

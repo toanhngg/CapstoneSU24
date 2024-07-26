@@ -1,11 +1,8 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
-import fpt.CapstoneSU24.dto.payload.ForgotPasswordRequest;
-import fpt.CapstoneSU24.dto.payload.RegisterRequest;
-import fpt.CapstoneSU24.dto.payload.VerifyEmailRequest;
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.service.AuthenticationService;
-import fpt.CapstoneSU24.dto.payload.LoginRequest;
 import fpt.CapstoneSU24.service.ClientService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -33,7 +30,10 @@ public class AuthenticationController {
     public ResponseEntity<?> checkMailExist(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest) {
         return authenticationService.checkMailExist(verifyEmailRequest);
     }
-
+    @PostMapping("/checkOrgNameExist")
+    public ResponseEntity<?> checkOrgNameExist(@Valid @RequestBody OrgNameRequest req) {
+        return authenticationService.checkOrgNameExist(req);
+    }
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         return authenticationService.login(loginRequest, response);

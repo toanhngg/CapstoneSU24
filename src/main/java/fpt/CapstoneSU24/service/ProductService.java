@@ -1,6 +1,7 @@
 package fpt.CapstoneSU24.service;
 
 
+import fpt.CapstoneSU24.dto.ViewProductDTOResponse;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.mapper.UserMapper;
@@ -17,12 +18,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -34,9 +42,11 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final GCSService gcsService;
+
 
     @Autowired
-    public ProductService(ProductRepository productRepository,
+    public ProductService(GCSService gcsService, ProductRepository productRepository,
                              CategoryRepository categoryRepository,
                              ImageProductRepository imageProductRepository, ItemRepository itemRepository,
                              CloudinaryService cloudinaryService,ProductMapper productMapper, UserRepository userRepository, UserMapper userMapper) {
@@ -48,6 +58,8 @@ public class ProductService {
         this.productMapper = productMapper;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.gcsService = gcsService;
+
 
     }
 
@@ -166,18 +178,27 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity ViewProductByManufacturerId(FilterSearchProductByIdRequest req) {
+    public ResponseEntity ViewProductByManufacturerId(ViewProductRequest req) {
+//        try {
+//            Page<Product> products = null;
+//            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+//                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+//                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+//            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+//                products = productRepository.findAllProductWithDate(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
+//            } else {
+//                products = productRepository.findAllProduct(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
+//            }
+//            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToViewProductDTOResponse));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
+//        }
         try {
-            Page<Product> products = null;
-            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
-                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
-                            PageRequest.of(req.getPageNumber(), req.getPageSize());
-            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                products = productRepository.findAllProductWithDate(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
-            } else {
-                products = productRepository.findAllProduct(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToViewProductDTOResponse));
+            List<Product> products = productRepository.findAllProduct(req.getId(), "%"+req.getCategory()+"%");
+            List<ViewProductDTOResponse> productDTOs = products.stream()
+                    .map(productMapper::productToViewProductDTOResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.status(HttpStatus.OK).body(productDTOs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
         }
@@ -243,6 +264,11 @@ public class ProductService {
        List<Product> products = productRepository.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(products.size());
     }
+    public ResponseEntity findProductIdByName(ProductNameRequest req) {
+       Product products = productRepository.findOneByProductName(req.getProductName());
+        return ResponseEntity.status(HttpStatus.OK).body(products.getProductId());
+    }
+
     public JSONObject infoProductForMonitor(long startDate, long endDate) {
         List<Product> monthlyProducts = productRepository.findAllProductByCreateAtBetween(startDate, endDate);
         List<Product> products = productRepository.findAll();
@@ -251,4 +277,20 @@ public class ProductService {
         jsonObject.put("monthly",monthlyProducts.size());
         return jsonObject;
     }
+    public ResponseEntity saveFileAI(MultipartFile weights, MultipartFile classNames, MultipartFile model) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if(currentUser.getRole().getRoleId() == 1){
+
+            gcsService.uploadFile(weights);
+            gcsService.uploadFile(classNames);
+            gcsService.uploadFile(model);
+
+            return ResponseEntity.status(200).body("save file weights.bin, classNames.json, model.json successfully");
+        }
+        return ResponseEntity.status(500).body("your account isn't permitted for this action");
+
+    }
+
+
 }

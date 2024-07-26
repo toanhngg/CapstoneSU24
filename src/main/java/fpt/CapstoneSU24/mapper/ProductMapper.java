@@ -43,6 +43,15 @@ public abstract class ProductMapper {
     @Mapping(source = "weight", target = "weight")
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract ViewProductDTOResponse productToViewProductDTOResponse(Product product);
+
+    @Mapping(source = "productId", target = "productId")
+    @Mapping(source = "productName", target = "productName")
+    @Mapping(source = "description", target = "description")
+    @Mapping(source = "dimensions", target = "dimensions")
+    @Mapping(source = "material", target = "material")
+    @Mapping(source = "weight", target = "weight")
+    @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
+    public abstract List<ViewProductDTOResponse> productToViewProductDTOResponse(List<Product> product);
     @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "dimensions", target = "dimensions")
@@ -63,6 +72,13 @@ public abstract class ProductMapper {
     @Mapping(target = "listImages", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract ProductImageDTOResponse productToProductImageDTOResponse(Product product);
 
+    @AfterMapping
+    protected void setAvatar(Product product, @MappingTarget ViewProductDTOResponse productDTO) {
+        ImageProduct imageProduct = imageProductRepository.findAllByFilePath("avatar/"+product.getProductId());
+        if (imageProduct != null) {
+            productDTO.setAvatar(cloudinaryService.getImageUrl(imageProduct.getFilePath()));
+        }
+    }
     @AfterMapping
     protected void setAvatar(Product product, @MappingTarget ProductDTOResponse productDTO) {
         ImageProduct imageProduct = imageProductRepository.findAllByFilePath("avatar/"+product.getProductId());

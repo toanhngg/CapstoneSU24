@@ -6,6 +6,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/product")
@@ -33,7 +36,7 @@ public class ProductController {
     }
     //tìm kiếm toàn bộ product theo id của manufacturer (không cần auth)
     @PostMapping("/ViewProductByManufacturerId")
-    public ResponseEntity<?> ViewProductByManufacturerId(@Valid @RequestBody FilterSearchProductByIdRequest req) {
+    public ResponseEntity<?> ViewProductByManufacturerId(@Valid @RequestBody ViewProductRequest req) {
         return productService.ViewProductByManufacturerId(req);
     }
     @PostMapping("/findImgByProductId")
@@ -55,5 +58,13 @@ public class ProductController {
     @GetMapping("/countRegisteredProduct")
     public ResponseEntity<?> countRegisteredProduct() {
         return productService.countRegisteredProduct();
+    }
+    @PostMapping("/findProductIdByName")
+    public ResponseEntity<?> findProductIdByName(@Valid @RequestBody ProductNameRequest req) {
+        return productService.findProductIdByName(req);
+    }
+    @PostMapping("/saveFileAI")
+    public ResponseEntity<?> saveFileAI(@RequestParam("weights") MultipartFile weights, @RequestParam("classNames") MultipartFile classNames, @RequestParam("model") MultipartFile model) throws IOException {
+        return productService.saveFileAI(weights, classNames, model);
     }
 }

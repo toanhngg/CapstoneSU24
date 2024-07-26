@@ -37,6 +37,10 @@ public class ItemLogController {
     public ResponseEntity<?> editItemLog(@Valid @RequestBody EditItemLogDTO dataEditDTO){
         return itemLogService.editItemLog(dataEditDTO);
     }
+    @PostMapping(value = "/editTransport")
+    public ResponseEntity<?> editTransport(@Valid @RequestBody EditItemLogDTO dataEditDTO){
+        return itemLogService.editItemLog(dataEditDTO);
+    }
 //    @GetMapping(value = "getItemLogsByItemId")
 //    public ResponseEntity<?>  getItemLogsByItemId(@RequestParam int itemId){
 //        return itemLogService.getItemLogsByItemId(itemId);

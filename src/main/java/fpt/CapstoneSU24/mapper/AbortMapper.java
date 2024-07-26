@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 
     @Mapper(componentModel = "spring")
     public interface AbortMapper {
+
         ItemLog abortDTOToItemLog(AbortDTO abortDTO);
     }
 

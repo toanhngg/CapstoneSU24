@@ -44,6 +44,7 @@ public class MultipleThreadService {
         Callable<JSONObject> InfoItemTask = () -> itemService.infoItemForMonitor(firstDayOfMonthTimestamp,currentTimestamp);
         Callable<JSONObject> InfoLocationTask = locationService::PieCityForMonitor;
         Callable<JSONObject> NumberTransportTask = transportService::getForMonitor;
+        Callable<JSONObject> ratioTask = itemService::logMetrics;
 
         Map<String, Callable<JSONObject>> tasks = new HashMap<>();
         tasks.put("InfoUserTask", InfoUserTask);
@@ -51,6 +52,8 @@ public class MultipleThreadService {
         tasks.put("InfoItemTask", InfoItemTask);
         tasks.put("InfoLocationTask", InfoLocationTask);
         tasks.put("NumberTransportTask", NumberTransportTask);
+        tasks.put("ratioTask", ratioTask);
+
 
 
 

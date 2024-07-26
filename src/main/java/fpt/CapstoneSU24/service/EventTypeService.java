@@ -16,7 +16,7 @@ public class EventTypeService {
     }
 
     public ResponseEntity<?> getListEventType() {
-        List<EventType> eventTypeList = eventTypeRepository.findAll();
+        List<EventType> eventTypeList = eventTypeRepository.getAllEventTypeIgnoreEdit();
         return ResponseEntity.ok(eventTypeList);
     }
 }

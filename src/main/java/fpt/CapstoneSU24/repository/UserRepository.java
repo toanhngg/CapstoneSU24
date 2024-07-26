@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findAll();
     public User findOneByUserId(int id);
     public User findOneByEmail(String email);
+    @Query("SELECT o FROM User o WHERE o.org_name = :orgName")
+    public User findOneByOrgName(String orgName);
     public User findOneByEmailAndPassword(String email, String password);
     Optional<User> findByEmail(String email);
     Page<User> findAllByPhoneContainingAndStatus(String phone, int status, Pageable pageable);

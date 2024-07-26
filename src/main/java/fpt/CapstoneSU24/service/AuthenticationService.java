@@ -4,11 +4,8 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.controller.AuthenticationController;
 import fpt.CapstoneSU24.dto.ChangePasswordDto;
 import fpt.CapstoneSU24.dto.DataMailDTO;
-import fpt.CapstoneSU24.dto.payload.VerifyEmailRequest;
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.model.*;
-import fpt.CapstoneSU24.dto.payload.ForgotPasswordRequest;
-import fpt.CapstoneSU24.dto.payload.LoginRequest;
-import fpt.CapstoneSU24.dto.payload.RegisterRequest;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DataUtils;
@@ -112,6 +109,15 @@ public class AuthenticationService {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("mail exist in database");
             }
     }
+
+    public ResponseEntity checkOrgNameExist(OrgNameRequest req) {
+        if (userRepository.findOneByOrgName(req.getOrgName()) == null) {
+            return ResponseEntity.status(HttpStatus.OK).body("mail doesn't exist in database");
+        }else{
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("mail exist in database");
+        }
+    }
+
     public ResponseEntity login(LoginRequest loginRequest, HttpServletResponse response) {
         User authenticatedUser = authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String jwtToken = jwtService.generateToken(authenticatedUser, authenticatedUser);

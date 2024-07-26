@@ -21,6 +21,7 @@ public class OriginController {
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         return originService.findAll();
+
     }
 //    @PostMapping("/findByIdProduct")
 //    public ResponseEntity findOriginByProduct(@RequestBody String req) {
