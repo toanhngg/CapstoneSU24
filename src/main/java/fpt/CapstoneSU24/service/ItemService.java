@@ -78,7 +78,7 @@ public class ItemService {
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
-                       AbortMapper abortMapper,ItemMapper itemMapper,LocationMapper locationMapper,
+                       AbortMapper abortMapper, ItemMapper itemMapper, LocationMapper locationMapper,
                        ProductMapper productMapper, AuthorizedMapper authorizedMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
@@ -104,7 +104,9 @@ public class ItemService {
         this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
     }
+
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
+
 
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
         Page<Item> items;
@@ -112,17 +114,17 @@ public class ItemService {
                 req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createdAt")) :
                         PageRequest.of(req.getPageNumber(), req.getPageSize());
         try {
-            if(req.getEventTypeId() != 0){
-                    if(req.getStartDate() != 0 && req.getEndDate() != 0){
-                        items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
-                    }else{
-                        items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getEventTypeId(), pageable);
-                    }
-            }else {
-                if(req.getStartDate() != 0 && req.getEndDate() != 0){
-                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%",req.getStartDate(), req.getEndDate(), pageable);
-                }else{
-                    items = itemRepository.findAllItem(req.getProductId(), "%"+req.getName()+"%", "%"+req.getProductRecognition()+"%", pageable);
+            if (req.getEventTypeId() != 0) {
+                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
+                } else {
+                    items = itemRepository.findAllItem(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getEventTypeId(), pageable);
+                }
+            } else {
+                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getStartDate(), req.getEndDate(), pageable);
+                } else {
+                    items = itemRepository.findAllItem(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", pageable);
                 }
             }
             return ResponseEntity.status(200).body(items.map(itemMapper::itemToItemViewDTOResponse));
@@ -161,15 +163,10 @@ public class ItemService {
         }
     }
 
-    private ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
+    public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
         try {
             User user = userRepository.getReferenceById(currentUser.getUserId());
-            // Lưu địa chỉ
-          //  Location location = createLocation(itemLogDTO);
-           // validateAndSetCoordinates(location, itemLogDTO);
-         //   Location savedLocation = locationRepository.save(location);
-            Location location = locationMapper.locationDtoToLocation(itemLogDTO.getLocation());
-
+            //   Location location = locationMapper.locationDtoToLocation(itemLogDTO.getLocation());
             Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
 
             Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
@@ -233,7 +230,7 @@ public class ItemService {
             context.setVariables(informationCert.getProps());
             String html = templateEngine.process(Const.TEMPLATE_FILE_NAME.CERTIFICATE, context);
             byte[] cert = documentGenerator.generatePdfFromHtml(html);
-           // byte[] cert = documentGenerator.generateImageFromHtml(html);
+            // byte[] cert = documentGenerator.generateImageFromHtml(html);
             String certLink = cloudinaryService.uploadPdfToCloudinary(cert, "trace_origin_cert_of+" + productRecog);
             item.setCertificateLink(certLink);
             items.add(item);
@@ -268,7 +265,7 @@ public class ItemService {
             itemLog.setLocation(savedLocation);
             itemLog.setParty(parties.get(i));
 
-            Point point = pointService.randomPoint(10000,10000);
+            Point point = pointService.randomPoint(10000, 10000);
             itemLog.setPoint(point.toString());
             itemLogs.add(itemLog);
         }
@@ -278,14 +275,15 @@ public class ItemService {
     public ResponseEntity<?> viewLineItem(String productRecognition) {
         try {
             log.info("itemviewLineItem");
-            if(productRecognition.length() < 10){
+            if (productRecognition.length() < 10) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
             }
             Item item = itemRepository.findByProductRecognition(productRecognition);
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
-            List<ItemLog> itemList = itemLogRepository.getItemLogsByItemIdAsc(item.getItemId());
+            //List<ItemLog> itemList = itemLogRepository.getItemLogsByItemIdAsc(item.getItemId());
+            List<ItemLog> itemList = itemLogRepository.getItemLogsByItemIdAscNotEdit(item.getItemId());
 
             if (itemList.isEmpty()) {
                 // Trả về chỉ thông tin của Item nếu không có ItemLog nào
@@ -306,6 +304,7 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while processing viewLineItem:: " + ex.getMessage());
         }
     }
+
 
     private ItemLogDTOResponse convertToItemLogDTO(ItemLog itemLog) {
         ItemLogDTOResponse dto = new ItemLogDTOResponse();
@@ -349,11 +348,15 @@ public class ItemService {
     }
 
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
-        JSONObject jsonReq = new JSONObject(req);
-        String email = jsonReq.getString("email");
-        String productRecognition = jsonReq.getString("productRecognition");
-
+//        JSONObject jsonReq = new JSONObject(req);
+//        String email = jsonReq.getString("email");
+//        String productRecognition = jsonReq.getString("productRecognition");
+        String email = req.getEmail();
+        String productRecognition = req.getProductRecognition();
         Item item = itemRepository.findByProductRecognition(productRecognition);
+        if (productRecognition == null || productRecognition.isEmpty()) {
+            return ResponseEntity.badRequest().body("Product recognition is required");
+        }
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
         }
@@ -366,24 +369,26 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
         }
 
-        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemId(item.getItemId());
+        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
         if (itemLogs.isEmpty()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
         }
 
-        List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+        List<ItemLog> pointLogs = itemLogRepository.getPointItemIdIgnoreEdit(item.getItemId());
         if (pointLogs.size() != itemLogs.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mismatch in item logs and point logs.");
         }
         if (!pointService.arePointsOnCurve(pointLogs)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Points do not form a valid graph.");
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "certificate.pdf");
-
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_PDF);
+//        headers.setContentDispositionFormData("attachment", "certificate.pdf");
+//
+//        String pdfData = item.getCertificateLink();
+//        return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
         String pdfData = item.getCertificateLink();
-        return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
+        return new ResponseEntity<>(pdfData, HttpStatus.OK);
     }
 
     public ResponseEntity<Boolean> confirmCurrentOwner(SendOTP otp, String productRecognition) {
@@ -403,26 +408,27 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
-        Item item = findByProductRecognition(productRecognition); // B1
-        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
-        if (list.get(0).getAuthorized() == null) {
-            return ResponseEntity.ok(false);
-        } else {
-            return ResponseEntity.ok(true);
-        }
-    }
+//    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
+//        Item item = findByProductRecognition(productRecognition); // B1
+//        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+//        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
+//        if (list.get(0).getAuthorized() == null) {
+//            return ResponseEntity.ok(false);
+//        } else {
+//            return ResponseEntity.ok(true);
+//        }
+//    }
 
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
-            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+            if (item.getStatus() == 0)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             if (checkOwner(authorized.getAssignPersonMail(), item.getCurrentOwner())) {
-                if(!authorized.getAuthorizedEmail().equals(authorized.getAssignPersonMail())){
+                if (!authorized.getAuthorizedEmail().equals(authorized.getAssignPersonMail())) {
                     return addEventAuthorized(authorized, item);
-                }else{
+                } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mail authorized not same mail assign person");
                 }
             } else {
@@ -436,7 +442,7 @@ public class ItemService {
         }
     }
 
-//    public ResponseEntity<Boolean> checkCurrentOwner(CurrentOwnerCheckDTO req) {
+    //    public ResponseEntity<Boolean> checkCurrentOwner(CurrentOwnerCheckDTO req) {
 //        JSONObject jsonReq = new JSONObject(req);
 //        String email = jsonReq.getString("email");
 //        String productRecognition = jsonReq.getString("productRecognition");
@@ -457,26 +463,28 @@ public class ItemService {
 //    }
 //
     public ResponseEntity<Integer> check(CurrentOwnerCheckDTO req) {
-        JSONObject jsonReq = new JSONObject(req);
-        String email = jsonReq.getString("email");
-        String productRecognition = jsonReq.getString("productRecognition");
+//        JSONObject jsonReq = new JSONObject(req);
+//        String email = jsonReq.getString("email");
+//        String productRecognition = jsonReq.getString("productRecognition");
+        String email = req.getEmail();
+        String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
-        logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
+//        logService.info("checkCurrentOwner"+ " " + email + " " + productRecognition);
 
         if (item.getStatus() == 0) ResponseEntity.ok(0);
-        try{
+        try {
             if (checkOwner(email, item.getCurrentOwner())) {
                 return ResponseEntity.ok(1); // is CurrentOwner
             }
             if (list.get(0).getAuthorized().getAuthorizedEmail().equals(req.getEmail())) {
                 return ResponseEntity.ok(2); // is Authorized
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logService.logError(e);
             return ResponseEntity.ok(3); // Exception
         }
-        return  ResponseEntity.ok(4);
+        return ResponseEntity.ok(4);
     }
 
     public boolean checkOwner(String email, String emailCurrentOwner) {
@@ -598,17 +606,20 @@ public class ItemService {
 
     public ResponseEntity<?> sendCurrentOwnerOTP(CurrentOwnerCheckDTO req) {
         try {
-            JSONObject jsonReq = new JSONObject(req);
-            String email = jsonReq.getString("email");
-            String productRecognition = jsonReq.getString("productRecognition");
+            String email = req.getEmail();
+            String productRecognition = req.getProductRecognition();
+//            JSONObject jsonReq = new JSONObject(req);
+//            String email = jsonReq.getString("email");
+//            String productRecognition = jsonReq.getString("productRecognition");
 
             // Kiểm tra xem item có tồn tại và có status = 0 hay không
             Item item = findByProductRecognition(productRecognition);
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
             }
-            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
-            if(checkOwner(email,item.getCurrentOwner())) {
+            if (item.getStatus() == 0)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+            if (checkOwner(email, item.getCurrentOwner())) {
                 // Tạo đối tượng ClientSdi và gửi email OTP
                 ClientSdi sdi = new ClientSdi();
                 sdi.setEmail(item.getCurrentOwner());
@@ -635,9 +646,11 @@ public class ItemService {
 
     public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
         try {
-            JSONObject jsonReq = new JSONObject(req);
-            String email = jsonReq.getString("email");
-            String productRecognition = jsonReq.getString("productRecognition");
+            String email = req.getEmail();
+            String productRecognition = req.getProductRecognition();
+//            JSONObject jsonReq = new JSONObject(req);
+//            String email = jsonReq.getString("email");
+//            String productRecognition = jsonReq.getString("productRecognition");
 
             // Kiểm tra xem item có tồn tại và có status = 0 hay không
             Item item = findByProductRecognition(productRecognition);
@@ -654,7 +667,7 @@ public class ItemService {
             if (itemIndex.getAuthorized() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
             }
-           // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
+            // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
             //System.out.println(email);
             // Kiểm tra xem email có đúng là current owner không
             if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
@@ -690,8 +703,6 @@ public class ItemService {
              // - Chính xác => Cập nhật status trong item CurrentOwner thành status là 1
              // - Insert bảng party => Sau khi nhận mới trở thành party
              */
-            log.info("item-confirmOTP");
-
             Item item = itemRepository.findByProductRecognition(productRecognition); // B1
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false); // Nếu item không tồn tại
@@ -712,46 +723,48 @@ public class ItemService {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
             }
             boolean check = clientService.checkOTPinSQL(otp.getEmail().trim(), otp.getOtp().trim());
-                if (check) {
-                    int status = 1;
-                    itemRepository.updateItemStatusAndCurrentOwnwe((long) item.getItemId(), status, itemIndex.getAuthorized().getAuthorizedEmail());
-                    Party party = partyRepository.save(new Party(
-                            itemIndex.getAuthorized().getDescription(),
-                            itemIndex.getAuthorized().getAuthorizedEmail(),
-                            itemIndex.getAuthorized().getAuthorizedName(),
-                            itemIndex.getAuthorized().getPhoneNumber()
-                    ));
+            if (check) {
+                int status = 1;
+                itemRepository.updateItemStatusAndCurrentOwnwe((long) item.getItemId(), status, itemIndex.getAuthorized().getAuthorizedEmail());
+                Party party = partyRepository.save(new Party(
+                        itemIndex.getAuthorized().getAuthorizedName(),
+                        itemIndex.getAuthorized().getDescription(),
+                        itemIndex.getAuthorized().getPhoneNumber(),
+                        itemIndex.getAuthorized().getAuthorizedEmail()
+                        ));
 
-                    ItemLog itemLog = new ItemLog();
-                    itemLog.setAddress(itemIndex.getAuthorized().getLocation().getAddress());
-                    itemLog.setDescription(itemIndex.getAuthorized().getDescription());
-                    itemLog.setAuthorized(null);
-                    itemLog.setStatus(1);
-                    itemLog.setTimeStamp(System.currentTimeMillis());
-                    itemLog.setItem(item);
-                    itemLog.setLocation(itemIndex.getAuthorized().getLocation());
-                    itemLog.setParty(party);
+                ItemLog itemLog = new ItemLog();
+                itemLog.setAddress(itemIndex.getAuthorized().getLocation().getAddress());
+                itemLog.setDescription(itemIndex.getAuthorized().getDescription());
+                itemLog.setAuthorized(null);
+                itemLog.setStatus(1);
+                itemLog.setTimeStamp(System.currentTimeMillis());
+                itemLog.setItem(item);
+                itemLog.setLocation(itemIndex.getAuthorized().getLocation());
+                itemLog.setParty(party);
 
-                    double pointX = pointService.generateX();
-                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                    List<Point> pointList = pointService.getPointList(pointLogs);
-                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-                    Point point = new Point(pointX, pointY);
-                    itemLog.setPoint(point.toString());
-                    itemLog.setEvent_id(eventTypeRepository.findOneByEventId(4)); // Event này là nhận hàng
-                    itemLog.setImageItemLog(null);
+                double pointX = pointService.generateX();
+                List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                List<Point> pointList = pointService.getPointList(pointLogs);
+                double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                Point point = new Point(pointX, pointY);
+                itemLog.setPoint(point.toString());
+                itemLog.setEvent_id(eventTypeRepository.findOneByEventId(4)); // Event này là nhận hàng
+                itemLog.setImageItemLog(null);
+                // Check if there are at least two elements in the list before accessing index 1
+                if (list.size() > 1) {
                     itemLogRepository.updateStatus(1, list.get(1).getItemLogId());
-                    itemLogRepository.save(itemLog);
-
-                    return ResponseEntity.ok(true); // Thành công, trả về true
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
                 }
+                itemLogRepository.save(itemLog);
+                return ResponseEntity.ok(true); // Thành công, trả về true
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false); // OTP không chính xác
+            }
         } catch (Exception ex) {
-            // Log the error
-            // System.err.println("Error occurred while confirming OTP: " + ex.getMessage());
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false); // Xảy ra lỗi, trả về lỗi server
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Error-Message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(false); // Xảy ra lỗi, trả về lỗi server
         }
     }
 
@@ -765,17 +778,17 @@ public class ItemService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("List not found!");
             }
             ItemLog itemIndex = list.get(0);
-            long timeDifference = timeInsert - itemIndex.getTimeStamp() ;
+            long timeDifference = timeInsert - itemIndex.getTimeStamp();
 
             long DaysInMillis = TimeUnit.DAYS.toMillis(1);
-            if(timeDifference > DaysInMillis) {
+            if (timeDifference > DaysInMillis) {
                 if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
                     if (item.getStatus() == 0)
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
                     // Sử dụng mapper để ánh xạ AbortDTO sang ItemLog
-                   // ItemLog itemLog = new ItemLog();
+                    // ItemLog itemLog = new ItemLog();
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
-                  //  locationRepository.save(locationSaved);
+                    //  locationRepository.save(locationSaved);
                     Party partySaved = new Party();
                     partySaved.setPartyFullName(item.getCurrentOwner());
                     partySaved.setEmail(item.getCurrentOwner());
@@ -785,9 +798,9 @@ public class ItemService {
                     List<Point> pointList = pointService.getPointList(pointLogs);
                     double pointY = pointService.lagrangeInterpolate(pointList, pointX);
                     Point point = new Point(pointX, pointY);
-                    itemLogRepository.save(new ItemLog(item,abortDTO.getLocation().getAddress(),partySaved,savedLocation,
-                            System.currentTimeMillis(), abortDTO.getDescription(),null, eventTypeRepository.findOneByEventId(5),
-                            1,abortDTO.getImageItemLog(),point.toString()));
+                    itemLogRepository.save(new ItemLog(item, abortDTO.getLocation().getAddress(), partySaved, savedLocation,
+                            System.currentTimeMillis(), abortDTO.getDescription(), null, eventTypeRepository.findOneByEventId(5),
+                            1, abortDTO.getImageItemLog(), point.toString()));
 
                     // Cap nhat trang thai cua item => da bi huy
                     itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
@@ -796,19 +809,51 @@ public class ItemService {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
                 }
             }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body( "You cannot destroy this item once created!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot destroy this item once created!");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
         }
     }
 
+    //Da test
     public ResponseEntity<?> getItemByEventType(int eventType) {
         List<Item> item = itemRepository.getItemByEventType(eventType);
         if (item.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Item found for eventType: " + eventType);
         } else {
             return ResponseEntity.ok(item);
+        }
+    }
+
+    public ResponseEntity<?> logMetrics() {
+        try {
+            int countPoint = itemLogRepository.countPoint();
+            int countItemLog = itemLogRepository.countItemId();
+
+            Map<String, Integer> response = new HashMap<>();
+            response.put("countPoint", countPoint);
+            response.put("countItemLog", countItemLog);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+
+    }
+
+    public ResponseEntity<?> getInforItemByItemId(String productRecognition) {
+        try {
+            ItemDTO itemDTO = new ItemDTO();
+            Item item = itemRepository.findByProductRecognition(productRecognition);
+            itemDTO.setItemId(item.getItemId());
+            itemDTO.setManufacturerName(item.getProduct().getManufacturer().getLastName() + " " + item.getProduct().getManufacturer().getLastName());
+            itemDTO.setManufacturerId(item.getProduct().getManufacturer().getUserId());
+            itemDTO.setProductId(item.getProduct().getProductId());
+            itemDTO.setProductName(item.getProduct().getProductName());
+            return ResponseEntity.status(HttpStatus.OK).body(itemDTO);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
 }

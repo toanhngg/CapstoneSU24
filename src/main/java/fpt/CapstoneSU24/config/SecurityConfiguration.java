@@ -97,9 +97,8 @@ public class SecurityConfiguration {
                                 "/api/user/getAllUser",
                                 "api/item/getItemByEventType",
                                 "api/item/check",
-                                "api/item/checkEventAuthorized"
-
-
+                                "api/item/checkEventAuthorized",
+                                "api/item/logMetrics"
 
                         ).permitAll()
                         .anyRequest().authenticated())

@@ -3,11 +3,15 @@ package fpt.CapstoneSU24.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.CapstoneSU24.model.*;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AbortDTO {
     @JsonIgnore
     private int itemLogId;

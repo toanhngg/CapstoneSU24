@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.dto;
 
+import fpt.CapstoneSU24.model.ItemLog;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ public class ItemLogDetailResponse {
     private double coordinateY;
     private long timeReceive;
     private String descriptionItemLog;
+    private ItemLogDetailResponse itemLog;
 
 
 }

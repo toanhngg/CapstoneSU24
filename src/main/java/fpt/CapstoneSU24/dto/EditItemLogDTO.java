@@ -1,6 +1,7 @@
 package fpt.CapstoneSU24.dto;
 
 import fpt.CapstoneSU24.model.Location;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EditItemLogDTO {
+    private String authorizedName;
+    private String authorizedEmail;
     private Location location;
     private String description;
     @Email

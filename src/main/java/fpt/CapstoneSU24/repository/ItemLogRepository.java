@@ -38,16 +38,29 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId desc")
     List<ItemLog> getItemLogsByItemId(@Param("itemId") int itemId);
 
+    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.event_id.eventId <> 6 ORDER BY il.itemLogId desc")
+    List<ItemLog> getItemLogsByItemIdIgnoreEdit(@Param("itemId") int itemId);
+
     Optional<ItemLog> findFirstByItem_ItemIdOrderByItemLogIdDesc(int itemId);
 
 
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId asc")
     List<ItemLog> getItemLogsByItemIdAsc(@Param("itemId") int itemId);
 
+    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.event_id.eventId <> 6 ORDER BY il.itemLogId asc")
+    List<ItemLog> getItemLogsByItemIdAscNotEdit(@Param("itemId") int itemId);
+
     @Query("SELECT il FROM ItemLog il LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.point IS NOT NULL")
     List<ItemLog> getPointItemId(@Param("itemId") Integer itemId);
 
+    @Query("SELECT il FROM ItemLog il LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.event_id.eventId <> 6  AND il.point IS NOT NULL")
+    List<ItemLog> getPointItemIdIgnoreEdit(@Param("itemId") Integer itemId);
 
+    @Query("SELECT count(il) FROM ItemLog il WHERE il.point IS NOT NULL  AND il.event_id.eventId <> 6 ")
+    Integer countPoint();
+
+    @Query("SELECT count(il) FROM ItemLog il  WHERE il.event_id.eventId <> 6  ")
+    Integer countItemId();
 
     @Modifying
     @Transactional
@@ -61,8 +74,11 @@ public interface ItemLogRepository extends JpaRepository<ItemLog, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE ItemLog i SET i.address = :address WHERE i.itemLogId = :itemLogId")
-    void updateItemLog(@Param("address") String address, @Param("itemLogId") int itemLogId);
+    @Query("UPDATE ItemLog i SET i.address = :address, i.timeStamp = :timeStamp," +
+            "i.point =:point,i.description =:description,i.idEdit = :idItem WHERE i.itemLogId = :itemLogId")
+    void updateItemLog(@Param("address") String address,@Param("timeStamp") long timeStamp,
+                       @Param("point") String point, @Param("itemLogId") int itemLogId,
+                       @Param("description") String description,@Param("idItem") int idItem);
 
     //   List<Item> findAllById(int itemId);
 //    @Query("SELECT o FROM Origin o WHERE o.Product.productId = :id")
