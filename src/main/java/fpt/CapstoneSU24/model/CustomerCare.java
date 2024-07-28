@@ -29,4 +29,6 @@ public class CustomerCare {
     private long timestamp;
     @Column(name = "status", columnDefinition = "int")
     private int status;
+    @Column(name = "note", columnDefinition = "nvarchar(300)")
+    private String note;
 }
