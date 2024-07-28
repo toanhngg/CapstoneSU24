@@ -31,4 +31,7 @@ public class CustomerCare {
     private int status;
     @Column(name = "note", columnDefinition = "nvarchar(300)")
     private String note;
+    @ManyToOne
+    @JoinColumn(name = "user_check_id")
+    private User userCheck;
 }

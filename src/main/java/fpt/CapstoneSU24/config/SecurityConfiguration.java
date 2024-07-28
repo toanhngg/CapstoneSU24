@@ -110,7 +110,8 @@ public class SecurityConfiguration {
                                 "/ws/**",
                                 "api/item/logMetrics",
                                 "api/customercare/add",
-                                "api/user/top5OrgNames"
+                                "api/user/top5OrgNames",
+                                "api/customercare/searchCustomerCare"
 
                         ).permitAll()
                         .anyRequest().authenticated())
