@@ -825,6 +825,8 @@ public class ItemService {
             return ResponseEntity.ok(item);
         }
     }
+
+
     public JSONObject infoItemForMonitor(long startDate, long endDate) {
         List<Item> monthlyItem = itemRepository.findAllItemByCreatedAtBetween(startDate, endDate);
         List<Item> items = itemRepository.findAll();

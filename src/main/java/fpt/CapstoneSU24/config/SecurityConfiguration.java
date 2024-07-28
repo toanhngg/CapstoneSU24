@@ -57,7 +57,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/test/**").permitAll()
-                        .requestMatchers("/api/test/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -92,6 +91,7 @@ public class SecurityConfiguration {
                                 "/api/auth/checkMailExist",
                                 "/api/auth/checkOrgNameExist",
                                 "/api/category/search",
+                                "/api/category/findCategoryByManufacturer",
                                 "/api/product/ViewProductByManufacturerId",
                                 "/api/product/findProductIdByName",
                                 "/api/certificate/ViewCertByManufacturerId",
@@ -109,7 +109,10 @@ public class SecurityConfiguration {
                                 "/app/topic/messages",
                                 "/topic/messages",
                                 "/ws/**",
-                                "api/item/logMetrics"
+                                "api/item/logMetrics",
+                                "api/customercare/add",
+                                "api/user/top5OrgNames"
+
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
@@ -124,7 +127,6 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "https://trace-origin.netlify.app"));
         configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://trace-origin.netlify.app"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET","POST", "PUT"));

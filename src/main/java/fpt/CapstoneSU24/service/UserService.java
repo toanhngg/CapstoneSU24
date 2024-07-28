@@ -4,15 +4,18 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.dto.payload.OrgNameRequest;
 import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.Certificate;
+import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.repository.AuthTokenRepository;
 import fpt.CapstoneSU24.repository.CertificateRepository;
 import fpt.CapstoneSU24.repository.ProductRepository;
@@ -43,6 +46,7 @@ import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -68,6 +72,8 @@ public class UserService {
 
     @Autowired
     private DocumentGenerator documentGenerator;
+    @Autowired
+    private ItemRepository itemRepository;
     @Autowired
     private UserMapper userMapper;
     @Autowired
@@ -125,7 +131,6 @@ public class UserService {
         }
         return userProfileDTO;
     }
-
     public ResponseEntity<?> viewAllManufacturer(FilterSearchManufacturerRequest req) {
         try {
             Page<User> users;
@@ -133,6 +138,18 @@ public class UserService {
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
             users = userRepository.findAllUser("%" + req.getOrgName() + "%", pageable);
+            return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
+    }
+    public ResponseEntity<?> getAllUser(FilterSearchManufacturerRequest req) {
+        try {
+            Page<User> users;
+            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+            users = userRepository.findAllUser("%"+req.getOrgName()+"%", pageable);
             return ResponseEntity.status(200).body(users.map(userMapper::usersToUserViewDTOs));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");
@@ -463,9 +480,7 @@ public class UserService {
     public ResponseEntity<?> searchAllManufacturer() {
         List<User> users = userRepository.findAllManufacturer();
         return ResponseEntity.status(200).body(userMapper.usersToUserViewDTOs(users));
-
     }
-
     public JSONObject infoUserForMonitor(long startDate, long endDate) {
         List<User> monthlyUser = userRepository.findAllUserByCreateAtBetween(startDate, endDate);
         List<User> users = userRepository.findAll();
@@ -474,5 +489,19 @@ public class UserService {
         jsonObject.put("monthly",monthlyUser.size());
         return jsonObject;
     }
+    public List<OrgNameUserDTO> getTop5OrgNames() {
+            try {
+                Pageable topFive = PageRequest.of(0, 5);
+                List<OrgNameUserDTO> dtoList = itemRepository.findTop5OrgNames(topFive);
+//                List<OrgNameUserDTO> dtoList = items.stream()
+//                        .map(item -> new OrgNameUserDTO(item.getProduct().getManufacturer().getOrg_name(), item.getProduct().getManufacturer().getUserId(),
+//                                item.getProduct().getManufacturer().getProfileImage()))
+//                        .collect(Collectors.toList());
 
+                return dtoList;
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                throw e;
+            }
+    }
 }

@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
+import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
@@ -100,6 +101,11 @@ public class UserController {
     @PutMapping("/updateAvatar")
     public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {
         return userService.updateAvatar(file);
+    }
+    @GetMapping("/top5OrgNames")
+    public ResponseEntity<List<OrgNameUserDTO>> getTop5OrgNames() {
+        List<OrgNameUserDTO> topOrgNames = userService.getTop5OrgNames();
+        return ResponseEntity.ok(topOrgNames);
     }
     @GetMapping("/countRegisteredUser")
     public ResponseEntity<?> countRegisteredUser() {
