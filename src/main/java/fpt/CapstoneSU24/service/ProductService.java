@@ -11,6 +11,8 @@ import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -62,15 +63,14 @@ public class ProductService {
 
 
     }
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
-    public ResponseEntity addProduct(AddProductRequest req) {
+    public ResponseEntity<?> addProduct(AddProductRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2) {
+        if(currentUser.getRole().getRoleId() == 2){
             try {
-                if (categoryRepository.findOneByCategoryId(req.getCategoryId()) == null)
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can not find id category");
-
+                if(categoryRepository.findOneByCategoryId(req.getCategoryId()) ==null) return ResponseEntity.status(500).body("can not find id category");
                 Product product = new Product();
                 product.setProductName(req.getProductName());
                 product.setCategory(categoryRepository.findOneByCategoryId(req.getCategoryId()));
@@ -90,8 +90,8 @@ public class ProductService {
                 //save ava
                 String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
-                    String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()), "file3d/" + product.getProductId());
-                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
+                System.out.println("productAdd"+currentUser.getOrg_name());
+                log.info("productAdd");
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("add product successfully");
             } catch (Exception e) {
@@ -178,21 +178,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity ViewProductByManufacturerId(ViewProductRequest req) {
-//        try {
-//            Page<Product> products = null;
-//            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
-//                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
-//                            PageRequest.of(req.getPageNumber(), req.getPageSize());
-//            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-//                products = productRepository.findAllProductWithDate(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
-//            } else {
-//                products = productRepository.findAllProduct(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
-//            }
-//            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToViewProductDTOResponse));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
-//        }
+    public ResponseEntity ViewProductByManufacturerId(FilterSearchProductByIdRequest req) {
         try {
             List<Product> products = productRepository.findAllProduct(req.getId(), "%"+req.getCategory()+"%");
             List<ViewProductDTOResponse> productDTOs = products.stream()

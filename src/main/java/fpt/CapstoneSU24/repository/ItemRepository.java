@@ -1,11 +1,9 @@
 package fpt.CapstoneSU24.repository;
 
+import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.model.Item;
-import fpt.CapstoneSU24.model.ItemLog;
-import fpt.CapstoneSU24.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-//import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -116,6 +114,15 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query("SELECT i FROM Item i WHERE i.currentOwner = :currentOwner")
     List<Item> findByCurrentOwner(@Param("currentOwner") String currentOwner);
+
+    @Query("SELECT new fpt.CapstoneSU24.dto.OrgNameUserDTO(u.org_name, u.userId, u.profileImage) " +
+            "FROM Item i " +
+            "LEFT JOIN Product p ON i.product.productId = p.productId " +
+            "LEFT JOIN User u ON u.userId = p.manufacturer.userId " +
+            "LEFT JOIN ItemLog il ON il.item.itemId = i.itemId " +
+            "GROUP BY u.org_name, u.userId, u.profileImage " +
+            "ORDER BY COUNT(il.itemLogId) DESC")
+    List<OrgNameUserDTO> findTop5OrgNames(Pageable pageable);
     List<Item> findAllItemByCreatedAtBetween(long startDate, long endDate);
 
 }

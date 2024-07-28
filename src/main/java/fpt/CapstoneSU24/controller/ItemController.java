@@ -152,9 +152,14 @@ public class ItemController {
         return itemService.getItemByEventType(eventType);
     }
 
+    @GetMapping(value="logMetrics")
+    public  ResponseEntity<?> logMetrics(){
+        return itemService.logMetrics();
+    }
     @GetMapping(value="getInforItemByProductRecognition")
     public  ResponseEntity<?> getInfoItemByItemId(String productRecognition){
         return itemService.getInforItemByItemId(productRecognition);
     }
+
 }
 
