@@ -178,7 +178,21 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity ViewProductByManufacturerId(FilterSearchProductByIdRequest req) {
+    public ResponseEntity ViewProductByManufacturerId(ViewProductRequest req) {
+//        try {
+//            Page<Product> products = null;
+//            Pageable pageable = req.getType().equals("desc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.DESC, "createAt")) :
+//                    req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
+//                            PageRequest.of(req.getPageNumber(), req.getPageSize());
+//            if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+//                products = productRepository.findAllProductWithDate(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
+//            } else {
+//                products = productRepository.findAllProduct(req.getId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
+//            }
+//            return ResponseEntity.status(HttpStatus.OK).body(products.map(productMapper::productToViewProductDTOResponse));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
+//        }
         try {
             List<Product> products = productRepository.findAllProduct(req.getId(), "%"+req.getCategory()+"%");
             List<ViewProductDTOResponse> productDTOs = products.stream()

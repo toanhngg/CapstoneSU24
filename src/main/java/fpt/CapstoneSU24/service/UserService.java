@@ -480,6 +480,15 @@ public class UserService {
     public ResponseEntity<?> searchAllManufacturer() {
         List<User> users = userRepository.findAllManufacturer();
         return ResponseEntity.status(200).body(userMapper.usersToUserViewDTOs(users));
+    }
+    public JSONObject infoUserForMonitor(long startDate, long endDate) {
+        List<User> monthlyUser = userRepository.findAllUserByCreateAtBetween(startDate, endDate);
+        List<User> users = userRepository.findAll();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("total", users.size());
+        jsonObject.put("monthly",monthlyUser.size());
+        return jsonObject;
+    }
     public List<OrgNameUserDTO> getTop5OrgNames() {
             try {
                 Pageable topFive = PageRequest.of(0, 5);
