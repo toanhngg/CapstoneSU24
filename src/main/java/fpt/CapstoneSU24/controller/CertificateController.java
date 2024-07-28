@@ -16,49 +16,52 @@ import java.io.IOException;
 @RequestMapping("/api/certificate")
 public class CertificateController {
     private final CertificateService certificateService;
+
     @Autowired
-public CertificateController( CertificateService certificateService){
+    public CertificateController(CertificateService certificateService) {
         this.certificateService = certificateService;
     }
 
     @PostMapping("/getListCertificateByManuId")
-    public ResponseEntity<?> getListCertificateByManuId(@Valid @RequestBody IdRequest req)
-    {
+    public ResponseEntity<?> getListCertificateByManuId(@Valid @RequestBody IdRequest req) {
         return certificateService.getListCertificateByManuId(req);
     }
 
     @PostMapping("/getListManuToVerify")
-    public ResponseEntity<?> getListManuToVerify(@Valid @RequestBody ListManuToVerifyRequest req)
-    {
+    public ResponseEntity<?> getListManuToVerify(@Valid @RequestBody ListManuToVerifyRequest req) {
         return certificateService.getListManuToVerify(req);
     }
+
     @GetMapping("/getListCertMe")
-    public ResponseEntity<?> getListCertMe()
-    {
+    public ResponseEntity<?> getListCertMe() {
         return certificateService.getListCertMe();
     }
+
     @PostMapping("/ViewCertByManufacturerId")
-    public ResponseEntity<?> ViewCertByManufacturerId(@Valid @RequestBody IdRequest req)
-    {
+    public ResponseEntity<?> ViewCertByManufacturerId(@Valid @RequestBody IdRequest req) {
         return certificateService.ViewCertByManufacturerId(req);
     }
+
     @PostMapping("/replyCertByAdmin")
-    public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req)
-    {
+    public ResponseEntity<?> replyCertByAdmin(@Valid @RequestBody ReplyCertByAdminRequest req) {
         return certificateService.replyCertByAdmin(req);
     }
+
     @PostMapping("/createCertificate")
     public ResponseEntity<?> createCertificate(@Valid @RequestBody CreateCertificateRequest req) throws IOException {
         return certificateService.createCertificate(req);
     }
+
     @GetMapping("/deleteAllCertByManufacturer")
     public ResponseEntity<?> deleteAllCertByManufacturer() throws IOException {
         return certificateService.deleteAllCertByManufacturer();
     }
+
     @PostMapping("/deleteCertCertId")
     public ResponseEntity<?> deleteCertCertId(@Valid @RequestBody IdRequest req) throws IOException {
         return certificateService.deleteCertCertId(req);
     }
+
     @GetMapping("/SendRequestVerifyCert")
     public ResponseEntity<?> SendRequestVerifyCert() throws IOException {
         return certificateService.sendRequestVerifyCert();

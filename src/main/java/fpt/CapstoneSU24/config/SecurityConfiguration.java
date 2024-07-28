@@ -98,7 +98,9 @@ public class SecurityConfiguration {
                                 "api/item/getItemByEventType",
                                 "api/item/check",
                                 "api/item/checkEventAuthorized",
-                                "api/item/logMetrics"
+                                "api/item/logMetrics",
+                                "api/customercare/add",
+                                "api/origin/top5OrgNames"
 
                         ).permitAll()
                         .anyRequest().authenticated())

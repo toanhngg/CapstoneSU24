@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.ItemLog;
+import fpt.CapstoneSU24.model.Origin;
 import fpt.CapstoneSU24.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

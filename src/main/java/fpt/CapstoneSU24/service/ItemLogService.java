@@ -144,7 +144,7 @@ public class ItemLogService {
                 if (itemlogDetail.getIdEdit() !=  null) {
                     detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
                     detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
-                    detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());
+                    detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
                     detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
                     detailResponse.setAddressInParty(itemlogDetail.getAddress());
                     detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
@@ -152,10 +152,11 @@ public class ItemLogService {
                     detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                     detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                     ItemLog itemLog = itemLogRepository.getItemLogs(itemlogDetail.getIdEdit());
+
                     ItemLogDetailResponse nestedResponse = new ItemLogDetailResponse();
                     nestedResponse.setItemLogId(itemLog.getItemLogId());
                     nestedResponse.setEventType(itemLog.getEvent_id().getEvent_type());
-                    nestedResponse.setPartyFullname(itemLog.getParty().getPartyFullName());
+                    nestedResponse.setPartyFullname(itemLog.getParty().getEmail());
                     nestedResponse.setSender(itemLog.getAuthorized().getAssignPersonMail());
                     nestedResponse.setReceiver(itemLog.getAuthorized().getAuthorizedEmail());
                     nestedResponse.setPartyPhoneNumber(itemLog.getParty().getPhoneNumber());
@@ -169,7 +170,7 @@ public class ItemLogService {
                 }else{
                     detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
                     detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
-                    detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());
+                    detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
                     detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
                     detailResponse.setAddressInParty(itemlogDetail.getAddress());
                     detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
@@ -177,11 +178,20 @@ public class ItemLogService {
                     detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                     detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 }
-
-            } else {
+            } else if(itemlogDetail.getEvent_id().getEventId() == 2)  {
+                detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
+                detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
+                detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
+                detailResponse.setAddressInParty(itemlogDetail.getAddress());
+                detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
+                detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
+                detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
+                detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
+            }else{
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty().getPartyFullName());
+                detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
                 detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
