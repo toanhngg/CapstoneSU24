@@ -35,16 +35,7 @@ public class OriginService {
         return ResponseEntity.ok(originList);
     }
 
-    public List<OrgNameUserDTO> getTop5OrgNames() {
-//        Pageable topFive = PageRequest.of(0, 5);
-//        return originRepository.findTop5OrgNames(topFive);
-        try {
-            Pageable topFive = PageRequest.of(0, 5);
-            return originRepository.findTop5OrgNames(topFive);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
+
 //        Pageable topFive = PageRequest.of(0, 5);
 //        List<Origin> originList = originRepository.findTop5OrgNames(topFive);
 //        if (originList.isEmpty()) {
@@ -56,7 +47,7 @@ public class OriginService {
 //                    .collect(Collectors.toList());
 //            return ResponseEntity.status(HttpStatus.OK).body(orgNameUserDTOS);
 //        }
-    }
+
 //    private OrgNameUserDTO convertToItemLogDTO(Origin origin) {
 //        OrgNameUserDTO dto = new OrgNameUserDTO();
 //        dto.setOrgName(origin.getOrg_name());
