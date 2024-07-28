@@ -100,7 +100,7 @@ public class SecurityConfiguration {
                                 "api/item/checkEventAuthorized",
                                 "api/item/logMetrics",
                                 "api/customercare/add",
-                                "api/origin/top5OrgNames"
+                                "api/user/top5OrgNames"
 
                         ).permitAll()
                         .anyRequest().authenticated())

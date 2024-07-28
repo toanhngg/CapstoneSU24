@@ -28,11 +28,11 @@ public class OriginController {
         return originService.findAll();
 
     }
-    @GetMapping("/top5OrgNames")
-    public ResponseEntity<List<OrgNameUserDTO>> getTop5OrgNames() {
-        List<OrgNameUserDTO> topOrgNames = originService.getTop5OrgNames();
-        return ResponseEntity.ok(topOrgNames);
-    }
+//    @GetMapping("/top5OrgNames")
+//    public ResponseEntity<List<OrgNameUserDTO>> getTop5OrgNames() {
+//        List<OrgNameUserDTO> topOrgNames = originService.getTop5OrgNames();
+//        return ResponseEntity.ok(topOrgNames);
+//    }
 //    @PostMapping("/findByIdProduct")
 //    public ResponseEntity findOriginByProduct(@RequestBody String req) {
 //        JSONObject jsonReq = new JSONObject(req);

@@ -4,16 +4,16 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
 import fpt.CapstoneSU24.dto.payload.IdRequest;
 import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.Certificate;
+import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
-import fpt.CapstoneSU24.repository.AuthTokenRepository;
-import fpt.CapstoneSU24.repository.CertificateRepository;
-import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DocumentGenerator;
 import jakarta.mail.MessagingException;
@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -64,6 +65,8 @@ public class UserService {
 
     @Autowired
     private DocumentGenerator documentGenerator;
+    @Autowired
+    private ItemRepository itemRepository;
     @Autowired
     private UserMapper userMapper;
 
@@ -461,6 +464,19 @@ public class UserService {
     }
 
 
+    public List<OrgNameUserDTO> getTop5OrgNames() {
+            try {
+                Pageable topFive = PageRequest.of(0, 5);
+                List<OrgNameUserDTO> dtoList = itemRepository.findTop5OrgNames(topFive);
+//                List<OrgNameUserDTO> dtoList = items.stream()
+//                        .map(item -> new OrgNameUserDTO(item.getProduct().getManufacturer().getOrg_name(), item.getProduct().getManufacturer().getUserId(),
+//                                item.getProduct().getManufacturer().getProfileImage()))
+//                        .collect(Collectors.toList());
 
-
+                return dtoList;
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                throw e;
+            }
+    }
 }
