@@ -55,24 +55,20 @@ public class CustomerCareService {
 
         Page<CustomerCare> customerCarePage;
         try {
-            if (req.getStatus() != 0) {
+            if (req.getStatus() == 3) {
+                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                    customerCarePage = customerCareRepository.searchCustomerCareWithDate(req.getKeyword(), req.getStartDate(), req.getEndDate(), pageable);
+                } else {
+                    customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
+                }
+            }
+            else {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
                     customerCarePage = customerCareRepository.searchCustomerCareWithDateAndStatus(req.getKeyword(), req.getStartDate(), req.getEndDate(), req.getStatus(), pageable);
                 } else {
                     customerCarePage = customerCareRepository.searchCustomerCareWithStatus(req.getKeyword(), req.getStatus(), pageable);
                 }
-            } else if (req.getStatus() != 1) {
-                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    customerCarePage = customerCareRepository.searchCustomerCareWithDate(req.getKeyword(), req.getStartDate(), req.getEndDate(), pageable);
-                } else {
-                    customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
-                }
-            }else {
-                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    customerCarePage = customerCareRepository.searchCustomerCareWithDate(req.getKeyword(), req.getStartDate(), req.getEndDate(), pageable);
-                } else {
-                    customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
-                }
+
             }
             return ResponseEntity.status(HttpStatus.OK).body(customerCarePage.map(customerCareMapper::customerCareToCustomerCareDTO));
         } catch (Exception e) {
