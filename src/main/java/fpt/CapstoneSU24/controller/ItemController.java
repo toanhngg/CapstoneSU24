@@ -5,10 +5,8 @@ import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.service.*;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -152,9 +150,14 @@ public class ItemController {
         return itemService.getItemByEventType(eventType);
     }
 
+//    @GetMapping(value="logMetrics")
+//    public JSONObject logMetrics(){
+//        return itemService.logMetrics();
+//    }
     @GetMapping(value="getInforItemByProductRecognition")
     public  ResponseEntity<?> getInfoItemByItemId(String productRecognition){
         return itemService.getInforItemByItemId(productRecognition);
     }
+
 }
 

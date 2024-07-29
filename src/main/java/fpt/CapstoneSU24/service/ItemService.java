@@ -104,9 +104,7 @@ public class ItemService {
         this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
     }
-
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
-
 
     public ResponseEntity<?> searchItem(FilterSearchItemRequest req) {
         Page<Item> items;
