@@ -52,4 +52,20 @@ public class OTPService {
         return (otp.getCodeOTP().trim()).equals(codeOTP);
     }
 
+
+    /*
+    *  0 : otp ko tồn tại
+    *  2 : otp ko match
+    *  -1 : hết hạn
+    *  1 OK
+    * */
+    public int verifyOTPv2(String email, String codeOTP) {
+        OTP otp = otpRepository.findOTPByEmail(email);
+        //otp ko co
+        if (otp == null) return 0;
+        if (new Date().after(otp.getExpiryTime())) return -1;
+        if (!codeOTP.equals(otp.getCodeOTP())) return 2;
+        return 1;
+    }
+
 }

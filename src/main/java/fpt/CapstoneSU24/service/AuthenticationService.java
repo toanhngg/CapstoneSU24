@@ -72,7 +72,8 @@ public class AuthenticationService {
     }
 
     public ResponseEntity signup(RegisterRequest input) {
-        if (clientService.checkOTPinSQL(input.getEmail(), input.getOtpVerify())) {
+        int statusOtp = otpService.verifyOTPv2(input.getEmail(), input.getOtpVerify());
+        if (statusOtp == 1) {
             try {
                 if (userRepository.findOneByEmail(input.getEmail()) == null) {
 //                if (roleRepository.findOneByRoleId(2) == null) {
@@ -100,7 +101,7 @@ public class AuthenticationService {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
             }
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("otp code is incorrect");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(statusOtp);
     }
     public ResponseEntity checkMailExist(VerifyEmailRequest req) {
             if (userRepository.findOneByEmail(req.getEmail()) == null) {

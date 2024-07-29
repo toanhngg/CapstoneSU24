@@ -90,8 +90,10 @@ public class ProductService {
                 //save ava
                 String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
-                System.out.println("productAdd"+currentUser.getOrg_name());
-                log.info("productAdd");
+                if (!req.getFile3D().isEmpty()) {
+                    String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()), "file3d/" + product.getProductId());
+                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
+                }
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("add product successfully");
             } catch (Exception e) {
@@ -144,7 +146,7 @@ public class ProductService {
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
                 }
                 if (!req.getFile3D().isEmpty()) {
-                    String filePathFile3D = cloudinaryService.updateImage("file3d/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getFile3D()));
+                    String filePathFile3D = cloudinaryService.updateImage("file3d/" + product.getProductId(),cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()));
                     imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
                 }
 

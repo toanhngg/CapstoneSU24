@@ -42,5 +42,8 @@ public class CategoryController {
     public ResponseEntity search(@Valid @RequestBody FilterSearchForCategoryRequest req) {
         return categoryService.search(req);
     }
-
+    @PostMapping("/findCategoryByManufacturer")
+    public ResponseEntity findCategoryByManufacturer(@Valid @RequestBody IdRequest req) {
+        return categoryService.findCategoryByManufacturer(req);
+    }
 }

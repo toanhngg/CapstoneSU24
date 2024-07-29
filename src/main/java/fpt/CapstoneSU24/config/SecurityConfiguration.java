@@ -91,6 +91,7 @@ public class SecurityConfiguration {
                                 "/api/auth/checkMailExist",
                                 "/api/auth/checkOrgNameExist",
                                 "/api/category/search",
+                                "/api/category/findCategoryByManufacturer",
                                 "/api/product/ViewProductByManufacturerId",
                                 "/api/product/findProductIdByName",
                                 "/api/certificate/ViewCertByManufacturerId",
