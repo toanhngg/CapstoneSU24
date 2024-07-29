@@ -16,7 +16,6 @@ public interface AuthorizedMapper {
     @Mapping(source = "authorizedEmail", target = "authorizedEmail")
     @Mapping(source = "assignPerson", target = "assignPerson")
     @Mapping(source = "assignPersonMail", target = "assignPersonMail")
-    @Mapping(source = "location", target = "location")
     @Mapping(source = "description", target = "description")
     @Mapping(source = "phoneNumber", target = "phoneNumber")
     Authorized authorizedDtoToAuthorized(AuthorizedDTO authorizedDto);

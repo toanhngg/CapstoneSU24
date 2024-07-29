@@ -27,6 +27,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
@@ -160,7 +162,7 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
-
+    @Transactional
     public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
         try {
             User user = userRepository.getReferenceById(currentUser.getUserId());
@@ -183,8 +185,8 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
-
-    private Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public  Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
         long scoreTime = System.currentTimeMillis();
         Origin origin = new Origin();
         origin.setCreatedAt(scoreTime);
@@ -197,8 +199,8 @@ public class ItemService {
         origin.setLocation(savedLocation);
         return originRepository.save(origin);
     }
-
-    private List<Item> createItems(ItemLogDTO itemLogDTO, User user, Origin saveOrigin) throws IOException {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<Item> createItems(ItemLogDTO itemLogDTO, User user, Origin saveOrigin) throws IOException {
 
         List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
         long scoreTime = System.currentTimeMillis();
@@ -235,8 +237,8 @@ public class ItemService {
         }
         return items;
     }
-
-    private List<Party> createParties(ItemLogDTO itemLogDTO, User user) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<Party> createParties(ItemLogDTO itemLogDTO, User user) {
         List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
             Party party = new Party();
@@ -248,8 +250,8 @@ public class ItemService {
         }
         return parties;
     }
-
-    private List<ItemLog> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, List<Party> parties) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<ItemLog> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, List<Party> parties) {
         List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
         long scoreTime = System.currentTimeMillis();
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
@@ -406,17 +408,18 @@ public class ItemService {
         }
     }
 
-//    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
-//        Item item = findByProductRecognition(productRecognition); // B1
-//        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-//        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
-//        if (list.get(0).getAuthorized() == null) {
-//            return ResponseEntity.ok(false);
-//        } else {
-//            return ResponseEntity.ok(true);
-//        }
-//    }
+    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
+        Item item = findByProductRecognition(productRecognition); // B1
+        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
+        if (list.get(0).getAuthorized() == null) {
+            return ResponseEntity.ok(false);
+        } else {
+            return ResponseEntity.ok(true);
+        }
+    }
 
+    @Transactional
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {
             Item item = findByProductRecognition(authorized.getProductRecognition());
@@ -506,11 +509,11 @@ public class ItemService {
 //        return itemLogRepository.getItemLogs(itemLogId);
 //    }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ResponseEntity<String> addEventAuthorized(AuthorizedDTO authorized, Item item) {
         if (authorized == null || item == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authorized or Item is null");
         }
-
         try {
             // Reuse HttpClient instance if used elsewhere
             HttpClient client = HttpClient.newHttpClient();
@@ -548,7 +551,7 @@ public class ItemService {
 
             if (timeDifference > TimeUnit.DAYS.toMillis(3)) {
                 Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
-                authorizedEntity.setLocation(savedLocation);
+//                authorizedEntity.setLocation(savedLocation);
                 Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                 Point point = null;
@@ -565,7 +568,7 @@ public class ItemService {
                         item,
                         itemIndex.getAddress(),
                         itemIndex.getParty(),
-                        itemIndex.getLocation(),
+                        savedLocation,
                         timeInsert,
                         authorized.getDescription(),
                         authorizedSaved,
@@ -606,9 +609,6 @@ public class ItemService {
         try {
             String email = req.getEmail();
             String productRecognition = req.getProductRecognition();
-//            JSONObject jsonReq = new JSONObject(req);
-//            String email = jsonReq.getString("email");
-//            String productRecognition = jsonReq.getString("productRecognition");
 
             // Kiểm tra xem item có tồn tại và có status = 0 hay không
             Item item = findByProductRecognition(productRecognition);
@@ -646,10 +646,6 @@ public class ItemService {
         try {
             String email = req.getEmail();
             String productRecognition = req.getProductRecognition();
-//            JSONObject jsonReq = new JSONObject(req);
-//            String email = jsonReq.getString("email");
-//            String productRecognition = jsonReq.getString("productRecognition");
-
             // Kiểm tra xem item có tồn tại và có status = 0 hay không
             Item item = findByProductRecognition(productRecognition);
             if (item == null) {
@@ -732,13 +728,13 @@ public class ItemService {
                         ));
 
                 ItemLog itemLog = new ItemLog();
-                itemLog.setAddress(itemIndex.getAuthorized().getLocation().getAddress());
+                itemLog.setAddress(otp.getLocation().getAddress());
                 itemLog.setDescription(itemIndex.getAuthorized().getDescription());
                 itemLog.setAuthorized(null);
                 itemLog.setStatus(1);
                 itemLog.setTimeStamp(System.currentTimeMillis());
                 itemLog.setItem(item);
-                itemLog.setLocation(itemIndex.getAuthorized().getLocation());
+                itemLog.setLocation(locationMapper.locationDtoToLocation(otp.getLocation()));
                 itemLog.setParty(party);
 
                 double pointX = pointService.generateX();
