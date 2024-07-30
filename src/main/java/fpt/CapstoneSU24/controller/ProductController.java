@@ -44,7 +44,7 @@ public class ProductController {
         return productService.findImgByProductId(req);
     }
     @PostMapping("/findProductDetailById")
-    public ResponseEntity<?> findProductDetailById(@Valid @RequestBody IdRequest req) {
+    public ResponseEntity<?> findProductDetailById(@Valid @RequestBody IdRequest req) throws IOException {
         return productService.findProductDetailById(req);
     }
     @PostMapping("/deleteProductById")
@@ -66,5 +66,9 @@ public class ProductController {
     @PostMapping("/saveFileAI")
     public ResponseEntity<?> saveFileAI(@RequestParam("weights") MultipartFile weights, @RequestParam("classNames") MultipartFile classNames, @RequestParam("model") MultipartFile model) throws IOException {
         return productService.saveFileAI(weights, classNames, model);
+    }
+    @PostMapping("/saveModel3D/{id}")
+    public ResponseEntity<?> saveModel3D(@RequestParam("file3D") MultipartFile file3D, @PathVariable("id") int id) throws IOException {
+        return productService.saveModel3D(file3D, id);
     }
 }

@@ -90,10 +90,10 @@ public class ProductService {
                 //save ava
                 String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                 imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
-                if (!req.getFile3D().isEmpty()) {
-                    String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()), "file3d/" + product.getProductId());
-                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
-                }
+//                if (!req.getFile3D().isEmpty()) {
+//                    String filePathFile3D = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()), "file3d/" + product.getProductId());
+//                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
+//                }
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("add product successfully");
             } catch (Exception e) {
@@ -224,7 +224,7 @@ public class ProductService {
     }
 
 
-    public ResponseEntity<?> findProductDetailById(IdRequest req) {
+    public ResponseEntity<?> findProductDetailById(IdRequest req) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         Product p = productRepository.findOneByProductId(req.getId());
@@ -284,15 +284,30 @@ public class ProductService {
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 1){
 
-            gcsService.uploadFile(weights);
-            gcsService.uploadFile(classNames);
-            gcsService.uploadFile(model);
+            gcsService.uploadFile(weights, weights.getOriginalFilename());
+            gcsService.uploadFile(classNames, classNames.getOriginalFilename());
+            gcsService.uploadFile(model, model.getOriginalFilename());
 
             return ResponseEntity.status(200).body("save file weights.bin, classNames.json, model.json successfully");
         }
         return ResponseEntity.status(500).body("your account isn't permitted for this action");
-
     }
+    public ResponseEntity saveModel3D(MultipartFile file3D, int id) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if(currentUser.getRole().getRoleId() == 2){
+            String originalFilename = file3D.getOriginalFilename();
 
-
+            // Kiểm tra và lấy đuôi file
+            String fileExtension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                int dotIndex = originalFilename.lastIndexOf(".");
+                fileExtension = originalFilename.substring(dotIndex);
+            }
+            String newFileName = "model3D/"+ id + fileExtension;
+           String path = gcsService.uploadFile(file3D, newFileName);
+            return ResponseEntity.status(200).body("save model 3d successfully");
+        }
+        return ResponseEntity.status(500).body("your account isn't permitted for this action");
+    }
 }

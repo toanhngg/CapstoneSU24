@@ -10,11 +10,13 @@ import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.repository.ImageProductRepository;
 import fpt.CapstoneSU24.repository.ItemRepository;
 import fpt.CapstoneSU24.service.CloudinaryService;
+import fpt.CapstoneSU24.service.GCSService;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,8 @@ public abstract class ProductMapper {
     private ItemRepository itemRepository;
     @Autowired
     private ItemMapper itemMapper;
+    @Autowired
+    private GCSService gcsService;
     @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "description", target = "description")
@@ -60,11 +64,11 @@ public abstract class ProductMapper {
     @Mapping(source = "createAt", target = "createAt")
     @Mapping(source = "weight", target = "weight")
     @Mapping(source = "warranty", target = "warranty")
-
+    @Mapping(target = "model3D", ignore = true) // Ignore avatar for now, we'll set it manually
     @Mapping(target = "avatar", ignore = true) // Ignore avatar for now, we'll set it manually
     @Mapping(target = "listImages", ignore = true) // Ignore avatar for now, we'll set it manually
 
-    public abstract ProductDetailDTOResponse productToProductDetailDTOResponse(Product product);
+    public abstract ProductDetailDTOResponse productToProductDetailDTOResponse(Product product) throws IOException;
 
 
 
@@ -98,6 +102,10 @@ public abstract class ProductMapper {
         if (imageProduct != null) {
             productDTO.setAvatar(cloudinaryService.getImageUrl(imageProduct.getFilePath()));
         }
+    }
+    @AfterMapping
+    protected void setModel3D(Product product, @MappingTarget ProductDetailDTOResponse productDTO) throws IOException {
+            productDTO.setModel3D(gcsService.getFileLink(String.valueOf(product.getProductId())));
     }
     @AfterMapping
     protected void setListImages(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
