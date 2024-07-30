@@ -406,16 +406,16 @@ public class ItemService {
         }
     }
 
-//    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
-//        Item item = findByProductRecognition(productRecognition); // B1
-//        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-//        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
-//        if (list.get(0).getAuthorized() == null) {
-//            return ResponseEntity.ok(false);
-//        } else {
-//            return ResponseEntity.ok(true);
-//        }
-//    }
+    public ResponseEntity<Boolean> checkEventAuthorized(String productRecognition) {
+        Item item = findByProductRecognition(productRecognition); // B1
+        if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
+        if (list.get(0).getAuthorized() == null) {
+            return ResponseEntity.ok(false);
+        } else {
+            return ResponseEntity.ok(true);
+        }
+    }
 
     public ResponseEntity<?> authorize(AuthorizedDTO authorized) {
         try {

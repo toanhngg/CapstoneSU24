@@ -64,14 +64,14 @@ public class CustomerCareController {
 //    }
     @PostMapping ("/searchCustomerCare")
     public ResponseEntity<?> searchCustomerCare(@Valid @RequestBody SearchCustomerCareDTO req) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-
-        if (currentUser.getRole().getRoleId() == 1) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User currentUser = (User) authentication.getPrincipal();
+//
+//        if (currentUser.getRole().getRoleId() == 1) {
             return customerCareService.searchCustomerCare(req);
-        } else {
-            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
-        }
+//        } else {
+//            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
+//        }
     }
     @PostMapping("/updateStatus")
     public ResponseEntity<?> updateStatus(@Valid @RequestBody UpdateStatusDTO updateStatusDTO) {

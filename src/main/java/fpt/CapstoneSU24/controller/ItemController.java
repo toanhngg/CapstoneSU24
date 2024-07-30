@@ -96,15 +96,15 @@ public class ItemController {
         return itemService.authorize(authorized);
     }
 
-//    @PostMapping(value = "/checkEventAuthorized")
-//    public ResponseEntity<Boolean> checkEventAuthorized(@RequestParam String productRecognition)  {
-//        if(productRecognition.isEmpty()){
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-//        }
-//        return itemService.checkEventAuthorized(productRecognition);
-//        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
-//        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
-//    }
+    @PostMapping(value = "/checkEventAuthorized")
+    public ResponseEntity<Boolean> checkEventAuthorized(@RequestParam String productRecognition)  {
+        if(productRecognition.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+        }
+        return itemService.checkEventAuthorized(productRecognition);
+        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
+        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
+    }
 //    @PostMapping(value = "/checkAuthorized")
 //    public ResponseEntity<Boolean> checkAuthorized(@Valid @RequestBody CurrentOwnerCheckDTO req)  {
 //        return itemService.checkAuthorized(req);
