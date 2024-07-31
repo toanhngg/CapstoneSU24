@@ -31,5 +31,6 @@ public interface CustomerCareRepository extends JpaRepository<CustomerCare, Inte
     @Query("SELECT c FROM CustomerCare c WHERE (c.customerName LIKE %:keyword% OR c.customerPhone LIKE %:keyword% OR c.customerEmail LIKE %:keyword%) AND c.timestamp >= :startDate AND c.timestamp <= :endDate AND c.status = :status")
     Page<CustomerCare> searchCustomerCareWithDateAndStatus(@Param("keyword") String keyword, @Param("startDate") long startDate, @Param("endDate") long endDate, @Param("status") int status, Pageable pageable);
 
+    List<CustomerCare> findAllByStatus(int status);
 
 }

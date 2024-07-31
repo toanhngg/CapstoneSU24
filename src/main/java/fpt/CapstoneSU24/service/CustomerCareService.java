@@ -6,6 +6,7 @@ import fpt.CapstoneSU24.mapper.CustomerCareMapper;
 import fpt.CapstoneSU24.model.CustomerCare;
 import fpt.CapstoneSU24.repository.CustomerCareRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,7 +26,7 @@ public class CustomerCareService {
     private final UserRepository userRepository;
 
     @Autowired
-    public CustomerCareService(CustomerCareRepository customerCareRepository,CustomerCareMapper customerCareMapper,
+    public CustomerCareService(CustomerCareRepository customerCareRepository, CustomerCareMapper customerCareMapper,
                                UserRepository userRepository) {
         this.customerCareRepository = customerCareRepository;
         this.customerCareMapper = customerCareMapper;
@@ -43,7 +44,6 @@ public class CustomerCareService {
 
         return customerCareRepository.save(customerCare);
     }
-
     public List<CustomerCare> getAllCustomerCare() {
         return customerCareRepository.findAll();
     }
@@ -61,8 +61,7 @@ public class CustomerCareService {
                 } else {
                     customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
                 }
-            }
-            else {
+            } else {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
                     customerCarePage = customerCareRepository.searchCustomerCareWithDateAndStatus(req.getKeyword(), req.getStartDate(), req.getEndDate(), req.getStatus(), pageable);
                 } else {
@@ -76,7 +75,7 @@ public class CustomerCareService {
         }
     }
 
-    public Optional<CustomerCare> updateStatus(int careId, int status, String note,int userId) {
+    public Optional<CustomerCare> updateStatus(int careId, int status, String note, int userId) {
         try {
             Optional<CustomerCare> optionalCustomerCare = customerCareRepository.findById(careId);
             if (optionalCustomerCare.isPresent()) {
@@ -95,4 +94,15 @@ public class CustomerCareService {
         }
     }
 
+    public JSONObject countStatus() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("done", customerCareRepository.findAllByStatus(0).size());
+            jsonObject.put("cancel", customerCareRepository.findAllByStatus(1).size());
+            jsonObject.put("waiting", customerCareRepository.findAllByStatus(2).size());
+            return jsonObject;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 }
