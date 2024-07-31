@@ -8,7 +8,8 @@ import java.util.Date;
 public class B03_RequestDTO {
     private String email = "";
     private Integer roleId = null;
-    private Integer status = null;
+    private String status = "";
+    private String city = "";
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dateFrom = null;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -17,8 +18,6 @@ public class B03_RequestDTO {
     private Boolean isAsc = false;
     private int page = 0;
     private int size = 10;
-
-    // Getters and setters
 
     public String getEmail() {
         return email;
@@ -36,12 +35,20 @@ public class B03_RequestDTO {
         this.roleId = roleId;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public LocalDate getDateFrom() {
@@ -68,12 +75,12 @@ public class B03_RequestDTO {
         this.orderBy = orderBy;
     }
 
-    public Boolean getIsAsc() {
+    public Boolean getAsc() {
         return isAsc;
     }
 
-    public void setIsAsc(Boolean isAsc) {
-        this.isAsc = isAsc;
+    public void setAsc(Boolean asc) {
+        isAsc = asc;
     }
 
     public int getPage() {

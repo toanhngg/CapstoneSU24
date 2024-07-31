@@ -47,4 +47,7 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
                 "LEFT JOIN Location l ON u.location.locationId = l.locationId " +
                 "GROUP BY l.city")
         List<Object[]> countUsersByCity();
+
+        @Query("SELECT DISTINCT l.city FROM Location l")
+        List<String> getListDistinctCity();
 }

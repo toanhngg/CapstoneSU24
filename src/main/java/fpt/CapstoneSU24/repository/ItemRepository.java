@@ -120,4 +120,6 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     List<Item> findByCurrentOwner(@Param("currentOwner") String currentOwner);
     List<Item> findAllItemByCreatedAtBetween(long startDate, long endDate);
 
+
+    public Item findOneByItemId(int id);
 }
