@@ -278,6 +278,8 @@ public class ItemLogService {
             if (item == null) {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
+            if (item.getStatus() == 0)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             int check = clientService.checkOTPinSQL2(itemLogDTO.getEmailParty().trim(), itemLogDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP time expire.");
