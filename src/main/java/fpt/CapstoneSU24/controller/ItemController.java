@@ -112,6 +112,7 @@ public class ItemController {
     public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req)  {
         return itemService.check(req);
     }
+
     @PostMapping(value = "/sendOTP")
     public ResponseEntity<?> sendOTP(@Valid @RequestParam String email) {
         return itemService.sendOTP(email);

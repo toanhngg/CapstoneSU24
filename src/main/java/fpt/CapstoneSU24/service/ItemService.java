@@ -452,24 +452,49 @@ public class ItemService {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
-        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
-        if (item.getStatus() == 0) ResponseEntity.ok(0);
-        try {
-            if (checkOwner(email, item.getCurrentOwner())) {
-                return ResponseEntity.ok(3); // is CurrentOwner
-            } else if (list.get(0).getAuthorized().getAuthorizedEmail().equals(req.getEmail())) {
-                return ResponseEntity.ok(2); // is Authorized
-            } else if (checkParty(email, item.getItemId())) {
-                return ResponseEntity.ok(4);  // Chi la party
-            } else {
-                return ResponseEntity.ok(1);  // ko La gi
 
+        if (item == null) {
+            // Xử lý nếu item không tồn tại
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+        }
+
+        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+
+        // Kiểm tra trạng thái của item bị cấm
+        if (item.getStatus() == 0) {
+            return ResponseEntity.ok(0); // Item status is 0
+        }
+
+        try {
+            // Kiểm tra xem email có phải là CurrentOwner hay không
+            if (checkOwner(email, item.getCurrentOwner())) {
+                if (list.get(list.size() - 1).getLocation() == null)
+                    return ResponseEntity.ok(3); // CurrentOwner
+                else
+                    return ResponseEntity.ok(6); // CurrentOwner
             }
+
+            // Kiểm tra xem email có phải là Authorized không
+            if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
+                if (email.equals(list.get(0).getAuthorized().getAuthorizedEmail())) {
+                    return ResponseEntity.ok(2); // Authorized
+                }
+            }
+
+            // Kiểm tra xem email có phải là Party từng tham gia ko
+            if (checkParty(email, item.getItemId())) {
+                return ResponseEntity.ok(4); // Party
+            }
+
+            // Không là gì
+            return ResponseEntity.ok(1); // Không là gì
+
         } catch (Exception e) {
             logService.logError(e);
             return ResponseEntity.ok(5); // Exception
         }
     }
+
 
     public boolean checkParty(String email, int itemId) {
         List<ItemLog> itemLogs = itemLogRepository.checkParty(itemId, email);
@@ -583,9 +608,20 @@ public class ItemService {
 
     public ResponseEntity<?> sendOTP(String emailjson) {
         try {
-//            JSONObject jsonReq = new JSONObject(emailjson);
-//           String email = jsonReq.getString("email");
-            // Tạo đối tượng ClientSdi và gửi email OTP
+            HttpClient client = HttpClient.newHttpClient();
+            // Validate email
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
+                    .POST(HttpRequest.BodyPublishers.ofString("email=" + emailjson))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String responseBody = response.body();
+
+            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not exist!");
+            }
             ClientSdi sdi = new ClientSdi();
             sdi.setEmail(emailjson);
             boolean emailSent = clientService.createMailAndSaveSQL(sdi);
@@ -603,57 +639,57 @@ public class ItemService {
         }
     }
 
-    public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
-        try {
-            String email = req.getEmail();
-            String productRecognition = req.getProductRecognition();
-//            JSONObject jsonReq = new JSONObject(req);
-//            String email = jsonReq.getString("email");
-//            String productRecognition = jsonReq.getString("productRecognition");
-
-            // Kiểm tra xem item có tồn tại và có status = 0 hay không
-            Item item = findByProductRecognition(productRecognition);
-            if (item == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-            }
-            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-
-            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-            if (list.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
-            }
-            ItemLog itemIndex = list.get(0);
-            if (itemIndex.getAuthorized() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
-            }
-            // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
-            //System.out.println(email);
-            // Kiểm tra xem email có đúng là current owner không
-            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
-            }
-            // Tạo đối tượng ClientSdi và gửi email OTP
-            ClientSdi sdi = new ClientSdi();
-            sdi.setEmail(itemIndex.getAuthorized().getAuthorizedEmail());
-            sdi.setUsername(itemIndex.getAuthorized().getAuthorizedName());
-            sdi.setName(itemIndex.getAuthorized().getAuthorizedName());
-
-            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
-
-            if (emailSent) {
-                return ResponseEntity.ok("OTP has been sent successfully.");
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
-            }
-        } catch (JSONException e) {
-            logService.logError(e);
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
-        } catch (Exception ex) {
-            logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-        }
-    }
+//    public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
+//        try {
+//            String email = req.getEmail();
+//            String productRecognition = req.getProductRecognition();
+////            JSONObject jsonReq = new JSONObject(req);
+////            String email = jsonReq.getString("email");
+////            String productRecognition = jsonReq.getString("productRecognition");
+//
+//            // Kiểm tra xem item có tồn tại và có status = 0 hay không
+//            Item item = findByProductRecognition(productRecognition);
+//            if (item == null) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
+//            }
+//            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
+//
+//            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+//            if (list.isEmpty()) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
+//            }
+//            ItemLog itemIndex = list.get(0);
+//            if (itemIndex.getAuthorized() == null) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
+//            }
+//            // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
+//            //System.out.println(email);
+//            // Kiểm tra xem email có đúng là current owner không
+//            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
+//                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
+//            }
+//            // Tạo đối tượng ClientSdi và gửi email OTP
+//            ClientSdi sdi = new ClientSdi();
+//            sdi.setEmail(itemIndex.getAuthorized().getAuthorizedEmail());
+//            sdi.setUsername(itemIndex.getAuthorized().getAuthorizedName());
+//            sdi.setName(itemIndex.getAuthorized().getAuthorizedName());
+//
+//            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
+//
+//            if (emailSent) {
+//                return ResponseEntity.ok("OTP has been sent successfully.");
+//            } else {
+//                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
+//            }
+//        } catch (JSONException e) {
+//            logService.logError(e);
+//
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
+//        } catch (Exception ex) {
+//            logService.logError(ex);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+//        }
+//    }
 
     //SendOTP Sau
     public ResponseEntity<?> confirmOTP(SendOTP otp, String productRecognition) {

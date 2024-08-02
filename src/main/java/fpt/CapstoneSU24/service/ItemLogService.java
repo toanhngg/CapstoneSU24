@@ -86,6 +86,7 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
+                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
 
             } else {
                 detailResponse.setSender(null);
@@ -105,6 +106,8 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
+                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+
             }
 
             return new ResponseEntity<>(detailResponse, HttpStatus.OK);
