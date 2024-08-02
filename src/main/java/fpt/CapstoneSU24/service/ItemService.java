@@ -448,7 +448,7 @@ public class ItemService {
 
         return false; // Không có trường nào null
     }
-    public ResponseEntity<Integer> check(CurrentOwnerCheckDTO req) {
+    public ResponseEntity<Integer> check(CurrentOwnerCheck req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
@@ -583,11 +583,11 @@ public class ItemService {
 
     public ResponseEntity<?> sendOTP(String emailjson) {
         try {
-            JSONObject jsonReq = new JSONObject(emailjson);
-          String email = jsonReq.getString("email");
+//            JSONObject jsonReq = new JSONObject(emailjson);
+//           String email = jsonReq.getString("email");
             // Tạo đối tượng ClientSdi và gửi email OTP
             ClientSdi sdi = new ClientSdi();
-            sdi.setEmail(email);
+            sdi.setEmail(emailjson);
             boolean emailSent = clientService.createMailAndSaveSQL(sdi);
             if (emailSent) {
                 return ResponseEntity.ok("OTP has been sent successfully.");

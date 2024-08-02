@@ -60,70 +60,51 @@ public class ItemLogService {
     public ResponseEntity<?> getItemLogDetail(int itemLogId) {
         try {
             ItemLog itemlogDetail = itemLogRepository.getItemLogsById(itemLogId);
-            if (itemlogDetail == null)
+            if (itemlogDetail == null) {
                 return new ResponseEntity<>("ItemLog not found.", HttpStatus.NOT_FOUND);
+            }
+
             ItemLogDetailResponse detailResponse = new ItemLogDetailResponse();
             detailResponse.setItemLogId(itemlogDetail.getItemLogId());
-            detailResponse.setEventType(itemlogDetail.getEvent_id().getEvent_type());
-            if (itemlogDetail.getEvent_id().getEventId() == 3) {
-                    detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
-                    detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
-                    detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
-                    detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
-                    detailResponse.setAddressInParty(itemlogDetail.getAddress());
-                    detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
-                    detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
-                    detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
-                    detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
-                detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-/*
-                    ItemLog itemLog = itemLogRepository.getItemLogs(itemlogDetail.getIdEdit());
+            detailResponse.setEventType(itemlogDetail.getEvent_id() != null ? itemlogDetail.getEvent_id().getEvent_type() : null);
 
-                    ItemLogDetailResponse nestedResponse = new ItemLogDetailResponse();
-                    nestedResponse.setItemLogId(itemLog.getItemLogId());
-                    nestedResponse.setEventType(itemLog.getEvent_id().getEvent_type());
-                    nestedResponse.setPartyFullname(itemLog.getParty().getEmail());
-                    nestedResponse.setSender(itemLog.getAuthorized().getAssignPersonMail());
-                    nestedResponse.setReceiver(itemLog.getAuthorized().getAuthorizedEmail());
-                    nestedResponse.setPartyPhoneNumber(itemLog.getParty().getPhoneNumber());
-                    nestedResponse.setAddressInParty(itemLog.getLocation().getAddress());
-                    nestedResponse.setCoordinateX(itemLog.getLocation().getCoordinateX());
-                    nestedResponse.setCoordinateY(itemLog.getLocation().getCoordinateY());
-                    nestedResponse.setTimeReceive(itemLog.getTimeStamp());
-                    nestedResponse.setDescriptionItemLog(itemLog.getDescription());
-                    // Gán nestedItemLog cho phản hồi chính
-                    detailResponse.setItemLog(nestedResponse);
-                } else {
-                    detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
-                    detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
-                    detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
-                    detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
-                    detailResponse.setAddressInParty(itemlogDetail.getAddress());
+            if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 3) {
+                detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
+                detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAddressInParty(itemlogDetail.getAddress());
+
+                if (itemlogDetail.getLocation() != null) {
                     detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
                     detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
-                    detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
-                    detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
-                } */
-//            } else if (itemlogDetail.getEvent_id().getEventId() == 2) {
-//                detailResponse.setSender(itemlogDetail.getAuthorized().getAssignPersonMail());
-//                detailResponse.setReceiver(itemlogDetail.getAuthorized().getAuthorizedEmail());
-//                detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
-//                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
-//                detailResponse.setAddressInParty(itemlogDetail.getAddress());
-//                detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
-//                detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
-//                detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
-//                detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
+                } else {
+                    detailResponse.setCoordinateX(null);
+                    detailResponse.setCoordinateY(null);
+                }
+
+                detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
+                detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
+                detailResponse.setIdEdit(itemlogDetail.getIdEdit());
+
             } else {
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty().getEmail());
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty().getPhoneNumber());
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
-                detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
-                detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
+
+                if (itemlogDetail.getLocation() != null) {
+                    detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
+                    detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
+                } else {
+                    detailResponse.setCoordinateX(null);
+                    detailResponse.setCoordinateY(null);
+                }
+
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
+                detailResponse.setIdEdit(itemlogDetail.getIdEdit());
             }
 
             return new ResponseEntity<>(detailResponse, HttpStatus.OK);
