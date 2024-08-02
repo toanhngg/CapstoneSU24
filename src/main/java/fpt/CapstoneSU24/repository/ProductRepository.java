@@ -32,8 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer>  {
     @Transactional
     void deleteOneByProductId(int productId);
     List<Product> findAllProductByCreateAtBetween(long startDate, long endDate);
+    Product findOneByProductName(String productName);
     @Query("SELECT COUNT(p) FROM Product p WHERE p.category.categoryId = :categoryId")
     int countProductsByCategoryId(int categoryId);
-    Product findOneByProductName(String productName);
-
 }
