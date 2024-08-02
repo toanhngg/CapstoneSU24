@@ -17,20 +17,8 @@ public class Party {
     private String phoneNumber;
     @Column(name = "email")
     private String email;
-    @Column(name = "signature")
-    private String signature;
-
     public Party() {
 
-    }
-
-    public Party(int partyId, String partyFullName, String description, String phoneNumber, String email, String signature) {
-        this.partyId = partyId;
-        this.partyFullName = partyFullName;
-        this.description = description;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-        this.signature = signature;
     }
 
     public Party(String partyFullName, String description, String phoneNumber, String email) {
@@ -82,11 +70,4 @@ public class Party {
         this.email = email;
     }
 
-    public String getSignature() {
-        return signature;
-    }
-
-    public void setSignature(String signature) {
-        this.signature = signature;
-    }
 }

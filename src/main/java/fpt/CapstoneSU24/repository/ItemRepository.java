@@ -2,12 +2,8 @@ package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.model.Item;
-import fpt.CapstoneSU24.model.ItemLog;
-import fpt.CapstoneSU24.model.Product;
-import fpt.CapstoneSU24.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-//import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Override
     Page<Item> findAll(Pageable pageable);
@@ -114,7 +109,7 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Modifying
     @Transactional
     @Query("UPDATE Item i SET i.status = :status , i.currentOwner = :currentOwner WHERE i.itemId = :itemId")
-    void updateItemStatusAndCurrentOwnwe(@Param("itemId") Long itemId, @Param("status") int status, @Param("currentOwner") String currentOwner);
+    void updateItemStatusAndCurrentOwnwe(@Param("itemId") Integer itemId, @Param("status") int status, @Param("currentOwner") String currentOwner);
 
 
     @Query("SELECT i FROM Item i WHERE i.currentOwner = :currentOwner")

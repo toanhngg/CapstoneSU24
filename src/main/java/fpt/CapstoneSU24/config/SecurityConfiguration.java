@@ -111,10 +111,16 @@ public class SecurityConfiguration {
                                 "/topic/messages",
                                 "/ws/**",
                                 "api/item/logMetrics",
+                                "api/itemlog/editTransport",
+                                "api/itemlog/addItemLogTransport",
+                                "api/itemlog/getItemLogDetail",
+                                "api/itemlog/getItemLogDetailHistory",
+                                "api/itemlog/editItemLogByParty",
+                                "api/item/getInforItemByProductRecognition",
                                 "api/customercare/add",
                                 "api/user/top5OrgNames",
-                                "api/customercare/searchCustomerCare"
-
+                                "api/customercare/searchCustomerCare",
+                               "api/itemlog/updateItemLog"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

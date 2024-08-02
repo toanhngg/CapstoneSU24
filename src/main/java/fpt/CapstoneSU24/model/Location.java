@@ -35,4 +35,9 @@ public class Location {
     private String ward;
 
 
+    public Location(String address, String city, String country, Double coordinateX, Double coordinateY, String district, String ward) {
+    }
+
+    public Location(Location location) {
+    }
 }
