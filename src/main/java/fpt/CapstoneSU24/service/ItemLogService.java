@@ -140,7 +140,7 @@ public class ItemLogService {
                 int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-                if (check == 3) {
+                if (check == 3 || check == 0) {
                     // B2: Lưu thông tin của itemLogId đó thành một dòng itemLogId khác
                     ItemLog newItemLog = new ItemLog();
                     copyItemLogDetails(newItemLog, itemLogDetail);
@@ -203,7 +203,7 @@ public class ItemLogService {
             int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-            if (check == 4) {
+            if (check == 4 || check == 0) {
                 // B2: Lưu thông tin của itemLogId đó thành một dòng itemLogId khác
                 ItemLog newItemLog = new ItemLog();
                 copyItemLogDetails(newItemLog, itemLogDetail);
@@ -252,7 +252,7 @@ public class ItemLogService {
             int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-            if (check == 3) {
+            if (check == 3 || check == 0) {
                 // B3: Cập nhật thông tin của ItemLogId trước đó
                 Location savedLocation = locationRepository.save(dataEditDTO.getLocation());
                 if (!hasNullFields(savedLocation)) {
@@ -278,9 +278,9 @@ public class ItemLogService {
             if (item == null) {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
-            if (item.getStatus() == 0)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             int check = clientService.checkOTPinSQL2(itemLogDTO.getEmailParty().trim(), itemLogDTO.getOTP().trim(), item.getProductRecognition());
+            if (check == 0)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP time expire.");
             if (check == 3) {
@@ -358,7 +358,7 @@ public class ItemLogService {
             int check = clientService.checkOTPinSQL2(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-            if (check == 3) {
+            if (check == 3 || check == 0) {
                 // B2: Lưu thông tin của itemLogId đó thành một dòng itemLogId khác
                 ItemLog newItemLog = new ItemLog();
                 copyItemLogDetails(newItemLog, itemLogDetail);
