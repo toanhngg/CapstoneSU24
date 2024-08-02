@@ -26,14 +26,8 @@ import org.springframework.web.bind.annotation.GetMapping;
         private String assignPerson;
         @Column(name = "assign_person_mail")
         private String assignPersonMail;
-        @ManyToOne
-        @JoinColumn(name = "location_id")
-        private Location location;
         @Column(name = "description", columnDefinition = "nvarchar(255)")
         private String description;
         @Column(name = "phone_number")
         private String phoneNumber;
-
-    public Authorized(String authorizedName, String authorizedEmail, String partyFullName, String email, Location savedLocation, String phoneNumber, String description) {
-    }
 }

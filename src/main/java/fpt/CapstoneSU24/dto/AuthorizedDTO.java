@@ -49,7 +49,7 @@ public class AuthorizedDTO {
     @Size(max = 10, message = "ProductRecognition must be 10 characters")
     private String productRecognition;
 
-
+    private String OTP;
 
 
 

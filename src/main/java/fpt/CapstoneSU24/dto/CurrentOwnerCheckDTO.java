@@ -18,4 +18,6 @@ public class CurrentOwnerCheckDTO {
     @Size(max = 10, message = "ProductRecognition must be less than 10 characters")
     @NotBlank(message = "ProductRecognition email is required")
     private String productRecognition;
+
+    private String OTP;
 }

@@ -36,4 +36,6 @@ public class AbortDTO {
     private int status;
     @JsonIgnore
     private ImageItemLog imageItemLog;
+
+    private String OTP;
 }
