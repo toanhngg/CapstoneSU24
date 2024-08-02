@@ -112,11 +112,6 @@ public class UserController {
     public ResponseEntity<String> updateDescription(@RequestBody String description) {
         return userService.updateDescription(description);
     }
-    @GetMapping("/top5OrgNames")
-    public ResponseEntity<List<OrgNameUserDTO>> getTop5OrgNames() {
-        List<OrgNameUserDTO> topOrgNames = userService.getTop5OrgNames();
-        return ResponseEntity.ok(topOrgNames);
-    }
     @GetMapping("/countRegisteredUser")
     public ResponseEntity<?> countRegisteredUser() {
         return userService.countRegisteredUser();
