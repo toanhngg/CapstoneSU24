@@ -63,4 +63,13 @@ public class LocationService {
        jsonObject.put("pieCity", jsonArray);
        return jsonObject;
    }
+
+   public  ResponseEntity<?> getListDistinctCity()
+   {
+       List<String> listCity;
+
+       listCity = locationRepository.getListDistinctCity();
+
+       return  ResponseEntity.ok(listCity);
+   }
 }

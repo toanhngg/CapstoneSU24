@@ -47,6 +47,9 @@ public class User implements UserDetails {
     @Column(name = "profileImage", columnDefinition = "nvarchar(255)")
     private String profileImage;
 
+    @Column(name = "orgImage", columnDefinition = "nvarchar(255)")
+    private String orgImage;
+
     public User() {
     }
     public String getOrg_name() {
@@ -57,7 +60,7 @@ public class User implements UserDetails {
         this.org_name = org_name;
     }
 
-    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location, AuthToken authToken) {
+    public User(int userId, String email, String password, Role role, String firstName, String lastName, String description, String phone, long createAt, int status, Location location, AuthToken authToken, String orgImage) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -70,6 +73,7 @@ public class User implements UserDetails {
         this.status = status;
         this.location = location;
         this.authToken = authToken;
+        this.orgImage = orgImage;
     }
 
     @Override
@@ -204,5 +208,13 @@ public class User implements UserDetails {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getOrgImage() {
+        return orgImage;
+    }
+
+    public void setOrgImage(String orgImage) {
+        this.orgImage = orgImage;
     }
 }

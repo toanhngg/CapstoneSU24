@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title><span th:text="${title}"></span></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+        }
+        .header {
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .image-container img {
+            max-width: 200px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .footer {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #007bff;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h1 class="header">Báo cáo mới từ người dùng</h1>
+<p>Kính gửi <span th:text="${recipientName}">Quý Nhà Máy</span>,</p>
+<p>Chúng tôi xin thông báo rằng chúng tôi đã nhận được một báo cáo mới từ <span th:text="${senderName}">người dùng</span>. Dưới đây là chi tiết của báo cáo:</p>
+<div class="content">
+    <p><strong>Tiêu đề:</strong> <span th:text="${title}"></span></p>
+    <p><strong>Loại Vấn Đề:</strong> <span th:text="${component}"></span></p>
+    <p><strong>Mức Độ Ưu Tiên:</strong> <span th:text="${priority}"></span></p>
+    <p><strong>Chi Tiết Nguyên Nhân:</strong></p>
+    <p th:text="${causeDetail}"></p>
+</div>
+<p><strong>Hình Ảnh Đính Kèm:</strong></p>
+<div class="image-container">
+    <div th:each="image : ${imageReports}">
+        <img th:src="${image}" alt="Issue Image" />
+    </div>
+</div>
+<a th:href="${reportLink}" class="button">Xem báo cáo</a>
+<p>Vui lòng kiểm tra và xử lý báo cáo này trong thời gian sớm nhất. Nếu cần thêm thông tin, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
+<p class="footer">Trân trọng,</p>
+<p class="footer">Hệ Thống Quản Lý Báo Cáo</p>
+<div class="footer">
+    <p>Thông tin liên hệ: <a href="mailto:thanhnc942@gmail.com">thanhnc942@gmail.com</a></p>
+    <p>Điện thoại: 0961-835-886</p>
+    <p>Địa chỉ: Đại học FPT</p>
+</div>
+</body>
+</html>

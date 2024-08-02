@@ -4,14 +4,16 @@ import java.util.List;
 
 public class ListSupportDTOResponse {
     private int supportSystemId;
+    private String email;
     private String title;
     private String status;
     private long timestamp;
     private String supporterName;
     private List<SubSupportDTOResponse> subSupport;
 
-    public ListSupportDTOResponse(int supportSystemId, String title, String status, long timestamp, String supporterName, List<SubSupportDTOResponse> subSupport) {
+    public ListSupportDTOResponse(int supportSystemId, String email, String title, String status, long timestamp, String supporterName, List<SubSupportDTOResponse> subSupport) {
         this.supportSystemId = supportSystemId;
+        this.email = email;
         this.title = title;
         this.status = status;
         this.timestamp = timestamp;
@@ -21,6 +23,14 @@ public class ListSupportDTOResponse {
 
     public int getSupportSystemId() {
         return supportSystemId;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setSupportSystemId(int supportSystemId) {

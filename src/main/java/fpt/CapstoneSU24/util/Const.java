@@ -21,6 +21,13 @@ public class Const {
         public final static String UNLOCKUSER_DETAIL = "UnLockUserMail";
         public final static String CHANGEPASSWORD = "forgotPassword";
         public final static String VERIFY_EMAIL = "verifyEmail";
+        public final static String ANNOUCE_NEW_ISSUE = "announceNewIssue";
+        public final static String REPLY_ISSUE = "reply-issue-notification";
+    }
+
+    public final static class ClientServer{
+        public final static String DeployServer = "https://trace-origin.netlify.app/";
+        public final static String LocalServer = "http://localhost:3000/";
     }
 
 

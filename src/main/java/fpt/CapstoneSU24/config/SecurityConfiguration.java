@@ -107,6 +107,7 @@ public class SecurityConfiguration {
                                 "/api/user/countRegisteredUser",
                                 "/app/send/**",
                                 "/app/topic/messages",
+                                "/api/report/createReport",
                                 "/topic/messages",
                                 "/ws/**",
                                 "api/item/logMetrics",

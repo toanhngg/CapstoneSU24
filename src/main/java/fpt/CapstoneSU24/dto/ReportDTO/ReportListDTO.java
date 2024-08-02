@@ -1,55 +1,71 @@
-package fpt.CapstoneSU24.model;
+package fpt.CapstoneSU24.dto.ReportDTO;
 
-import jakarta.persistence.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "[report]")
-public class Report {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "report_id")
-    private int reportId;
-    @Column(name = "createOn")
+public class ReportListDTO {
+    private int id;
     private long createOn;
-    @Column(name = "updateOn")
     private long updateOn;
-    @Column(name = "code", columnDefinition = "nvarchar(50)")
     private String code;
-    @Column(name = "title", columnDefinition = "nvarchar(250)")
     private String title;
-    @Column(name = "type")
     private int type;
-    @Column(name = "status")
     private int status;
-    @Column(name = "priority")
     private int priority;
-    @ManyToOne
-    @JoinColumn(name = "createBy")
-    private Party createBy;
-    @ManyToOne
-    @JoinColumn(name = "report_to_id")
-    private User reportTo;
-    @Column(name = "component")
+    private String createBy;
+    private ReportTo reportTo;
     private int component;
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ImageReport> imageReports = new ArrayList<>();
-    @ManyToOne
-    @JoinColumn(name = "itemId")
-    private Item itemId;
-    @Column(name = "causeDetail")
     private String causeDetail;
-    @Column(name = "responseDetail")
     private String responseDetail;
+    private List<ImageReport> imageReports;
+    private String itemId;
+    private String productName;
 
-    public int getReportId() {
-        return reportId;
+
+    public static class ReportTo {
+        private String name;
+
+        // Getters and setters
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
-    public void setReportId(int reportId) {
-        this.reportId = reportId;
+    public static class ImageReport {
+        private int id;
+        private String url;
+
+        // Getters and setters
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
+
+    // Getters and setters for ReportListDTO
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public long getCreateOn() {
@@ -108,19 +124,19 @@ public class Report {
         this.priority = priority;
     }
 
-    public Party getCreateBy() {
+    public String getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(Party createBy) {
+    public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
 
-    public User getReportTo() {
+    public ReportTo getReportTo() {
         return reportTo;
     }
 
-    public void setReportTo(User reportTo) {
+    public void setReportTo(ReportTo reportTo) {
         this.reportTo = reportTo;
     }
 
@@ -130,22 +146,6 @@ public class Report {
 
     public void setComponent(int component) {
         this.component = component;
-    }
-
-    public List<ImageReport> getImageReports() {
-        return imageReports;
-    }
-
-    public void setImageReports(List<ImageReport> imageReports) {
-        this.imageReports = imageReports;
-    }
-
-    public Item getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(Item itemId) {
-        this.itemId = itemId;
     }
 
     public String getCauseDetail() {
@@ -162,5 +162,29 @@ public class Report {
 
     public void setResponseDetail(String responseDetail) {
         this.responseDetail = responseDetail;
+    }
+
+    public List<ImageReport> getImageReports() {
+        return imageReports;
+    }
+
+    public void setImageReports(List<ImageReport> imageReports) {
+        this.imageReports = imageReports;
+    }
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 }

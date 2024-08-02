@@ -51,7 +51,7 @@ public class SupportSystemService {
             supportSystem.setTimestamp(System.currentTimeMillis());
             supportSystemRepository.save(supportSystem);
             // add images
-            if (req.getImages().isEmpty()) {
+            if (!req.getImages().isEmpty()) {
                 for (String obj : req.getImages()) {
                     String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj), "");
                     imageSupportSystemRepository.save(new ImageSupportSystem(0, filePath,0, supportSystem));
@@ -75,7 +75,7 @@ public class SupportSystemService {
             supportSystem.setSupportTimestamp(System.currentTimeMillis());
             supportSystemRepository.save(supportSystem);
             // add images
-            if (req.getImages().isEmpty()) {
+            if (!req.getImages().isEmpty()) {
                 for (String obj : req.getImages()) {
                     String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj), "");
                     imageSupportSystemRepository.save(new ImageSupportSystem(0, filePath,1, supportSystem));
@@ -106,7 +106,7 @@ public class SupportSystemService {
 
 
             // add images
-            if (req.getImages().isEmpty()) {
+            if (!req.getImages().isEmpty()) {
                 for (String obj : req.getImages()) {
                     String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj), "");
                     imageSupportSystemRepository.save(new ImageSupportSystem(0, filePath,1, supportSystem));

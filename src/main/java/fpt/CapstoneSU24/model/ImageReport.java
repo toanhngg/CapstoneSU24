@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 @Table(name = "image_report") // Đặt tên bảng trong cơ sở dữ liệu
 public class ImageReport {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
 
@@ -22,8 +23,7 @@ public class ImageReport {
     public ImageReport() {
     }
 
-    public ImageReport(int id, String imageName, String imagePath, Report report) {
-        this.id = id;
+    public ImageReport(String imageName, String imagePath, Report report) {
         this.imageName = imageName;
         this.imagePath = imagePath;
         this.report = report;

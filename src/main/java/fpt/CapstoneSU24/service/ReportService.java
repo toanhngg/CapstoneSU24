@@ -1,26 +1,29 @@
 package fpt.CapstoneSU24.service;
 
-import fpt.CapstoneSU24.dto.B02.B02_GetListReport;
-import fpt.CapstoneSU24.dto.B02.B02_RequestFilterTable;
-import fpt.CapstoneSU24.dto.ReportDetailDto;
-import fpt.CapstoneSU24.model.ImageReport;
-import fpt.CapstoneSU24.model.Report;
+import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.dto.ReportDTO.CreateReportRequest;
+import fpt.CapstoneSU24.dto.ReportDTO.ReplyReportRequest;
+import fpt.CapstoneSU24.dto.ReportDTO.RequestListReport;
+import fpt.CapstoneSU24.dto.ReportDTO.ReportListDTO;
+import fpt.CapstoneSU24.model.*;
+import fpt.CapstoneSU24.repository.ItemRepository;
+import fpt.CapstoneSU24.repository.PartyRepository;
 import fpt.CapstoneSU24.repository.ReportRepository;
-import fpt.CapstoneSU24.util.DataUtils;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fpt.CapstoneSU24.repository.UserRepository;
+import fpt.CapstoneSU24.util.Const;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
-import java.util.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,128 +36,202 @@ public class ReportService {
         this.epochDate = epochDate;
         this.reportRepository = reportRepository;
     }
-    private static final Logger log = LoggerFactory.getLogger(ReportService.class);
+    @Autowired
+    private CloudinaryService cloudinaryService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PartyRepository partyRepository;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private EmailService emailService;
 
 
-    public Page<B02_GetListReport> getListReports(String code,
-                                                  String title,
-                                                  Integer reportBy,
-                                                  Integer type,
-                                                  long dateFrom,
-                                                  long dateTo,
-                                                  Integer status,
-                                                  String orderBy,
-                                                  Boolean isAsc,
-                                                  int page,
-                                                  int size) {
-        try {
-            // Sort theo filter
-            Sort sort = Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, orderBy);
+    public ResponseEntity<?> getListReports(RequestListReport requestFilterTable) {
+        Sort.Direction direction = requestFilterTable.getAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, requestFilterTable.getOrderBy());
+        Pageable pageable = PageRequest.of(requestFilterTable.getPage(), requestFilterTable.getSize(), sort);
 
-            // Tạo request
-            Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Report> reports = reportRepository.findReports(
+                requestFilterTable.getCode(),
+                requestFilterTable.getTitle(),
+                requestFilterTable.getReportTo(),
+                requestFilterTable.getType(),
+                requestFilterTable.getDateFrom(),
+                requestFilterTable.getDateTo(),
+                requestFilterTable.getStatus(),
+                requestFilterTable.getEmailReport(),
+                requestFilterTable.getProductId(),
+                pageable
+        );
 
+        Page<ReportListDTO> reportListDTOs = reports.map(this::convertToDTO);
 
-            Page<Report> reportsPage = reportRepository.findReports(code, title, reportBy, type, dateFrom, dateTo, status, pageable);
-            // Mapping
-            List<B02_GetListReport> listReports = reportsPage.getContent().stream()
-                    .map(this::transformToB02_GetListReport)
-                    .collect(Collectors.toList());
+        return ResponseEntity.ok(reportListDTOs);
+    }
 
-            // trả về kiểu page
-            return new PageImpl<>(listReports, pageable, reportsPage.getTotalElements());
+    private ReportListDTO convertToDTO(Report report) {
+        ReportListDTO dto = new ReportListDTO();
+        dto.setId(report.getReportId());
+        dto.setCreateOn(report.getCreateOn());
+        dto.setUpdateOn(report.getUpdateOn());
+        dto.setCode(report.getCode());
+        dto.setTitle(report.getTitle());
+        dto.setType(report.getType());
+        dto.setStatus(report.getStatus());
+        dto.setPriority(report.getPriority());
+        dto.setCreateBy(report.getCreateBy().getEmail());
 
-        } catch (Exception ex) {
-            System.err.println("Error in report: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-        return Page.empty(PageRequest.of(page, size, Sort.by(orderBy)));
+        ReportListDTO.ReportTo reportToDto = new ReportListDTO.ReportTo();
+        reportToDto.setName(report.getReportTo().getFirstName());
+        dto.setReportTo(reportToDto);
+
+        dto.setComponent(report.getComponent());
+        dto.setCauseDetail(report.getCauseDetail());
+        dto.setResponseDetail(report.getResponseDetail());
+        dto.setImageReports(report.getImageReports().stream()
+                .map(imageReport -> {
+                    ReportListDTO.ImageReport imageDto = new ReportListDTO.ImageReport();
+                    imageDto.setId(imageReport.getId());
+                    imageDto.setUrl(cloudinaryService.getImageUrl(imageReport.getImagePath()));
+                    return imageDto;
+                }).collect(Collectors.toList()));
+        dto.setItemId(report.getItemId().getProductRecognition());
+        dto.setProductName(report.getItemId().getProduct().getProductName());
+        return dto;
     }
 
 
-    private B02_GetListReport transformToB02_GetListReport(Report report) {
-        B02_GetListReport listReport = new B02_GetListReport();
-        listReport.setReportId(report.getReportId());
-        listReport.setStatus(report.getStatus());
+    public ResponseEntity<Report> createReport(CreateReportRequest request) throws MessagingException {
+        Report report = new Report();
+        Item item = itemRepository.findOneByItemId(1);
+        User user = userRepository.findOneByUserId(22);
+        report.setReportTo(user);
+        report.setCreateBy(partyRepository.findOneByPartyId(1));
+        report.setItemId(item);
+        report.setCreateOn(System.currentTimeMillis());
+        report.setUpdateOn(System.currentTimeMillis());
+        report.setTitle(request.getTitle());
+        report.setType(request.getType());
+        report.setComponent(request.getComponent());
+        report.setCauseDetail(request.getCauseDetail());
+        report.setStatus(0);
+        report.setPriority(request.getPriority());
 
-        Map<Integer, String> componentMap = DataUtils.getComponentMapping();
-        int componentCode = report.getComponent();
-        String componentName = componentMap.getOrDefault(componentCode, "Other");
-        listReport.setCode("[ " + componentName + " ]" + report.getCode());
+        String reportCode =item.getProductRecognition() + "-" + reportRepository.countItem(item.getItemId());
+        report.setCode(reportCode);
 
-        listReport.setTitle(report.getTitle());
-        return listReport;
+        List<ImageReport> imageReports = request.getImageReports().stream()
+                .map(imageData -> {
+                    try {
+                        String filePath = cloudinaryService.uploadImageAndGetPublicId(
+                                cloudinaryService.convertBase64ToImgFile(imageData), "");
+                        return new ImageReport("", filePath, report);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+        report.setImageReports(imageReports);
+
+        Report savedReport = reportRepository.save(report);
+
+        String subjectMail = "[" + reportCode + "] " + request.getTitle();
+        String templateMail = Const.TEMPLATE_FILE_NAME.ANNOUCE_NEW_ISSUE;
+
+        DataMailDTO dataMail = new DataMailDTO();
+        dataMail.setTo("dtm.it2002@gmail.com");
+        dataMail.setSubject(subjectMail);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("recipientName", user.getFirstName());
+        props.put("senderName", report.getCreateBy().getEmail());
+        props.put("title", request.getTitle());
+        props.put("component", getComponentLabel(request.getComponent()));
+        props.put("priority", getPriorityLabel(request.getPriority()));
+        props.put("causeDetail", request.getCauseDetail());
+        props.put("imageReports", imageReports.stream()
+                .map(imageReport -> cloudinaryService.getImageUrl(imageReport.getImagePath()))
+                .collect(Collectors.toList()));
+        props.put("reportLink", Const.ClientServer.LocalServer + "manufacturer/reportManager/" + report.getReportId());
+        dataMail.setProps(props);
+
+        emailService.sendHtmlMail(dataMail, templateMail);
+
+        return ResponseEntity.ok(savedReport);
     }
 
-    public ReportDetailDto getDetailReport(int reportId)
-    {
-        ReportDetailDto reportDetailDto = new ReportDetailDto();
-               Report report = reportRepository.getOneByreportId(reportId);
-        Map<String, String> imageReport = new HashMap<>();
-
-        for (ImageReport imageReportItem : report.getImageReports()) {
-            imageReport.put(String.valueOf(imageReportItem.getId()), imageReportItem.getImageName());
+    private String getPriorityLabel(int priority) {
+        switch (priority) {
+            case 0:
+                return "Low";
+            case 1:
+                return "Medium";
+            case 2:
+                return "High";
+            case 3:
+                return "Very High";
+            default:
+                return "Unknown";
         }
-        //mapping component
-        Map<Integer, String> componentMap = DataUtils.getComponentMapping();
-        int componentCode = report.getComponent();
-        String componentName = componentMap.getOrDefault(componentCode, "Other");
-
-        reportDetailDto.setReportId(report.getReportId());
-        reportDetailDto.setCode(report.getCode());
-        reportDetailDto.setComponent(componentName);
-        reportDetailDto.setCreateBy(report.getCreateBy());
-        String getReportDate = epochDate.dateTimeToString(epochDate.epochToDate(report.getCreateOn()), "dd-MM-yyyy");
-        reportDetailDto.setCreateOn(getReportDate);
-        reportDetailDto.setPriority(report.getPriority());
-        reportDetailDto.setStatus(report.getStatus());
-        reportDetailDto.setTitle(report.getTitle());
-        reportDetailDto.setType(report.getType());
-        String getReportUpdateOn = epochDate.dateTimeToString(epochDate.epochToDate(report.getUpdateOn()), "dd-MM-yyyy");
-        reportDetailDto.setUpdateOn(getReportUpdateOn);
-        reportDetailDto.setReportTo(report.getReportTo().getEmail());
-        reportDetailDto.setReportImage(imageReport);
-        return reportDetailDto;
     }
 
-    public ResponseEntity<Page<B02_GetListReport>> getListReports(B02_RequestFilterTable requestFilter) {
-        long dateFromEpoch = requestFilter.getDateFrom() != null ? requestFilter.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : 0;
-        long dateToEpoch = requestFilter.getDateTo() != null ? requestFilter.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : 0;
-
-        Integer  reportBy = null;
-        Integer type = null;
-        Integer status = null;
-
-        if (requestFilter.getReportBy() > -1) {
-            reportBy = -1;
+    private String getComponentLabel(int component) {
+        switch (component) {
+            case 1:
+                return "Sản phẩm không đúng mô tả (sai màu, kích thước, v.v.)";
+            case 2:
+                return "Sản phẩm bị hỏng/móp méo hoặc thiếu phụ kiện";
+            case 3:
+                return "Không hoạt động/lỗi kỹ thuật/quá hạn sử dụng";
+            case 4:
+                return "Sản phẩm giao chậm";
+            case 5:
+                return "Không có tem bảo hành hoặc cần thông tin bảo hành";
+            case 6:
+                return "Đổi/trả sản phẩm hoặc cần hướng dẫn sử dụng";
+            case 7:
+                return "Tư vấn sản phẩm tương tự";
+            case 8:
+                return "Khác...";
+            default:
+                return "Unknown";
         }
-        if (requestFilter.getType() > -1) {
-            type = -1;
-        }
-        if (requestFilter.getStatus()  > -1) {
-            status = -1;
-        }
-
-        Page<B02_GetListReport> b02GetListReports = getListReports(
-                requestFilter.getCode(),
-                requestFilter.getTitle(),
-                reportBy,
-                type,
-                dateFromEpoch,
-                dateToEpoch,
-                status,
-                requestFilter.getOrderBy(),
-                requestFilter.getAsc(),
-                requestFilter.getPage(),
-                requestFilter.getSize());
-        return  ResponseEntity.ok(b02GetListReports);
     }
 
-    public ResponseEntity<?> getReportById(String req) {
-        ReportDetailDto reportDetail = new ReportDetailDto();
-        JSONObject jsonObject = new JSONObject(req);
-        int reportId = jsonObject.has("reportId") ? jsonObject.getInt("reportId") : -1;
-        reportDetail = getDetailReport(reportId);
-        return ResponseEntity.ok(reportDetail);
+    public ResponseEntity<String> replyReport(ReplyReportRequest request) throws MessagingException {
+        Report report = reportRepository.findById(request.getReportId())
+                .orElseThrow(() -> new RuntimeException("Report not found"));
+
+        Party user = report.getCreateBy();
+
+        report.setStatus(1);
+        report.setResponseDetail(request.getResponseDetail());
+        reportRepository.save(report);
+
+
+        String subjectMail = "Phản hồi về vấn đề [" + report.getCode() + "] " + report.getTitle();
+        String templateMail = Const.TEMPLATE_FILE_NAME.REPLY_ISSUE;
+
+        DataMailDTO dataMail = new DataMailDTO();
+        dataMail.setTo("dtm.it2002@gmail.com");
+        dataMail.setSubject(subjectMail);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("userName", user.getPartyFullName());
+        props.put("title", report.getTitle());
+        props.put("responseDetail", request.getResponseDetail());
+        dataMail.setProps(props);
+
+
+        emailService.sendHtmlMail(dataMail, templateMail);
+
+        return ResponseEntity.ok("Reply sent successfully");
     }
+
+
+
+
+
 }

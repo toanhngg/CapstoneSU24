@@ -28,24 +28,30 @@ public abstract class SupportSystemMapper {
     @Mapping(source = "status", target = "status")
     @Mapping(source = "timestamp", target = "timestamp")
     @Mapping(source = "supporterName", target = "supporterName")
-    @Mapping(target = "subSupport", ignore = true) // Ignore avatar for now, we'll set it manually
+    @Mapping(target = "email", ignore = true)
+    @Mapping(target = "subSupport", ignore = true)
     public abstract ListSupportDTOResponse supportSystemToListSupportDTOResponse(SupportSystem supportSystem);
+    @AfterMapping
+    protected void setEmail(SupportSystem supportSystem, @MappingTarget ListSupportDTOResponse listSupportDTOResponse) {
 
+        listSupportDTOResponse.setEmail(supportSystem.getUser().getEmail());
+    }
     @AfterMapping
     protected void setSubSupport(SupportSystem supportSystem, @MappingTarget ListSupportDTOResponse listSupportDTOResponse) {
         List<SupportSystem> supportSystems = supportSystemRepository.findAllByReplyId(supportSystem.getSupportSystemId());
-        if(!supportSystems.isEmpty()){
-            List<SubSupportDTOResponse> subSupportDTOResponses = new ArrayList<>();
-            List<String> initImages = imageSupportSystemRepository.findImagesBySupSystemIdAndType(supportSystem.getSupportSystemId(), 0).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());;
-            List<String> initSupportImages = imageSupportSystemRepository.findImagesBySupSystemIdAndType(supportSystem.getSupportSystemId(), 1).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());;
-            subSupportDTOResponses.add(new SubSupportDTOResponse(supportSystem.getSupportSystemId(), supportSystem.getContent(), initImages, supportSystem.getTimestamp(), supportSystem.getSupportContent(), initSupportImages, supportSystem.getSupportTimestamp()));
+        List<SubSupportDTOResponse> subSupportDTOResponses = new ArrayList<>();
 
+        List<String> initImages = imageSupportSystemRepository.findImagesBySupSystemIdAndType(supportSystem.getSupportSystemId(), 0).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());;
+        List<String> initSupportImages = imageSupportSystemRepository.findImagesBySupSystemIdAndType(supportSystem.getSupportSystemId(), 1).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());;
+        subSupportDTOResponses.add(new SubSupportDTOResponse(supportSystem.getSupportSystemId(), supportSystem.getContent(), initImages, supportSystem.getTimestamp(), supportSystem.getSupportContent(), initSupportImages, supportSystem.getSupportTimestamp()));
+
+        if(!supportSystems.isEmpty()){
             for (SupportSystem i: supportSystems) {
                 List<String> images = imageSupportSystemRepository.findImagesBySupSystemIdAndType(i.getSupportSystemId(), 0).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());;
                 List<String> supportImages = imageSupportSystemRepository.findImagesBySupSystemIdAndType(i.getSupportSystemId(), 1).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());;
                 subSupportDTOResponses.add(new SubSupportDTOResponse(i.getSupportSystemId(), i.getContent(), images, i.getTimestamp(), i.getSupportContent(), supportImages, i.getSupportTimestamp()));
             }
-            listSupportDTOResponse.setSubSupport(subSupportDTOResponses);
         }
+        listSupportDTOResponse.setSubSupport(subSupportDTOResponses);
     }
 }

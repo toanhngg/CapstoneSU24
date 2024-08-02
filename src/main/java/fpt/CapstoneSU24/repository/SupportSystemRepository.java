@@ -13,7 +13,7 @@ import java.util.List;
 public interface SupportSystemRepository extends JpaRepository<SupportSystem, Integer> {
 
     //======================================= filter by admin
-    @Query("SELECT c FROM SupportSystem c WHERE (c.user.email LIKE %:keyword% AND c.replyId != -1)")
+    @Query("SELECT c FROM SupportSystem c WHERE (c.user.email LIKE %:keyword% AND c.replyId = -1)")
     Page<SupportSystem> searchSupportSystem(@Param("keyword") String keyword, Pageable pageable);
     @Query("SELECT c FROM SupportSystem c WHERE (c.user.email LIKE %:keyword%) AND c.timestamp >= :startDate AND c.timestamp <= :endDate AND c.replyId = -1")
     Page<SupportSystem> searchSupportSystemWithDate(@Param("keyword") String keyword, @Param("startDate") long startDate, @Param("endDate") long endDate, Pageable pageable);

@@ -2,8 +2,12 @@ package fpt.CapstoneSU24.repository;
 
 import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.model.Item;
+import fpt.CapstoneSU24.model.ItemLog;
+import fpt.CapstoneSU24.model.Product;
+import fpt.CapstoneSU24.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+//import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
+
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Override
     Page<Item> findAll(Pageable pageable);
@@ -125,4 +130,6 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     List<OrgNameUserDTO> findTop5OrgNames(Pageable pageable);
     List<Item> findAllItemByCreatedAtBetween(long startDate, long endDate);
 
+
+    public Item findOneByItemId(int id);
 }

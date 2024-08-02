@@ -13,9 +13,9 @@ public class InformationCert {
     private Map<String, Object> props;
 
     private String orgName;
-    private String itemName;
+    private String  itemName;
     private String supportingDocuments;
-    private String createAt;
+    private String   createAt;
     private String productRecognition;
 
 }

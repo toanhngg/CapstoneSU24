@@ -26,14 +26,16 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Page<User> findAllByStatus(int status, Pageable pageable);
 
     @Query("SELECT u FROM User u " +
-            "WHERE (:email IS NULL OR :email = '' OR u.email = :email) " +
+            "WHERE (:email IS NULL OR :email = '' OR u.email LIKE %:email%) " +
             "AND (:roleId IS NULL OR u.role.roleId = :roleId) " +
             "AND (:status IS NULL OR u.status = :status) " +
             "AND (:dateFrom IS NULL OR u.createAt >= :dateFrom) " +
+            "AND (:city IS NULL OR :city = '' OR u.location.city LIKE %:city%) " +
             "AND (:dateTo IS NULL OR u.createAt <= :dateTo)")
     Page<User> findByFilters(@Param("email") String email,
                              @Param("roleId") Integer roleId,
                              @Param("status") Integer status,
+                             @Param("city") String city,
                              @Param("dateFrom") Long dateFrom,
                              @Param("dateTo") Long dateTo,
                              Pageable pageable);

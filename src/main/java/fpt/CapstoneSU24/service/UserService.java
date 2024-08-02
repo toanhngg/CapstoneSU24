@@ -27,10 +27,7 @@ import jakarta.mail.MessagingException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,11 +70,11 @@ public class UserService {
     @Autowired
     private DocumentGenerator documentGenerator;
     @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
     private UserMapper userMapper;
     @Autowired
     TimeStampUtil timeStampUtil;
+    @Autowired
+    ItemRepository itemRepository;
 
 
     public UserProfileDTO getUserProfile(Authentication authentication, int userId) {
@@ -114,6 +111,7 @@ public class UserService {
                 userProfileDTO.setCountry(currentUser.getLocation().getCountry());
                 //cloudinaryService.getImageUrl: In: Key của ảnh(đã upload len, xem trong db), Out: Đuong dan cua anh
                 userProfileDTO.setProfileIMG(cloudinaryService.getImageUrl(currentUser.getProfileImage()));
+                userProfileDTO.setOrgIMG(cloudinaryService.getImageUrl(currentUser.getOrgImage()));
                 userProfileDTO.setWard(currentUser.getLocation().getWard());
                 userProfileDTO.setDistrict(currentUser.getLocation().getDistrict());
 
@@ -131,6 +129,7 @@ public class UserService {
         }
         return userProfileDTO;
     }
+
     public ResponseEntity<?> viewAllManufacturer(FilterSearchManufacturerRequest req) {
         try {
             Page<User> users;
@@ -175,21 +174,37 @@ public class UserService {
         if (userProfileDTO.getRole().getRoleId() != 1) {
             return new ResponseEntity<>("Admin role required", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        Sort.Direction direction = userRequestDTO.getIsAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Sort.Direction direction = userRequestDTO.getAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, userRequestDTO.getOrderBy());
 
-        //Convert Date
+        // Convert Date
         Long timestampFrom = userRequestDTO.getDateFrom() != null ?
                 userRequestDTO.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
         Long timestampTo = userRequestDTO.getDateTo() != null ?
                 userRequestDTO.getDateTo().atStartOfDay(ZoneId.systemDefault()).toEpochSecond() : null;
 
-
-        //Chia Page
+        // Chia Page
         Pageable pageable = PageRequest.of(userRequestDTO.getPage(), userRequestDTO.getSize(), sort);
-        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, userRequestDTO.getStatus(), timestampFrom, timestampTo, pageable);
 
-        //mapping DTO
+        // Xử lý giá trị status
+        Integer status = null;
+        if (userRequestDTO.getStatus() != null && !userRequestDTO.getStatus().isEmpty()) {
+            status = Integer.parseInt(userRequestDTO.getStatus());
+        }
+
+        Page<User> userPage = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, status,userRequestDTO.getCity() , timestampFrom, timestampTo, pageable);
+
+        if (status != null && status == 0) {
+            Page<User> userPageStatus7 = userRepository.findByFilters(userRequestDTO.getEmail(), /*userRequestDTO.getRoleId()*/ 2, 7,userRequestDTO.getCity(), timestampFrom, timestampTo, pageable);
+
+            List<User> combinedUsers = new ArrayList<>(userPage.getContent());
+            combinedUsers.addAll(userPageStatus7.getContent());
+
+            userPage = new PageImpl<>(combinedUsers, pageable, userPage.getTotalElements() + userPageStatus7.getTotalElements());
+        }
+
+        // mapping DTO
         Page<B03_GetDataGridDTO> B03_GetDataGridDTOPage = userPage.map(user -> {
             B03_GetDataGridDTO B03_GetDataGridDTO = new B03_GetDataGridDTO();
             B03_GetDataGridDTO.setUserId(user.getUserId());
@@ -213,6 +228,8 @@ public class UserService {
 
         return ResponseEntity.ok(B03_GetDataGridDTOPage);
     }
+
+
 
     public ResponseEntity<Role> getRoleByUserId(int userId) {
         User user = userRepository.findOneByUserId(userId);
@@ -450,14 +467,19 @@ public class UserService {
 
     }
 
-    public ResponseEntity<String> updateAvatar(MultipartFile file) {
+    public ResponseEntity<String> updateAvatar(String req) {
         try {
-
+            JSONObject jsonReq = new JSONObject(req);
+            String file = jsonReq.has("file") ? jsonReq.getString("file") : "";
+            if (file.isEmpty())
+            {
+                return ResponseEntity.status(500).body("Image is null");
+            }
             //input vào 1 file
             //gọi service upload: In: file | Out: Key của ảnh
-            String url = cloudinaryService.uploadImageAndGetPublicId(file, "");
-
-            User user = new User();
+            MultipartFile fileCore = cloudinaryService.convertBase64ToImgFile(file);
+            String url = cloudinaryService.uploadImageAndGetPublicId(fileCore, "");
+            User user;
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if ((authentication.getPrincipal() instanceof User)) {
                 user = (User) authentication.getPrincipal();
@@ -469,6 +491,45 @@ public class UserService {
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Failed to upload image");
         }
+    }
+
+    public ResponseEntity<String> updateOrgImage(String req) {
+        try {
+            JSONObject jsonReq = new JSONObject(req);
+            String file = jsonReq.has("file") ? jsonReq.getString("file") : "";
+            if (file.isEmpty())
+            {
+                return ResponseEntity.status(500).body("Image is null");
+            }
+            //input vào 1 file
+            //gọi service upload: In: file | Out: Key của ảnh
+            MultipartFile fileCore = cloudinaryService.convertBase64ToImgFile(file);
+            String url = cloudinaryService.uploadImageAndGetPublicId(fileCore, "");
+            User user;
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if ((authentication.getPrincipal() instanceof User)) {
+                user = (User) authentication.getPrincipal();
+                //save key cua ảnh vào database
+                user.setOrgImage(url);
+                userRepository.save(user);
+            }
+            return ResponseEntity.status(200).body("OrgImage update success");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Failed to upload image");
+        }
+    }
+
+    public ResponseEntity<String> updateDescription(String req) {
+            JSONObject jsonReq = new JSONObject(req);
+            String description = jsonReq.has("description") ? jsonReq.getString("description") : "";
+            User user;
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if ((authentication.getPrincipal() instanceof User)) {
+                user = (User) authentication.getPrincipal();
+                user.setDescription(description);
+                userRepository.save(user);
+            }
+            return ResponseEntity.status(200).body("description update success");
     }
 
     public ResponseEntity<?> countRegisteredUser() {
