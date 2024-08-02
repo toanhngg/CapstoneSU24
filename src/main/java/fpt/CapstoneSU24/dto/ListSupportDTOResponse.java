@@ -5,20 +5,30 @@ import java.util.List;
 public class ListSupportDTOResponse {
     private int supportSystemId;
     private String email;
+    private String phoneNumber;
     private String title;
     private String status;
     private long timestamp;
     private String supporterName;
     private List<SubSupportDTOResponse> subSupport;
 
-    public ListSupportDTOResponse(int supportSystemId, String email, String title, String status, long timestamp, String supporterName, List<SubSupportDTOResponse> subSupport) {
+    public ListSupportDTOResponse(int supportSystemId, String email, String phoneNumber, String title, String status, long timestamp, String supporterName, List<SubSupportDTOResponse> subSupport) {
         this.supportSystemId = supportSystemId;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.title = title;
         this.status = status;
         this.timestamp = timestamp;
         this.supporterName = supporterName;
         this.subSupport = subSupport;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public int getSupportSystemId() {

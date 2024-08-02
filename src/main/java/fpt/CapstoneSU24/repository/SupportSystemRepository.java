@@ -34,4 +34,5 @@ public interface SupportSystemRepository extends JpaRepository<SupportSystem, In
 
     SupportSystem findOneBySupportSystemId(int supportSystemId);
     List<SupportSystem> findAllByReplyId(int replyId);
+    List<SupportSystem> findAllByStatusAndReplyId(int status, int replyId);
 }

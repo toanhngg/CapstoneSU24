@@ -97,9 +97,9 @@ public class CustomerCareService {
     public JSONObject countStatus() {
         try {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("done", customerCareRepository.findAllByStatus(0).size());
-            jsonObject.put("cancel", customerCareRepository.findAllByStatus(1).size());
-            jsonObject.put("waiting", customerCareRepository.findAllByStatus(2).size());
+            jsonObject.put("waiting", customerCareRepository.findAllByStatus(0).size());
+            jsonObject.put("done", customerCareRepository.findAllByStatus(1).size());
+            jsonObject.put("cancel", customerCareRepository.findAllByStatus(2).size());
             return jsonObject;
         } catch (Exception ex) {
             return null;

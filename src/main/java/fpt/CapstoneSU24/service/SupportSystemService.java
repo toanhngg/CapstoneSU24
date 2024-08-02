@@ -8,6 +8,7 @@ import fpt.CapstoneSU24.mapper.SupportSystemMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.ImageSupportSystemRepository;
 import fpt.CapstoneSU24.repository.SupportSystemRepository;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,11 +70,15 @@ public class SupportSystemService {
         User currentUser = (User) authentication.getPrincipal();
         if (currentUser.getRole().getRoleId() != 2) {
             SupportSystem supportSystem = supportSystemRepository.findOneBySupportSystemId(req.getId());
+            SupportSystem updateStatus = supportSystemRepository.findOneBySupportSystemId(supportSystem.getReplyId());
             supportSystem.setSupportContent(req.getContent());
             supportSystem.setSupporterName(currentUser.getLastName() + " " + currentUser.getFirstName());
             supportSystem.setStatus(1);
+            updateStatus.setStatus(1);
             supportSystem.setSupportTimestamp(System.currentTimeMillis());
             supportSystemRepository.save(supportSystem);
+            supportSystemRepository.save(updateStatus);
+
             // add images
             if (!req.getImages().isEmpty()) {
                 for (String obj : req.getImages()) {
@@ -109,7 +114,7 @@ public class SupportSystemService {
             if (!req.getImages().isEmpty()) {
                 for (String obj : req.getImages()) {
                     String filePath = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(obj), "");
-                    imageSupportSystemRepository.save(new ImageSupportSystem(0, filePath,1, supportSystem));
+                    imageSupportSystemRepository.save(new ImageSupportSystem(0, filePath,0, replySupportSystem));
                 }
             }
 
@@ -161,6 +166,23 @@ public class SupportSystemService {
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(supportSystems.map(supportSystemMapper::supportSystemToListSupportDTOResponse));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not permit to access");
+        }
+    }
+    public ResponseEntity<?> countStatus() throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getRole().getRoleId() != 2) {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("waiting", supportSystemRepository.findAllByStatusAndReplyId(0,-1).size());
+                jsonObject.put("done", supportSystemRepository.findAllByStatusAndReplyId(1,-1).size());
+                return ResponseEntity.status(HttpStatus.OK).body(jsonObject.toString());
+
+            } catch (Exception ex) {
+                return null;
+            }
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not permit to access");
         }

@@ -99,7 +99,7 @@ public class CustomerCareController {
     public ResponseEntity<?> updateStatus(@Valid @RequestBody UpdateStatusDTO updateStatusDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 1) {
+        if (currentUser.getRole().getRoleId() != 2) {
             Optional<CustomerCare> updatedCustomerCare = customerCareService.updateStatus(updateStatusDTO.getCareId(),
                     updateStatusDTO.getStatus(), updateStatusDTO.getNote(),currentUser.getUserId());
             return updatedCustomerCare.map(customerCare -> new ResponseEntity<>(customerCare, HttpStatus.OK))
@@ -112,7 +112,7 @@ public class CustomerCareController {
     public ResponseEntity<?> countStatus() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 1) {
+        if (currentUser.getRole().getRoleId() != 2) {
             JSONObject countStatus = customerCareService.countStatus();
             return ResponseEntity.status(HttpStatus.OK).body(countStatus.toString());
         } else {

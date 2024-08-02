@@ -29,12 +29,14 @@ public abstract class SupportSystemMapper {
     @Mapping(source = "timestamp", target = "timestamp")
     @Mapping(source = "supporterName", target = "supporterName")
     @Mapping(target = "email", ignore = true)
+    @Mapping(target = "phoneNumber", ignore = true)
     @Mapping(target = "subSupport", ignore = true)
     public abstract ListSupportDTOResponse supportSystemToListSupportDTOResponse(SupportSystem supportSystem);
     @AfterMapping
-    protected void setEmail(SupportSystem supportSystem, @MappingTarget ListSupportDTOResponse listSupportDTOResponse) {
-
+    protected void setAfter(SupportSystem supportSystem, @MappingTarget ListSupportDTOResponse listSupportDTOResponse) {
         listSupportDTOResponse.setEmail(supportSystem.getUser().getEmail());
+        listSupportDTOResponse.setPhoneNumber(supportSystem.getUser().getPhone());
+
     }
     @AfterMapping
     protected void setSubSupport(SupportSystem supportSystem, @MappingTarget ListSupportDTOResponse listSupportDTOResponse) {
