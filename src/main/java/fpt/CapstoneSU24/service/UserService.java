@@ -554,12 +554,17 @@ public class UserService {
             try {
                 Pageable topFive = PageRequest.of(0, 5);
                 List<OrgNameUserDTO> dtoList = itemRepository.findTop5OrgNames(topFive);
+                List<OrgNameUserDTO> result = new ArrayList<>();
+                for (OrgNameUserDTO item : dtoList) {
+                    item.setUserImage(cloudinaryService.getImageUrl(item.getUserImage()));
+                    result.add(item);
+                }
 //                List<OrgNameUserDTO> dtoList = items.stream()
 //                        .map(item -> new OrgNameUserDTO(item.getProduct().getManufacturer().getOrg_name(), item.getProduct().getManufacturer().getUserId(),
 //                                item.getProduct().getManufacturer().getProfileImage()))
 //                        .collect(Collectors.toList());
 
-                return dtoList;
+                return result;
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 throw e;

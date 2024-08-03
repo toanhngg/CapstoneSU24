@@ -196,7 +196,13 @@ public class ProductService {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
 //        }
         try {
-            List<Product> products = productRepository.findAllProduct(req.getId(), "%"+req.getCategory()+"%");
+            List<Product> products = new ArrayList<>();
+            if(req.getCategoryId() == 0)
+            {
+                 products = productRepository.findAllProduct(req.getId());
+            }else {
+                 products = productRepository.findAllProduct(req.getId(), req.getCategoryId());
+            }
             List<ViewProductDTOResponse> productDTOs = products.stream()
                     .map(productMapper::productToViewProductDTOResponse)
                     .collect(Collectors.toList());

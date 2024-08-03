@@ -105,10 +105,18 @@ public class ReportService {
 
     public ResponseEntity<Report> createReport(CreateReportRequest request) throws MessagingException {
         Report report = new Report();
-        Item item = itemRepository.findOneByItemId(1);
-        User user = userRepository.findOneByUserId(22);
+        Party party = partyRepository.findByPartyEmail(request.getCreateBy());
+        if (party == null) {
+            party = new Party();
+            party.setEmail(request.getCreateBy());
+            party.setPhoneNumber("99999");
+            party.setDescription("Party chi tao report");
+            partyRepository.save(party);
+        }
+        Item item = itemRepository.findByProductRecognition(request.getProductCode());
+        User user = item.getProduct().getManufacturer();
         report.setReportTo(user);
-        report.setCreateBy(partyRepository.findOneByPartyId(1));
+        report.setCreateBy(partyRepository.findOneByPartyId(party.getPartyId()));
         report.setItemId(item);
         report.setCreateOn(System.currentTimeMillis());
         report.setUpdateOn(System.currentTimeMillis());
@@ -119,29 +127,36 @@ public class ReportService {
         report.setStatus(0);
         report.setPriority(request.getPriority());
 
-        String reportCode =item.getProductRecognition() + "-" + reportRepository.countItem(item.getItemId());
+        String reportCode = item.getProductRecognition() + "-" + reportRepository.countItem(item.getItemId());
         report.setCode(reportCode);
+
+        Report savedReport = reportRepository.save(report); // Lưu báo cáo trước để có ID hợp lệ
 
         List<ImageReport> imageReports = request.getImageReports().stream()
                 .map(imageData -> {
                     try {
                         String filePath = cloudinaryService.uploadImageAndGetPublicId(
                                 cloudinaryService.convertBase64ToImgFile(imageData), "");
-                        return new ImageReport("", filePath, report);
+                        ImageReport imageReport = new ImageReport();
+                        imageReport.setImagePath(filePath);
+                        imageReport.setReport(savedReport); // Gán báo cáo đã lưu trữ
+                        return imageReport;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 })
                 .collect(Collectors.toList());
-        report.setImageReports(imageReports);
 
-        Report savedReport = reportRepository.save(report);
+        savedReport.setImageReports(imageReports); // Gán danh sách ảnh cho báo cáo đã lưu trữ
+
+        // Lưu lại báo cáo cùng với các báo cáo ảnh
+        reportRepository.save(savedReport);
 
         String subjectMail = "[" + reportCode + "] " + request.getTitle();
         String templateMail = Const.TEMPLATE_FILE_NAME.ANNOUCE_NEW_ISSUE;
 
         DataMailDTO dataMail = new DataMailDTO();
-        dataMail.setTo("dtm.it2002@gmail.com");
+        dataMail.setTo(user.getEmail());
         dataMail.setSubject(subjectMail);
 
         Map<String, Object> props = new HashMap<>();
@@ -161,6 +176,7 @@ public class ReportService {
 
         return ResponseEntity.ok(savedReport);
     }
+
 
     private String getPriorityLabel(int priority) {
         switch (priority) {
@@ -215,11 +231,11 @@ public class ReportService {
         String templateMail = Const.TEMPLATE_FILE_NAME.REPLY_ISSUE;
 
         DataMailDTO dataMail = new DataMailDTO();
-        dataMail.setTo("dtm.it2002@gmail.com");
+        dataMail.setTo(user.getEmail());
         dataMail.setSubject(subjectMail);
 
         Map<String, Object> props = new HashMap<>();
-        props.put("userName", user.getPartyFullName());
+        props.put("userName", user.getEmail());
         props.put("title", report.getTitle());
         props.put("responseDetail", request.getResponseDetail());
         dataMail.setProps(props);

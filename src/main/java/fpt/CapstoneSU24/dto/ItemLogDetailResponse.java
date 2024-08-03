@@ -24,6 +24,7 @@ public class ItemLogDetailResponse {
     private Long timeReceive;
     private String descriptionItemLog;
     private Integer IdEdit;
+    private Boolean checkPoint;
 
     public ItemLogDetailResponse(Integer itemLogId, String eventType, String partyFullname, String sender, String receiver, String partyPhoneNumber, String addressInParty, Double coordinateX, Double coordinateY, Long timeReceive, String descriptionItemLog) {
         this.itemLogId = itemLogId;

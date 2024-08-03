@@ -109,12 +109,13 @@ public class ItemController {
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
     }
     @PostMapping(value = "/check")
-    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheckDTO req)  {
+    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req)  {
         return itemService.check(req);
     }
+
     @PostMapping(value = "/sendOTP")
-    public ResponseEntity<?> sendOTP(@Valid @RequestBody CurrentOwnerCheckDTO req) {
-        return itemService.sendOTP(req);
+    public ResponseEntity<?> sendOTP(@Valid @RequestParam String email) {
+        return itemService.sendOTP(email);
     }
 
     // API verify OTP
