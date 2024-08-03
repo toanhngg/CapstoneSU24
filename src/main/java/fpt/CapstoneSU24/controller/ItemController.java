@@ -108,6 +108,11 @@ public class ItemController {
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
     }
+    @PostMapping(value = "/checPartyFirst")
+    public ResponseEntity<Integer> checPartyFirst(@Valid @RequestBody CurrentOwnerCheck req)  {
+        return itemService.checPartyFirst(req);
+    }
+
     @PostMapping(value = "/check")
     public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req)  {
         return itemService.check(req);

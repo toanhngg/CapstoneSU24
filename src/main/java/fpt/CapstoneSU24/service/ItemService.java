@@ -448,7 +448,43 @@ public class ItemService {
 
         return false; // Không có trường nào null
     }
-    public ResponseEntity<Integer> check(CurrentOwnerCheck req) {
+
+    public ResponseEntity<Integer> checPartyFirst(CurrentOwnerCheck req) {
+        String email = req.getEmail();
+        String productRecognition = req.getProductRecognition();
+        Item item = findByProductRecognition(productRecognition);
+
+        if (item == null) {
+            // Xử lý nếu item không tồn tại
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+        }
+
+        List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
+
+        // Kiểm tra trạng thái của item bị cấm
+        if (item.getStatus() == 0) {
+            return ResponseEntity.ok(0); // Item status is 0
+        }
+
+        try {
+            // Kiểm tra xem email có phải là CurrentOwner hay không
+            if (list.get(list.size() - 1).getLocation() != null) {
+                if (checkOwner(email, item.getCurrentOwner())) {
+                    return ResponseEntity.ok(1); // CurrentOwner
+                }
+            } else {
+                if (checkParty(email, item.getItemId())) {
+                    return ResponseEntity.ok(2); // CurrentOwner
+                }
+            }
+            }catch(Exception e){
+                logService.logError(e);
+                return ResponseEntity.ok(5); // Exception
+            }
+        return null;
+    }
+
+        public ResponseEntity<Integer> check(CurrentOwnerCheck req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
@@ -468,10 +504,10 @@ public class ItemService {
         try {
             // Kiểm tra xem email có phải là CurrentOwner hay không
             if (checkOwner(email, item.getCurrentOwner())) {
-                if (list.get(list.size() - 1).getLocation() == null)
+//                if (list.get(list.size() - 1).getLocation() != null)
                     return ResponseEntity.ok(3); // CurrentOwner
-                else
-                    return ResponseEntity.ok(6); // CurrentOwner
+//                else
+//                    return ResponseEntity.ok(6); // CurrentOwner
             }
 
             // Kiểm tra xem email có phải là Authorized không
@@ -483,7 +519,11 @@ public class ItemService {
 
             // Kiểm tra xem email có phải là Party từng tham gia ko
             if (checkParty(email, item.getItemId())) {
-                return ResponseEntity.ok(4); // Party
+//               // return ResponseEntity.ok(4); // Party
+//                if (list.get(list.size() - 1).getLocation() != null)
+//                    return ResponseEntity.ok(7); // CurrentOwner
+//                else
+                return ResponseEntity.ok(4); // CurrentOwner
             }
 
             // Không là gì
