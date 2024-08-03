@@ -120,7 +120,8 @@ public class SecurityConfiguration {
                                 "api/customercare/add",
                                 "api/user/top5OrgNames",
                                 "api/customercare/searchCustomerCare",
-                               "api/itemlog/updateItemLog"
+                               "api/itemlog/updateItemLog",
+                                "api/item/checPartyFirst"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

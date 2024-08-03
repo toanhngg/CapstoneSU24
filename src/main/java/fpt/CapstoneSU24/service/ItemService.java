@@ -314,6 +314,8 @@ public class ItemService {
         dto.setEventType(itemLog.getEvent_id().getEvent_type());
         dto.setPartyName(itemLog.getParty().getPartyFullName());
         dto.setDescription(itemLog.getDescription());
+        dto.setCheckPoint(itemLog.getPoint()!= null);
+
         return dto;
     }
 
@@ -472,9 +474,10 @@ public class ItemService {
                 if (checkOwner(email, item.getCurrentOwner())) {
                     return ResponseEntity.ok(1); // CurrentOwner
                 }
-            } else {
                 if (checkParty(email, item.getItemId())) {
                     return ResponseEntity.ok(2); // CurrentOwner
+                }else{
+                    return  ResponseEntity.ok(3); // CurrentOwner
                 }
             }
             }catch(Exception e){
