@@ -9,8 +9,9 @@ public class CreateReportRequest {
     private int priority;
     private String causeDetail;
     private List<String> imageReports;
-    private String createBy;
-    private String productCode;
+    private int createBy;
+    private int  itemId;
+    private int reportTo;
 
     public String getTitle() {
         return title;
@@ -60,20 +61,27 @@ public class CreateReportRequest {
         this.imageReports = imageReports;
     }
 
-    public String getCreateBy() {
+    public int getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(String createBy) {
+    public void setCreateBy(int createBy) {
         this.createBy = createBy;
     }
 
-    public String getProductCode() {
-        return productCode;
+    public int getItemId() {
+        return itemId;
     }
 
-    public void setProductCode(String productCode) {
-        this.productCode = productCode;
+    public void setItemId(int itemId) {
+        this.itemId = itemId;
     }
 
+    public int getReportTo() {
+        return reportTo;
+    }
+
+    public void setReportTo(int reportTo) {
+        this.reportTo = reportTo;
+    }
 }
