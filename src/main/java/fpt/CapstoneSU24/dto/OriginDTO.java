@@ -17,8 +17,11 @@ public class OriginDTO {
     private LocationDTO locationDTO;
     private String descriptionProduct;
     private String descriptionOrigin;
+
     private int warranty;
-   // private double CoordinateX;
+    private Boolean checkPoint;
+
+    // private double CoordinateX;
    // private double CoordinateY;
   //  private String AddressOrigin;
     private List<String> image;

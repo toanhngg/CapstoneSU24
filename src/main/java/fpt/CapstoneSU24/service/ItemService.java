@@ -336,6 +336,8 @@ public class ItemService {
             originDTO.setDescriptionProduct(itemLog.getItem().getProduct().getDescription());
             originDTO.setDescriptionOrigin(itemLog.getItem().getOrigin().getDescription());
             originDTO.setWarranty(itemLog.getItem().getProduct().getWarranty());
+            originDTO.setCheckPoint(itemLog.getPoint() != null);
+
             int productId = itemLog.getItem().getProduct().getProductId();
             List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
                     .stream().map(cloudinaryService::getImageUrl).toList();
