@@ -35,6 +35,23 @@
 
 
 <!--		to anh them-->
+		<!-- https://mvnrepository.com/artifact/org.web3j/core -->
+		<!-- https://mvnrepository.com/artifact/org.web3j/core -->
+		<!-- https://mvnrepository.com/artifact/org.web3j/crypto -->
+		<!-- https://mvnrepository.com/artifact/org.web3j/core -->
+		<dependency>
+			<groupId>org.web3j</groupId>
+			<artifactId>core</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.web3j/codegen -->
+		<dependency>
+			<groupId>org.web3j</groupId>
+			<artifactId>codegen</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf-spring5</artifactId>
@@ -300,6 +317,20 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.web3j</groupId>
+				<artifactId>web3j-maven-plugin</artifactId>
+				<version>4.8.7</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
