@@ -152,4 +152,15 @@ public class CategoryService {
             return ResponseEntity.status(500).body("Error when fetching data");
         }
     }
+    public ResponseEntity<?> findCategoryAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        try {
+            List<Category> categories = categoryRepository.findCategoryByManufacturer(currentUser.getUserId());
+            return ResponseEntity.status(200).body(categories);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
+    }
+
 }
