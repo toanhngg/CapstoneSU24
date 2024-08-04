@@ -44,6 +44,7 @@
 			<artifactId>core</artifactId>
 			<version>5.0.0</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.web3j/codegen -->
 		<dependency>
 			<groupId>org.web3j</groupId>
