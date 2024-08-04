@@ -364,7 +364,7 @@ public class ItemService {
         if (email == null || email.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is missing.");
         }
-        int check = clientService.checkOTPinSQL2(req.getEmail().trim(), req.getOTP().trim(),item.getProductRecognition());
+        int check = clientService.checkOTP(req.getEmail().trim(), req.getOTP().trim(),item.getProductRecognition());
         if (check == 6)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
         if (check == 3) {
@@ -395,8 +395,8 @@ public class ItemService {
     public ResponseEntity<Integer> checkEventAuthorized(String productRecognition) {
         if (!productRecognition.isEmpty()) {
             Item item = findByProductRecognition(productRecognition); // B1
-            if (item.getStatus() == 0)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(3); // San pham da bi huy
+           if (item.getStatus() == 0)
+               return ResponseEntity.status(HttpStatus.OK).body(0); // San pham da bi huy
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
             if (list.get(0).getAuthorized() == null) {
                 return ResponseEntity.ok(1);
@@ -414,7 +414,7 @@ public class ItemService {
             if (item.getStatus() == 0)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             if (checkOwner(authorized.getAssignPersonMail(), item.getCurrentOwner())) {
-                int check = clientService.checkOTPinSQL2(authorized.getAssignPersonMail().trim(), authorized.getOTP().trim(),item.getProductRecognition());
+                int check = clientService.checkOTP(authorized.getAssignPersonMail().trim(), authorized.getOTP().trim(),item.getProductRecognition());
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
                 if (check == 3) {
@@ -453,7 +453,7 @@ public class ItemService {
         return false; // Không có trường nào null
     }
 
-    public ResponseEntity<Integer> checPartyFirst(CurrentOwnerCheck req) {
+    public ResponseEntity<Integer> checkPartyFirst(CurrentOwnerCheck req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
@@ -752,7 +752,7 @@ public class ItemService {
 
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             ItemLog itemIndex = list.get(0);
-            int check = clientService.checkOTPinSQL2(otp.getEmail().trim(), otp.getOtp().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(otp.getEmail().trim(), otp.getOtp().trim(), item.getProductRecognition());
             if(check == 6) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Fail! OTP is not correct");
             if (check == 2) {
 //                int status = 1;
@@ -807,7 +807,7 @@ public class ItemService {
             long DaysInMillis = TimeUnit.DAYS.toMillis(1);
             if (timeDifference > DaysInMillis) {
                 if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
-                    int check = clientService.checkOTPinSQL2(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(),item.getProductRecognition());
+                    int check = clientService.checkOTP(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(),item.getProductRecognition());
                     if (check == 6)
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
                     if (check == 3) {
@@ -879,6 +879,30 @@ public class ItemService {
             itemDTO.setProductName(item.getProduct().getProductName());
             return ResponseEntity.status(HttpStatus.OK).body(itemDTO);
         } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+    }
+    public ResponseEntity<?> listPartyJoin(CurrentOwnerCheck req) {
+        try{
+            String email = req.getEmail();
+            String productRecognition = req.getProductRecognition();
+            Item item = itemRepository.findByProductRecognition(productRecognition);
+            List<ItemLog> listItem = itemLogRepository.checkParty(item.getItemId(),email);
+            if (listItem.isEmpty()) {
+                // Trả về chỉ thông tin của Item nếu không có ItemLog nào
+                //  ItemDTO itemDTO = convertToItemDTO(item);
+                return ResponseEntity.status(HttpStatus.OK).body(new ItemLogDTOResponse(/*itemDTO, */Collections.emptyList()));
+
+            } else {
+                //  ItemDTO itemDTO = convertToItemDTO(item);
+                List<ItemLogDTOResponse> itemLogDTOs = listItem.stream()
+                        .map(this::convertToItemLogDTO)
+                        .collect(Collectors.toList());
+                // Tạo đối tượng ItemLogResponse và trả về
+                ItemLogResponse itemLogResponse = new ItemLogResponse(/*itemDTO,*/ itemLogDTOs);
+                return ResponseEntity.status(HttpStatus.OK).body(itemLogResponse);
+            }
+        }catch (Exception ex){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }

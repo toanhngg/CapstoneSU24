@@ -34,8 +34,6 @@ public class EventItemLogDTO {
     @Email(message = "EmailParty should be a valid email")
     private String emailParty;
 
-    @JsonIgnore
-    private byte[] imageItemLog;
 
     @Positive(message = "TransportId must be a positive number")
     private int transportId;

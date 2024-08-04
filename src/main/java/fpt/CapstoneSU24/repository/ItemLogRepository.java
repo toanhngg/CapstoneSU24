@@ -17,20 +17,13 @@ import java.util.Optional;
 public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Override
     List<ItemLog> findAll();
+
     @Query("SELECT il " +
             "FROM ItemLog il " +
             "LEFT JOIN Party p ON p.partyId = il.party.partyId " +
             "LEFT JOIN Location l ON il.location.locationId = l.locationId " +
             "WHERE il.itemLogId = :itemLogId")
     ItemLog getItemLogsById(@Param("itemLogId") int itemLogId);
-
-//    @Query("SELECT il " +
-//            "FROM ItemLog il " +
-//            "LEFT JOIN Party p ON p.partyId = il.party.partyId " +
-//            "LEFT JOIN Location l ON il.location.locationId = l.locationId " +
-//            "WHERE il.idEdit = :idEdit ORDER BY il.itemLogId ASC")
-//    ItemLog getItemLogsByIdEdit(@Param("idEdit") int idEdit);
-
 
     @Query("SELECT il " +
             "FROM ItemLog il " +
@@ -52,8 +45,8 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     Optional<ItemLog> findFirstByItem_ItemIdOrderByItemLogIdDesc(int itemId);
 
 
-    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId asc")
-    List<ItemLog> getItemLogsByItemIdAsc(@Param("itemId") int itemId);
+//    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId asc")
+//    List<ItemLog> getItemLogsByItemIdAsc(@Param("itemId") int itemId);
 
 
 //    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i LEFT JOIN il.party p WHERE il.itemLogId = :idEdit ORDER BY il.itemLogId asc")
@@ -136,8 +129,5 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
                                @Param("point") String point,
                                @Param("address") String address,
                                @Param("itemLogId") int itemLogId);
-    //   List<Item> findAllById(int itemId);
-//    @Query("SELECT o FROM Origin o WHERE o.Product.productId = :id")
-//    List<Origin> findAllByProductId(@Param("id")  int id);
 
 }

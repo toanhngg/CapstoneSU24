@@ -140,7 +140,7 @@ public class ItemLogService {
 
             // Kiểm tra quyền sở hữu
             if (itemService.checkOwner(dataEditDTO.getEmail(), item.getCurrentOwner())) {
-                int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+                int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
                 if (check == 3 || check == 0) {
@@ -182,13 +182,6 @@ public class ItemLogService {
         return null;
     }
 
-    private Party addParty(ItemLog itemLogDetail) {
-        return partyRepository.save(new Party(
-                itemLogDetail.getParty().getPartyFullName(),
-                itemLogDetail.getDescription(), itemLogDetail.getParty().getPhoneNumber(),
-                itemLogDetail.getParty().getEmail()));
-    }
-
     public ResponseEntity<?> editItemLogByParty(EditItemLogPartyDTO dataEditDTO) {
         /*
          * B1. Lay ra itemLogId can edit => Get ra thong tin
@@ -203,7 +196,7 @@ public class ItemLogService {
                     .orElseThrow(() -> new RuntimeException("Item not found"));
 
             // Kiểm tra quyền sở hữu
-            int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 4 || check == 0) {
@@ -217,7 +210,7 @@ public class ItemLogService {
                         .orElseThrow(() -> new RuntimeException("Event type not found"))); // Sự kiện chỉnh sửa
                 itemLogRepository.save(newItemLog);
                 // B3: Cập nhật thông tin của ItemLogId trước đó
-                Location savedLocation = locationRepository.save(dataEditDTO.getLocation());
+                Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                 String point;
                 if (!hasNullFields(itemLogDetail)) {
                     point = generateAndSetPoint(itemLogDetail);
@@ -252,12 +245,12 @@ public class ItemLogService {
             List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
             ItemLog itemLogDetail = itemLogs.get(0);
             // Kiểm tra quyền sở hữu
-            int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 3 || check == 0) {
                 // B3: Cập nhật thông tin của ItemLogId trước đó
-                Location savedLocation = locationRepository.save(dataEditDTO.getLocation());
+                Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                 if (!hasNullFields(savedLocation)) {
                     String point = generateAndSetPoint(itemLogDetail);
                     itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
@@ -281,7 +274,7 @@ public class ItemLogService {
             if (item == null) {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
-            int check = clientService.checkOTPinSQL2(itemLogDTO.getEmailParty().trim(), itemLogDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(itemLogDTO.getEmailParty().trim(), itemLogDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 0)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             if (check == 6)
@@ -358,7 +351,7 @@ public class ItemLogService {
         if (itemService.checkOwner(dataEditDTO.getEmailParty(), item.getCurrentOwner())) {
 //            boolean check = clientService.checkOTPinSQL(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim());
 //            if (check) {
-            int check = clientService.checkOTPinSQL2(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 3 || check == 0) {
@@ -404,23 +397,6 @@ public class ItemLogService {
 
     }
 
-    //    private Location addLocation(Location location) {
-//        return locationRepository.save(new Location(
-//                        location.getAddress(),
-//                location.getCity(),
-//                location.getCountry(),
-//                location.getCoordinateX(),
-//                location.getCoordinateY(),
-//                location.getDistrict(),
-//                location.getWard()));
-//    }
-    private Authorized addAuthorized(ItemLog itemLogDetail) {
-        Authorized authorized = new Authorized();
-        authorized.setAuthorizedName(itemLogDetail.getAuthorized().getAuthorizedName());
-        authorized.setAuthorizedEmail(itemLogDetail.getAuthorized().getAuthorizedEmail());
-        return authorizedRepository.save(authorized);
-    }
-
     private String generateAndSetPoint(ItemLog itemLogDetail) {
         double pointX = pointService.generateX();
         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(itemLogDetail.getItem().getItemId());
@@ -436,7 +412,6 @@ public class ItemLogService {
         if (obj == null) {
             return true; // Nếu object là null, trả về true
         }
-
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
@@ -450,14 +425,17 @@ public class ItemLogService {
 
         return false; // Không có trường nào null
     }
+
     public ResponseEntity<?> getEventByItemId(int itemId) {
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getEvent_id().getEventId())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId));
     }
+
     public ResponseEntity<?> getLocationItemId(int itemId) {
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getLocation())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Location found for itemId: " + itemId));
     }
+
 
 
 }
