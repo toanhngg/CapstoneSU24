@@ -500,10 +500,6 @@ public class ItemService {
 
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
-        // Kiểm tra trạng thái của item bị cấm
-        if (item.getStatus() == 0) {
-            return ResponseEntity.ok(0); // Item status is 0
-        }
 
         try {
             // Kiểm tra xem email có phải là CurrentOwner hay không
