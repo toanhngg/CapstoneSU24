@@ -396,7 +396,7 @@ public class ItemService {
         if (!productRecognition.isEmpty()) {
             Item item = findByProductRecognition(productRecognition); // B1
            if (item.getStatus() == 0)
-               return ResponseEntity.status(HttpStatus.OK).body(0); // San pham da bi huy
+            return ResponseEntity.ok(0);
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
             if (list.get(0).getAuthorized() == null) {
                 return ResponseEntity.ok(1);
@@ -438,7 +438,6 @@ public class ItemService {
         if (obj == null) {
             return true; // Nếu object là null, trả về true
         }
-
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
