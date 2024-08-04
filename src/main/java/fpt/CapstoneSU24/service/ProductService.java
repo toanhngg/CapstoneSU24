@@ -11,6 +11,8 @@ import fpt.CapstoneSU24.model.Product;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +45,7 @@ public class ProductService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final GCSService gcsService;
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
 
     @Autowired
@@ -285,7 +288,8 @@ public class ProductService {
         jsonObject.put("monthly",monthlyProducts.size());
         return jsonObject;
     }
-    public ResponseEntity saveFileAI(MultipartFile weights, MultipartFile classNames, MultipartFile model) throws IOException {
+    public ResponseEntity saveFileAI(MultipartFile weights, MultipartFile classNames, MultipartFile model, String description) throws IOException {
+        log.info("saveFileAI/"+description);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 1){

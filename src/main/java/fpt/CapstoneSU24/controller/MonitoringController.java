@@ -20,7 +20,7 @@ public class MonitoringController {
     @Autowired
     MonitoringService monitoringService;
     @GetMapping("/admin")
-    public ResponseEntity<?> findAll() throws IOException {
+    public ResponseEntity<?> getMonitoringByAdmin() throws IOException {
         return monitoringService.getMonitoringByAdmin();
     }
 }

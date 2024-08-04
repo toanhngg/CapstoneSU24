@@ -21,7 +21,7 @@ public class CustomerCareDTO {
     @Email
     @NotNull(message = "Email is not blank")
     private String customerEmail;
-    @NotNull(message = "Email is not blank")
+    @NotNull(message = "customerPhone is not blank")
     private String customerPhone;
     @NotNull(message = "Content is not blank")
     @Size(min = 10,max = 500, message = "Content must be less than 255 characters")

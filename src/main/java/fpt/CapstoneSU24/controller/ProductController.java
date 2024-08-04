@@ -64,8 +64,8 @@ public class ProductController {
         return productService.findProductIdByName(req);
     }
     @PostMapping("/saveFileAI")
-    public ResponseEntity<?> saveFileAI(@RequestParam("weights") MultipartFile weights, @RequestParam("classNames") MultipartFile classNames, @RequestParam("model") MultipartFile model) throws IOException {
-        return productService.saveFileAI(weights, classNames, model);
+    public ResponseEntity<?> saveFileAI(@RequestParam("weights") MultipartFile weights, @RequestParam("classNames") MultipartFile classNames, @RequestParam("model") MultipartFile model, @RequestParam("description") String description) throws IOException {
+        return productService.saveFileAI(weights, classNames, model, description);
     }
     @PostMapping("/saveModel3D/{id}")
     public ResponseEntity<?> saveModel3D(@RequestParam("file3D") MultipartFile file3D, @PathVariable("id") int id) throws IOException {

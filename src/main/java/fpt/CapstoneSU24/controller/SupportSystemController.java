@@ -55,6 +55,5 @@ public class SupportSystemController {
     @GetMapping("/countStatus")
     public ResponseEntity<?> countStatus() throws IOException {
         return supportSystemService.countStatus();
-
     }
 }
