@@ -22,6 +22,8 @@ public class AbortDTO {
     private String productRecognition;
     @NotNull
     private String email;
+    @NotNull
+    private String partyFullName;
 //    @JsonIgnore
 //    private String address;
 //    @JsonIgnore

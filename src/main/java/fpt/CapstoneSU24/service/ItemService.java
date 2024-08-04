@@ -812,7 +812,7 @@ public class ItemService {
                         Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
 
                         Party partySaved = new Party();
-                        partySaved.setPartyFullName(item.getCurrentOwner());
+                        partySaved.setPartyFullName(abortDTO.getPartyFullName());
                         partySaved.setEmail(item.getCurrentOwner());
                         partyRepository.save(partySaved);
                         double pointX = pointService.generateX();
