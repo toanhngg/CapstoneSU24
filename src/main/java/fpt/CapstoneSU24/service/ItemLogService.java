@@ -322,7 +322,7 @@ public class ItemLogService {
                 itemLog.setParty(savedParty);
                 itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
                 itemLog.setIdEdit(0);
-                if (!hasNullFields(itemLog)) {
+                if (!hasNullFields(itemLog.getParty()) && !hasNullFields(itemLog.getLocation())) {
                     double pointX = pointService.generateX();
                     List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                     List<Point> pointList = pointService.getPointList(pointLogs);

@@ -26,7 +26,7 @@ public class AuthorizedDTO {
 
     @JsonIgnore
     //@NotBlank(message = "Assign person is required")
-    @Size(max = 5, message = "Assign person must be less than 5 characters")
+    @Size(min = 5, message = "Assign person must be more  than 5 characters")
     @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
             message = "AAssign person must not contain special characters")
     private String assignPerson;
@@ -38,7 +38,7 @@ public class AuthorizedDTO {
     private LocationDTO location;
 
     // @NotBlank(message = "Description is required")
-    @Size(max = 50, message = "Description must be less than 50 characters")
+    @Size(max = 50, message = "Description must be more  than 50 characters")
     private String description;
 
     //@NotBlank(message = "Phone number is required")
