@@ -1,7 +1,6 @@
 package fpt.CapstoneSU24.controller;
 
-import fpt.CapstoneSU24.dto.EditItemLogDTO;
-import fpt.CapstoneSU24.dto.EventItemLogDTO;
+import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.model.ItemLog;
 import fpt.CapstoneSU24.service.ItemLogService;
 import jakarta.validation.Valid;
@@ -21,11 +20,10 @@ public class ItemLogController {
         this.itemLogService = itemLogService;
     }
 
-    @PostMapping(value = "/additemlogTransport")
-    public ResponseEntity<?> addItemLog(@Valid @RequestBody EventItemLogDTO itemLogDTO) {
-        return itemLogService.addItemLog(itemLogDTO);
+    @PostMapping(value = "/addItemLogTransport")
+    public ResponseEntity<?> addItemLogTransport(@Valid @RequestBody EventItemLogDTO itemLogDTO) {
+        return itemLogService.addItemLogTransport(itemLogDTO);
     }
-
 
     @GetMapping(value = "/getItemLogDetail")
     public ResponseEntity<?> getItemLogDetail(@RequestParam int itemLogId) {
@@ -33,18 +31,29 @@ public class ItemLogController {
         return itemLogService.getItemLogDetail(itemLogId);
     }
 
+    @GetMapping(value = "/getItemLogDetailHistory")
+    public ResponseEntity<?> getItemLogDetailHistory(@RequestParam int itemLogId) {
+        if(itemLogId < 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ItemLogId is not null");
+        return itemLogService.getItemLogDetailHistory(itemLogId);
+    }
+    //Dau sua chua update
     @PostMapping(value = "/editItemLog")
     public ResponseEntity<?> editItemLog(@Valid @RequestBody EditItemLogDTO dataEditDTO){
         return itemLogService.editItemLog(dataEditDTO);
     }
-    @PostMapping(value = "/editTransport")
-    public ResponseEntity<?> editTransport(@Valid @RequestBody EditItemLogDTO dataEditDTO){
-        return itemLogService.editItemLog(dataEditDTO);
+
+    @PostMapping(value = "/updateItemLog")
+    public ResponseEntity<?> updateItemLog(@Valid @RequestBody UpdateItemLogDTO dataEditDTO){
+        return itemLogService.updateItemLog(dataEditDTO);
     }
-//    @GetMapping(value = "getItemLogsByItemId")
-//    public ResponseEntity<?>  getItemLogsByItemId(@RequestParam int itemId){
-//        return itemLogService.getItemLogsByItemId(itemId);
-//    }
+    @PostMapping(value = "/editItemLogByParty")
+    public ResponseEntity<?> editItemLogByParty(@Valid @RequestBody EditItemLogPartyDTO dataEditDTO){
+        return itemLogService.editItemLogByParty(dataEditDTO);
+    }
+    @PostMapping(value = "/editTransport")
+    public ResponseEntity<?> editTransport(@Valid @RequestBody EventItemLogDTO dataEditDTO){
+        return itemLogService.editTransport(dataEditDTO);
+    }
     @GetMapping(value = "/getEventByItemId")
     public ResponseEntity<?>  getEventByItemId(@RequestParam int itemId){
         return itemLogService.getEventByItemId(itemId);
@@ -53,4 +62,5 @@ public class ItemLogController {
     public ResponseEntity<?>  getLocationItemId(@RequestParam int itemId){
         return itemLogService.getLocationItemId(itemId);
     }
+
 }

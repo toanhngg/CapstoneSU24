@@ -15,7 +15,7 @@ public class SendOTP {
         private String email;
     @NotBlank(message = "OTP is required")
     private String otp;
-     private LocationDTO location;
 
+    private String description;
     }
 

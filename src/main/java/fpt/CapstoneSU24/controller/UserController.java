@@ -97,9 +97,19 @@ public class UserController {
 //        return userService.updateCertification(otp);
 //    }
 
-    @PutMapping("/updateAvatar")
-    public ResponseEntity<String> updateAvatar(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/updateAvatar")
+    public ResponseEntity<String> updateAvatar(@RequestBody String file) {
         return userService.updateAvatar(file);
+    }
+
+    @PostMapping("/updateOrgImage")
+    public ResponseEntity<String> updateOrgImage(@RequestBody String file) {
+        return userService.updateOrgImage(file);
+    }
+
+    @PostMapping("/updateDescription")
+    public ResponseEntity<String> updateDescription(@RequestBody String description) {
+        return userService.updateDescription(description);
     }
     @GetMapping("/top5OrgNames")
     public ResponseEntity<List<OrgNameUserDTO>> getTop5OrgNames() {

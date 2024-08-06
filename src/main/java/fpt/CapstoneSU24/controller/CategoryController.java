@@ -1,11 +1,14 @@
 package fpt.CapstoneSU24.controller;
 
+import fpt.CapstoneSU24.dto.CategoryForManagerDTO;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/category")
@@ -22,6 +25,22 @@ public class CategoryController {
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         return categoryService.findAll();
+    }
+
+    @GetMapping("/getCategoryForAdmin")
+    public ResponseEntity<?> findAllToManager() {
+        return categoryService.findAllManager();
+    }
+
+    @GetMapping("/getNextId")
+    public ResponseEntity<?> getNextId() {
+        return categoryService.getLastID();
+    }
+
+
+    @PostMapping("/addListCategory")
+    public ResponseEntity<?> addListCategory(@Valid @RequestBody List<CategoryForManagerDTO> request) {
+        return categoryService.addListCategory(request);
     }
 
     @PostMapping("/addCategory")

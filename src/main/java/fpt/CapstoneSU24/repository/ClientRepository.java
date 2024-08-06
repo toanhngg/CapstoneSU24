@@ -6,8 +6,11 @@ public interface ClientRepository {
     Boolean create(ClientSdi sdi);
 
     Boolean notification(ClientSdi sdi);
-    Boolean checkOTP(String email, String otp);
+    Boolean notificationEdit(ClientSdi sdi);
+
+   // Boolean checkOTP(String email, String otp);
 
     Boolean createMailAndSaveSQL(ClientSdi sdi);
-    Boolean checkOTPinSQL(String email, String otp);
+  //  Boolean checkOTPinSQL(String email, String otp);
+    int checkOTP(String email, String productRecognition, String otp);
 }

@@ -6,6 +6,7 @@ import fpt.CapstoneSU24.mapper.CustomerCareMapper;
 import fpt.CapstoneSU24.model.CustomerCare;
 import fpt.CapstoneSU24.repository.CustomerCareRepository;
 import fpt.CapstoneSU24.repository.UserRepository;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,7 +26,7 @@ public class CustomerCareService {
     private final UserRepository userRepository;
 
     @Autowired
-    public CustomerCareService(CustomerCareRepository customerCareRepository,CustomerCareMapper customerCareMapper,
+    public CustomerCareService(CustomerCareRepository customerCareRepository, CustomerCareMapper customerCareMapper,
                                UserRepository userRepository) {
         this.customerCareRepository = customerCareRepository;
         this.customerCareMapper = customerCareMapper;
@@ -43,7 +44,6 @@ public class CustomerCareService {
 
         return customerCareRepository.save(customerCare);
     }
-
     public List<CustomerCare> getAllCustomerCare() {
         return customerCareRepository.findAll();
     }
@@ -55,24 +55,19 @@ public class CustomerCareService {
 
         Page<CustomerCare> customerCarePage;
         try {
-            if (req.getStatus() != 0) {
+            if (req.getStatus() == 3) {
+                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
+                    customerCarePage = customerCareRepository.searchCustomerCareWithDate(req.getKeyword(), req.getStartDate(), req.getEndDate(), pageable);
+                } else {
+                    customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
+                }
+            } else {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
                     customerCarePage = customerCareRepository.searchCustomerCareWithDateAndStatus(req.getKeyword(), req.getStartDate(), req.getEndDate(), req.getStatus(), pageable);
                 } else {
                     customerCarePage = customerCareRepository.searchCustomerCareWithStatus(req.getKeyword(), req.getStatus(), pageable);
                 }
-            } else if (req.getStatus() != 1) {
-                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    customerCarePage = customerCareRepository.searchCustomerCareWithDate(req.getKeyword(), req.getStartDate(), req.getEndDate(), pageable);
-                } else {
-                    customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
-                }
-            }else {
-                if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    customerCarePage = customerCareRepository.searchCustomerCareWithDate(req.getKeyword(), req.getStartDate(), req.getEndDate(), pageable);
-                } else {
-                    customerCarePage = customerCareRepository.searchCustomerCare(req.getKeyword(), pageable);
-                }
+
             }
             return ResponseEntity.status(HttpStatus.OK).body(customerCarePage.map(customerCareMapper::customerCareToCustomerCareDTO));
         } catch (Exception e) {
@@ -80,7 +75,7 @@ public class CustomerCareService {
         }
     }
 
-    public Optional<CustomerCare> updateStatus(int careId, int status, String note,int userId) {
+    public Optional<CustomerCare> updateStatus(int careId, int status, String note, int userId) {
         try {
             Optional<CustomerCare> optionalCustomerCare = customerCareRepository.findById(careId);
             if (optionalCustomerCare.isPresent()) {
@@ -99,4 +94,15 @@ public class CustomerCareService {
         }
     }
 
+    public JSONObject countStatus() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("waiting", customerCareRepository.findAllByStatus(0).size());
+            jsonObject.put("done", customerCareRepository.findAllByStatus(1).size());
+            jsonObject.put("cancel", customerCareRepository.findAllByStatus(2).size());
+            return jsonObject;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 }

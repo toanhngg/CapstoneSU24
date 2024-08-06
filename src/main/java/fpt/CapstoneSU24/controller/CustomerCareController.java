@@ -7,6 +7,7 @@ import fpt.CapstoneSU24.model.CustomerCare;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.service.CustomerCareService;
 import jakarta.validation.Valid;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,16 @@ public class CustomerCareController {
     }
     @PostMapping("/add")
     public ResponseEntity<CustomerCare> addCustomerCare(@Valid @RequestBody CustomerCareDTO customerCareDTO) {
+        CustomerCare newCustomerCare = customerCareService.addCustomerCare(customerCareDTO);
+        return new ResponseEntity<>(newCustomerCare, HttpStatus.CREATED);
+    }
+    @PostMapping("/addByUser")
+    public ResponseEntity<CustomerCare> addByUser(@Valid @RequestBody CustomerCareDTO customerCareDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        customerCareDTO.setCustomerEmail(currentUser.getEmail());
+        customerCareDTO.setCustomerName(currentUser.getLastName() +  " " + currentUser.getFirstName());
+        customerCareDTO.setCustomerPhone(currentUser.getPhone());
         CustomerCare newCustomerCare = customerCareService.addCustomerCare(customerCareDTO);
         return new ResponseEntity<>(newCustomerCare, HttpStatus.CREATED);
     }
@@ -64,24 +75,46 @@ public class CustomerCareController {
 //    }
     @PostMapping ("/searchCustomerCare")
     public ResponseEntity<?> searchCustomerCare(@Valid @RequestBody SearchCustomerCareDTO req) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User currentUser = (User) authentication.getPrincipal();
+//
+//        if (currentUser.getRole().getRoleId() == 1) {
+            return customerCareService.searchCustomerCare(req);
+//        } else {
+//            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
+//        }
+    }
+    @PostMapping ("/searchCustomerCareByUser")
+    public ResponseEntity<?> searchCustomerCareByUser(@Valid @RequestBody SearchCustomerCareDTO req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-
-        if (currentUser.getRole().getRoleId() == 1) {
-            return customerCareService.searchCustomerCare(req);
-        } else {
-            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
-        }
+        req.setKeyword(currentUser.getEmail());
+//        if (currentUser.getRole().getRoleId() == 1) {
+        return customerCareService.searchCustomerCare(req);
+//        } else {
+//            return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
+//        }
     }
     @PostMapping("/updateStatus")
     public ResponseEntity<?> updateStatus(@Valid @RequestBody UpdateStatusDTO updateStatusDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 1) {
+        if (currentUser.getRole().getRoleId() != 2) {
             Optional<CustomerCare> updatedCustomerCare = customerCareService.updateStatus(updateStatusDTO.getCareId(),
                     updateStatusDTO.getStatus(), updateStatusDTO.getNote(),currentUser.getUserId());
             return updatedCustomerCare.map(customerCare -> new ResponseEntity<>(customerCare, HttpStatus.OK))
                     .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+    }
+    @GetMapping("/countStatus")
+    public ResponseEntity<?> countStatus() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getRole().getRoleId() != 2) {
+            JSONObject countStatus = customerCareService.countStatus();
+            return ResponseEntity.status(HttpStatus.OK).body(countStatus.toString());
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         }

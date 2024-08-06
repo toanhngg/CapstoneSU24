@@ -29,6 +29,16 @@ public class UserProfileDTO {
 
     private String profileIMG;
 
+    private String OrgIMG;
+
+    public String getOrgIMG() {
+        return OrgIMG;
+    }
+
+    public void setOrgIMG(String orgIMG) {
+        OrgIMG = orgIMG;
+    }
+
     public String getEmail() {
         return email;
     }

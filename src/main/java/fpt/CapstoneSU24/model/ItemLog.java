@@ -47,6 +47,20 @@ public class ItemLog {
     private String point;
     @Column(name = "idEdit", columnDefinition = "int")
     private Integer  idEdit;
+    public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, EventType event_id, int status, ImageItemLog imageItemLog, String point,Integer  idEdit) {
+        this.item = item;
+        this.address = address;
+        this.party = party;
+        this.location = location;
+        this.timeStamp = timeStamp;
+        this.description = description;
+        this.authorized = authorized;
+        this.event_id = event_id;
+        this.status = status;
+        this.imageItemLog = imageItemLog;
+        this.point = point;
+        this.idEdit = idEdit;
+    }
     public ItemLog(Item item, String address, Party party, Location location, long timeStamp, String description, Authorized authorized, EventType event_id, int status, ImageItemLog imageItemLog, String point) {
         this.item = item;
         this.address = address;

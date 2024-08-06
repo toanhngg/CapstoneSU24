@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title><span th:text="${title}"></span></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+        }
+        .header {
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .footer {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1 class="header">Phản hồi về vấn đề của bạn</h1>
+<p>Kính gửi <span th:text="${userName}">Người dùng</span>,</p>
+<p>Chúng tôi xin thông báo rằng nhà máy đã phản hồi về vấn đề của bạn. Dưới đây là chi tiết phản hồi:</p>
+<div class="content">
+    <p><strong>Tiêu đề:</strong> <span th:text="${title}"></span></p>
+    <p><strong>Chi Tiết Phản Hồi:</strong></p>
+    <p th:text="${responseDetail}"></p>
+</div>
+<p>Vui lòng kiểm tra và theo dõi. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
+<p class="footer">Trân trọng,</p>
+<p class="footer">Hệ Thống Quản Lý Báo Cáo</p>
+<div class="footer">
+    <p>Thông tin liên hệ: <a href="mailto:thanhnc942@gmail.com">thanhnc942@gmail.com</a></p>
+    <p>Điện thoại: 0961-835-886</p>
+    <p>Địa chỉ: Đại học FPT</p>
+</div>
+</body>
+</html>

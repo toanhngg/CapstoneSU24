@@ -13,7 +13,7 @@ public class Report {
     @Column(name = "report_id")
     private int reportId;
     @Column(name = "createOn")
-    protected long createOn;
+    private long createOn;
     @Column(name = "updateOn")
     private long updateOn;
     @Column(name = "code", columnDefinition = "nvarchar(50)")
@@ -26,8 +26,9 @@ public class Report {
     private int status;
     @Column(name = "priority")
     private int priority;
-    @Column(name = "createBy", columnDefinition = "nvarchar(250)")
-    private String createBy;
+    @ManyToOne
+    @JoinColumn(name = "createBy")
+    private Party createBy;
     @ManyToOne
     @JoinColumn(name = "report_to_id")
     private User reportTo;
@@ -35,24 +36,13 @@ public class Report {
     private int component;
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ImageReport> imageReports = new ArrayList<>();
-
-    public Report() {
-    }
-
-    public Report(int reportId, long createOn, long updateOn, String code, String title, int type, int status, int priority, String createBy, User reportTo, int component, List<ImageReport> imageReports) {
-        this.reportId = reportId;
-        this.createOn = createOn;
-        this.updateOn = updateOn;
-        this.code = code;
-        this.title = title;
-        this.type = type;
-        this.status = status;
-        this.priority = priority;
-        this.createBy = createBy;
-        this.reportTo = reportTo;
-        this.component = component;
-        this.imageReports = imageReports;
-    }
+    @ManyToOne
+    @JoinColumn(name = "itemId")
+    private Item itemId;
+    @Column(name = "causeDetail")
+    private String causeDetail;
+    @Column(name = "responseDetail")
+    private String responseDetail;
 
     public int getReportId() {
         return reportId;
@@ -118,11 +108,11 @@ public class Report {
         this.priority = priority;
     }
 
-    public String getCreateBy() {
+    public Party getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(String createBy) {
+    public void setCreateBy(Party createBy) {
         this.createBy = createBy;
     }
 
@@ -148,5 +138,29 @@ public class Report {
 
     public void setImageReports(List<ImageReport> imageReports) {
         this.imageReports = imageReports;
+    }
+
+    public Item getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Item itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getCauseDetail() {
+        return causeDetail;
+    }
+
+    public void setCauseDetail(String causeDetail) {
+        this.causeDetail = causeDetail;
+    }
+
+    public String getResponseDetail() {
+        return responseDetail;
+    }
+
+    public void setResponseDetail(String responseDetail) {
+        this.responseDetail = responseDetail;
     }
 }

@@ -64,7 +64,7 @@ public class OTPService {
         //otp ko co
         if (otp == null) return 0;
         if (new Date().after(otp.getExpiryTime())) return -1;
-        if (!codeOTP.equals(otp.getCodeOTP())) return 2;
+        if (!codeOTP.trim().equals(otp.getCodeOTP().trim())) return 2;
         return 1;
     }
 

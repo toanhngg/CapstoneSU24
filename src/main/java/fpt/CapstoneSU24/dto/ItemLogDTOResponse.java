@@ -18,7 +18,7 @@ public class ItemLogDTOResponse {
     private String eventType;
     private String partyName;
     private String description;
-
+    private boolean checkPoint;
     public <T> ItemLogDTOResponse(List<T> ts) {
     }
 

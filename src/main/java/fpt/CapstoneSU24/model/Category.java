@@ -3,6 +3,9 @@ package fpt.CapstoneSU24.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.List;
+import java.util.Set;
+
 @Entity
 @Table(name = "category")
 public class Category {
@@ -15,18 +18,19 @@ public class Category {
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
 
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Product> products;
+
     public Category() {
 
     }
 
-    public Category(int categoryId, String name, String description) {
+    public Category(int categoryId, String name, String description, List<Product> products) {
         this.categoryId = categoryId;
         this.name = name;
         this.description = description;
+        this.products = products;
     }
-
-//    public Category(int i, String bát, String phầnMôTả) {
-//    }
 
     public int getCategoryId() {
         return categoryId;
@@ -52,4 +56,11 @@ public class Category {
         this.description = description;
     }
 
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
+    }
 }

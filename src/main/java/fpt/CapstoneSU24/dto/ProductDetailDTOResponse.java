@@ -11,11 +11,11 @@ public class ProductDetailDTOResponse {
     private long createAt;
     private float weight;
     private int warranty;
-
+    private String model3D;
     private String avatar;
     private List<String> listImages;
 
-    public ProductDetailDTOResponse(int productId, String productName, String dimensions, String material, String description, long createAt, float weight, int warranty, String avatar, List<String> listImages) {
+    public ProductDetailDTOResponse(int productId, String productName, String dimensions, String material, String description, long createAt, float weight, int warranty, String model3D, String avatar, List<String> listImages) {
         this.productId = productId;
         this.productName = productName;
         this.dimensions = dimensions;
@@ -24,8 +24,17 @@ public class ProductDetailDTOResponse {
         this.createAt = createAt;
         this.weight = weight;
         this.warranty = warranty;
+        this.model3D = model3D;
         this.avatar = avatar;
         this.listImages = listImages;
+    }
+
+    public String getModel3D() {
+        return model3D;
+    }
+
+    public void setModel3D(String model3D) {
+        this.model3D = model3D;
     }
 
     public int getProductId() {

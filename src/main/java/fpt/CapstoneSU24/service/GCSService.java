@@ -2,10 +2,7 @@ package fpt.CapstoneSU24.service;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
-import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,12 +36,30 @@ public class GCSService {
                 .getService();
     }
 
-    public String uploadFile(MultipartFile file) throws IOException {
-        // Đọc dữ liệu từ MultipartFile
+    public String uploadFile(MultipartFile file, String name) throws IOException {
         byte[] content = file.getBytes();
         Storage storage = getStorage();
-        // Tạo BlobId và BlobInfo
-        Blob blob = storage.create(Blob.newBuilder(bucketName, file.getOriginalFilename()).build(), content);
+        Blob blob = storage.create(Blob.newBuilder(bucketName, name).build(), content);
         return blob.getMediaLink();
     }
+    public String getFileLink(String fileName) throws IOException {
+        Storage storage = getStorage();
+        Bucket bucket = storage.get(bucketName);
+        if (bucket == null) {
+            throw new RuntimeException("Bucket không tồn tại.");
+        }
+
+        Iterable<Blob> blobs = bucket.list(Storage.BlobListOption.prefix("model3D/")).iterateAll();
+
+        // Tìm blob có đuôi .stl và trả về liên kết của nó
+        for (Blob blob : blobs) {
+            String blobName = blob.getName();
+            // Kiểm tra nếu blobName bắt đầu với tiền tố và kết thúc với .stl
+            if (blobName.contains("/"+fileName+".")) {
+                return blob.getMediaLink();
+            }
+        }
+        return "";
+    }
+
 }

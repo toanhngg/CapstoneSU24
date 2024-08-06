@@ -9,11 +9,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface AuthorizedRepository extends JpaRepository<Authorized, Integer> {
-
-    @Query("SELECT au FROM Authorized au " +
-            "LEFT JOIN Location l ON au.location.locationId = l.locationId " +
-            "WHERE au.authorizedId = :id")
-    Authorized findAuthorizedById(@Param("id") int id);
+//
+//    @Query("SELECT au FROM Authorized au " +
+//            "LEFT JOIN Location l ON au.location.locationId = l.locationId " +
+//            "WHERE au.authorizedId = :id")
+//    Authorized findAuthorizedById(@Param("id") int id);
 
     @Modifying
     @Transactional

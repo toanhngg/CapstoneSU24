@@ -1,15 +1,15 @@
 package fpt.CapstoneSU24.controller;
 
 import fpt.CapstoneSU24.dto.*;
-import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
-import fpt.CapstoneSU24.service.*;
+import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
+import fpt.CapstoneSU24.service.ItemService;
 import jakarta.validation.Valid;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
 
 @RequestMapping("/api/item")
@@ -42,20 +42,6 @@ public class ItemController {
         return itemService.addItem(itemLogDTO);
     }
 
-//    private double parseCoordinate(String coordinate) throws InvalidCoordinateException {
-//        try {
-//            return Double.parseDouble(coordinate);
-//        } catch (NumberFormatException ex) {
-//            throw new InvalidCoordinateException("Invalid coordinate: " + coordinate);
-//        }
-//    }
-
-//    @GetMapping("/findAllItemByProductId")
-//    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
-//        return itemService.findByProductId(ProductId);
-//    }
-
-
     //list all item_log by product_recogine
     @GetMapping("/viewLineItem")
     public ResponseEntity<?> viewLineItem(@RequestParam String productRecognition) {
@@ -68,16 +54,10 @@ public class ItemController {
         return itemService.viewOrigin(itemLogId);
     }
 
+    //Da sua chua test cho su kien getCertificate
     @PostMapping("/getCertificate")
     public ResponseEntity<?> getCertificate(@Valid @RequestBody CurrentOwnerCheckDTO req) {
          return itemService.getCertificate(req);
-    }
-
-    @PostMapping(value = "/confirmCurrentOwner")
-    public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
-        // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
-        // - Chính xác => Buoc tiep theo
-        return itemService.confirmCurrentOwner(otp,productRecognition);
     }
 
     /**
@@ -91,55 +71,43 @@ public class ItemController {
      * - Update bang itemLog voi id dai nhat voi authorized_id va bang authorized nhung thong tin cua nguoi duoc uy quyen
      * - Gui mail thong bao cho nguoi dung la bạn da duoc uy quyen
      */
+    //Da sua chua test cho su kien uy quyen
     @PostMapping(value = "/authorized")
     public ResponseEntity<?> authorize(@Valid @RequestBody AuthorizedDTO authorized) {
         return itemService.authorize(authorized);
     }
-
+//    @PostMapping(value = "/editAuthorized")
+//    public ResponseEntity<?> editAuthorized(@Valid @RequestBody AuthorizedDTO authorized){
+//        return itemService.editAuthorized(authorized);
+//    }
+    //Da sua chua test cho su kien uy quyen
     @PostMapping(value = "/checkEventAuthorized")
-    public ResponseEntity<Boolean> checkEventAuthorized(@RequestParam String productRecognition)  {
-        if(productRecognition.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-        }
+    public ResponseEntity<Integer> checkEventAuthorized(@RequestParam String productRecognition) {
         return itemService.checkEventAuthorized(productRecognition);
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
     }
-//    @PostMapping(value = "/checkAuthorized")
-//    public ResponseEntity<Boolean> checkAuthorized(@Valid @RequestBody CurrentOwnerCheckDTO req)  {
-//        return itemService.checkAuthorized(req);
-//    }
+    @PostMapping(value = "/checkPartyFirst")
+    public ResponseEntity<Integer> checkPartyFirst(@Valid @RequestBody CurrentOwnerCheck req)  {
+        return itemService.checkPartyFirst(req);
+    }
+
     @PostMapping(value = "/check")
-    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheckDTO req)  {
+    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req)  {
         return itemService.check(req);
     }
-    //API check CurrentOwner
-//    @PostMapping(value = "/checkCurrentOwner")
-//    public ResponseEntity<Boolean> checkCurrentOwner(@Valid @RequestBody CurrentOwnerCheckDTO req) {
-//        // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
-//        // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
-//        return itemService.checkCurrentOwner(req);
-//    }
 
-    @PostMapping(value = "/sendCurrentOwnerOTP")
-    public ResponseEntity<?> sendCurrentOwnerOTP(@Valid @RequestBody CurrentOwnerCheckDTO req) {
-        return itemService.sendCurrentOwnerOTP(req);
-    }
-
-    //API send OTP  nhap mail => sendOTP chua check
     @PostMapping(value = "/sendOTP")
-    public ResponseEntity<?> sendOTP(@Valid @RequestBody CurrentOwnerCheckDTO req) {
-        return itemService.sendOTP(req);
+    public ResponseEntity<?> sendOTP(@Valid @RequestParam String email) {
+        return itemService.sendOTP(email);
     }
 
     // API verify OTP
     @PostMapping(value = "/confirmOTP")
-    public ResponseEntity<Boolean> confirmOTP(@Valid @RequestBody SendOTP otp, @RequestParam String productRecognition) {
-        if(productRecognition.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-        }
+    public ResponseEntity<?> confirmOTP(@Valid @RequestBody SendOTP otp, @RequestParam String productRecognition) {
         return itemService.confirmOTP(otp,productRecognition);
     }
+    //Da sua chua test
     @PostMapping(value = "/abortItem")
     public ResponseEntity<?> abortItem(@RequestBody AbortDTO abortDTO ){
         return itemService.abortItem(abortDTO);
@@ -150,13 +118,13 @@ public class ItemController {
         return itemService.getItemByEventType(eventType);
     }
 
-//    @GetMapping(value="logMetrics")
-//    public JSONObject logMetrics(){
-//        return itemService.logMetrics();
-//    }
     @GetMapping(value="getInforItemByProductRecognition")
     public  ResponseEntity<?> getInfoItemByItemId(String productRecognition){
         return itemService.getInforItemByItemId(productRecognition);
+    }
+    @PostMapping(value = "/listPartyJoin")
+    public ResponseEntity<?>  listPartyJoin(@RequestBody CurrentOwnerCheck req){
+        return itemService.listPartyJoin(req);
     }
 
 }
