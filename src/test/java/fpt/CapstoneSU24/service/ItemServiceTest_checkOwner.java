@@ -16,7 +16,7 @@ public class ItemServiceTest_checkOwner {
     public void testCheckOwner_NullEmail() {
         assertFalse(itemService.checkOwner(null, "owner@example.com"));
     }
-
+    //x
     @Test
     public void testCheckOwner_EmptyEmail() {
         assertFalse(itemService.checkOwner("", "owner@example.com"));

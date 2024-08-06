@@ -31,7 +31,7 @@ public class ItemServiceTest_SendOTP {
 
     @Mock
     private ItemRepository itemRepository;
-
+    //x
     @Mock
     private ItemLogRepository itemLogRepository;
 
@@ -67,7 +67,7 @@ public class ItemServiceTest_SendOTP {
         Location location = new Location();
         location.setAddress("123 Test St");
 
-        authorized.setLocation(location);
+       // authorized.setLocation(location);
 
         itemLog = new ItemLog();
         itemLog.setAuthorized(authorized);

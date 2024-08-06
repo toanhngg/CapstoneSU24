@@ -32,7 +32,7 @@ import org.springframework.http.ResponseEntity;
 public class ItemServiceTest_AbortItem {
     @Mock
     private ItemRepository itemRepository;
-
+    //x
     @Mock
     private ItemLogRepository itemLogRepository;
 

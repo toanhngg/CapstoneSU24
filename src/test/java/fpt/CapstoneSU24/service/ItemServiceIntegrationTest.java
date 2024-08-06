@@ -44,7 +44,7 @@ public class ItemServiceIntegrationTest {
 
     @MockBean
     private PartyRepository partyRepository;
-
+//x
     @MockBean
     private PointService pointService;
 

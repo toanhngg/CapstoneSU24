@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class ItemServiceTest_ComfirmOTP {
     @Mock
     private ItemRepository itemRepository;
-
+    //x
     @Mock
     private ItemLogRepository itemLogRepository;
 
@@ -76,7 +76,7 @@ public class ItemServiceTest_ComfirmOTP {
         authorized.setDescription("Description");
         Location location = new Location();
         location.setAddress("123 Street");
-        authorized.setLocation(location);
+      //  authorized.setLocation(location);
 
         itemLog = new ItemLog();
         itemLog.setAuthorized(authorized);
