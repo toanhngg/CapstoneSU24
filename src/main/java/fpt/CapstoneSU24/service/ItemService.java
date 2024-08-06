@@ -756,13 +756,13 @@ public class ItemService {
 
                 Party party = partyRepository.save(new Party(
                         itemIndex.getAuthorized().getAuthorizedName(),
-                        itemIndex.getAuthorized().getDescription(),
+                        otp.getDescription(),
                         itemIndex.getAuthorized().getPhoneNumber(),
                         itemIndex.getAuthorized().getAuthorizedEmail()
                 ));
 
                 ItemLog itemLog = new ItemLog();
-                itemLog.setDescription(itemIndex.getAuthorized().getDescription());
+                itemLog.setDescription(otp.getDescription());
                 itemLog.setAuthorized(null);
                 itemLog.setStatus(1);
                 itemLog.setTimeStamp(System.currentTimeMillis());
