@@ -500,40 +500,27 @@ public class ItemService {
 
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
-
         try {
             // Kiểm tra xem email có phải là CurrentOwner hay không
             if (checkOwner(email, item.getCurrentOwner())) {
-//                if (list.get(list.size() - 1).getLocation() != null)
                     return ResponseEntity.ok(3); // CurrentOwner
-//                else
-//                    return ResponseEntity.ok(6); // CurrentOwner
             }
-
             // Kiểm tra xem email có phải là Authorized không
-            if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
-                if (email.equals(list.get(0).getAuthorized().getAuthorizedEmail())) {
+            else if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
+                if (email.equalsIgnoreCase(list.get(0).getAuthorized().getAuthorizedEmail())) {
                     return ResponseEntity.ok(2); // Authorized
                 }
-            }
-
-            // Kiểm tra xem email có phải là Party từng tham gia ko
-            if (checkParty(email, item.getItemId())) {
-//               // return ResponseEntity.ok(4); // Party
-//                if (list.get(list.size() - 1).getLocation() != null)
-//                    return ResponseEntity.ok(7); // CurrentOwner
-//                else
+            } else if (checkParty(email, item.getItemId())) {
                 return ResponseEntity.ok(4); // CurrentOwner
             }
-
             // Không là gì
             return ResponseEntity.ok(1); // Không là gì
 
         } catch (Exception e) {
             logService.logError(e);
-            return ResponseEntity.ok(5); // Exception
+            return ResponseEntity.badRequest().body(5); // Exception
         }
-    }
+        }
 
 
     public boolean checkParty(String email, int itemId) {
@@ -548,7 +535,7 @@ public class ItemService {
         if (emailCurrentOwner == null || emailCurrentOwner.isEmpty()) {
             return false;
         }
-        return email.equals(emailCurrentOwner);
+        return email.equalsIgnoreCase(emailCurrentOwner);
     }
 
     public Item findByProductRecognition(String productRecognition) {

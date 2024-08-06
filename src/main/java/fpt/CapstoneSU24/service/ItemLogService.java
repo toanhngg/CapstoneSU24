@@ -89,7 +89,7 @@ public class ItemLogService {
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
                 detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
 
-            }if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 2) {
+            } else if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 2) {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
