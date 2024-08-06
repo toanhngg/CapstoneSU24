@@ -249,15 +249,38 @@ public class ItemLogService {
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 3 || check == 0) {
-                // B3: Cập nhật thông tin của ItemLogId trước đó
-                Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
-                if (!hasNullFields(savedLocation)) {
-                    String point = generateAndSetPoint(itemLogDetail);
-                    itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
-                            , itemLogDetail.getItemLogId());
+                if(itemLogDetail.getLocation() == null) {
+                    // B3: Cập nhật thông tin của ItemLogId trước đó
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
+                    if (!hasNullFields(savedLocation)) {
+                        String point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
+                                , itemLogDetail.getItemLogId());
 
+                        return ResponseEntity.status(HttpStatus.OK).body("Update successfully.");
+                    }
+                }else{
+                    ItemLog newItemLog = new ItemLog();
+                    copyItemLogDetails(newItemLog, itemLogDetail);
+                    newItemLog.setTimeStamp(System.currentTimeMillis());
+                    newItemLog.setIdEdit(itemLogDetail.getItemLogId());
+
+                    newItemLog.setEvent_id(eventTypeRepository.findById(6)
+                            .orElseThrow(() -> new RuntimeException("Event type not found"))); // Sự kiện chỉnh sửa
+                    itemLogRepository.save(newItemLog);
+                    // B3: Cập nhật thông tin của ItemLogId trước đó
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
+                    String point;
+                    if (!hasNullFields(itemLogDetail)) {
+                        point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
+                                point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
+                    } else point = null;
+                    itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
+                            point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
                     return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
                 }
+
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! Unauthorized access.");
             }
