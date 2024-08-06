@@ -17,6 +17,7 @@ public class ItemLogDetailResponse {
     private String partyFullname;
     private String sender;
     private String receiver;
+    private String receiverName;
     private String partyPhoneNumber;
     private String addressInParty;
     private Double coordinateX;

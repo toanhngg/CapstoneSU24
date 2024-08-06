@@ -71,6 +71,7 @@ public class ItemLogService {
             if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 3) {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
+                detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
@@ -88,7 +89,29 @@ public class ItemLogService {
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
                 detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
 
-            } else {
+            }if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 2) {
+                detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
+                detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
+                detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAddressInParty(itemlogDetail.getAddress());
+
+                if (itemlogDetail.getLocation() != null) {
+                    detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
+                    detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
+                } else {
+                    detailResponse.setCoordinateX(null);
+                    detailResponse.setCoordinateY(null);
+                }
+
+                detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
+                detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
+                detailResponse.setIdEdit(itemlogDetail.getIdEdit());
+                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+
+            }
+            else {
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
