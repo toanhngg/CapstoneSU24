@@ -110,12 +110,12 @@ public class PointService {
 
         public boolean arePointsOnCurve(List<ItemLog> pointLogs) {
             List<Point> points = new ArrayList<>();
-            for (int i = 0; i < pointLogs.size(); i++) {
+            for (int i = 0; i < pointLogs.size() - 1 ; i++) {
                 Point point = getPoint(pointLogs.get(i).getPoint());
                 points.add(point);
             }
 
-            Point startPoint = getPoint(pointLogs.get(0).getPoint());
+            Point startPoint = getPoint(pointLogs.get(pointLogs.size() - 1).getPoint());
             return isPointOnCurve(points, startPoint);
         }
 

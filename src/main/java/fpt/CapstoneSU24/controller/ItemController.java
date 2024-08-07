@@ -8,12 +8,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 @RequestMapping("/api/item")
 @RestController
+@Validated
 public class ItemController {
 
     //private static final Logger log = LoggerFactory.getLogger(ItemController.class);
@@ -88,14 +92,16 @@ public class ItemController {
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
     }
     @PostMapping(value = "/checkPartyFirst")
+    @Validated
     public ResponseEntity<Integer> checkPartyFirst(@Valid @RequestBody CurrentOwnerCheck req)  {
         return itemService.checkPartyFirst(req);
     }
 
     @PostMapping(value = "/check")
-    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req)  {
+    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req) throws URISyntaxException, IOException, InterruptedException {
         return itemService.check(req);
     }
+
 
     @PostMapping(value = "/sendOTP")
     public ResponseEntity<?> sendOTP(@Valid @RequestParam String email) {

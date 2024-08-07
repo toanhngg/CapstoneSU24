@@ -13,6 +13,7 @@ import lombok.*;
 public class CurrentOwnerCheckDTO {
     @Email(message = "Email should be valid")
     @NotBlank(message = "Email is required")
+
     private String email;
 
     @Size(max = 10, message = "ProductRecognition must be less than 10 characters")

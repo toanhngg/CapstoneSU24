@@ -72,8 +72,11 @@ public class ItemLogService {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName(): null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail(): null);
+
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -87,14 +90,18 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             } else if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 2) {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -108,14 +115,17 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             }
             else {
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -129,7 +139,9 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             }
 
@@ -183,7 +195,7 @@ public class ItemLogService {
                     authorized.setAuthorizedName(dataEditDTO.getAuthorizedName());
                     authorized.setAuthorizedEmail(dataEditDTO.getAuthorizedEmail());
                     authorized.setAssignPerson(itemLogDetail.getParty().getPartyFullName());
-                    authorized.setAssignPerson(itemLogDetail.getParty().getEmail());
+                    authorized.setAssignPersonMail(itemLogDetail.getParty().getEmail());
                     authorized.setDescription(dataEditDTO.getDescription());
                     authorized.setPhoneNumber(dataEditDTO.getPhoneNumber());
                     Authorized saveAuthorized = authorizedRepository.save(authorized);
@@ -294,7 +306,7 @@ public class ItemLogService {
                     // B3: Cập nhật thông tin của ItemLogId trước đó
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                     String point;
-                    if (!hasNullFields(itemLogDetail)) {
+                    if (!hasNullFields(savedLocation)) {
                         point = generateAndSetPoint(itemLogDetail);
                         itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
                                 point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);

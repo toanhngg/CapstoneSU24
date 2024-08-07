@@ -1,8 +1,10 @@
 package fpt.CapstoneSU24.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fpt.CapstoneSU24.model.Location;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Setter
@@ -42,10 +44,10 @@ public class AuthorizedDTO {
     private String description;
 
     //@NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Phone number should be valid")
+    @Pattern(regexp = "^(\\+?[0-9]{10,15})?$", message = "Phone number should be valid")
     private String phoneNumber;
 
-    @NotBlank(message = "Product recognition is required")
+  @NotBlank(message = "Product recognition is required")
     @Size(max = 10, message = "ProductRecognition must be 10 characters")
     private String productRecognition;
 
