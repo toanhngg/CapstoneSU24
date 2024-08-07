@@ -33,6 +33,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -486,8 +487,22 @@ public class ItemService {
         return null;
     }
 
-        public ResponseEntity<Integer> check(CurrentOwnerCheck req) {
+        public ResponseEntity<Integer> check(CurrentOwnerCheck req) throws URISyntaxException, IOException, InterruptedException {
         String email = req.getEmail();
+            HttpClient client = HttpClient.newHttpClient();
+            // Validate email
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
+                    .POST(HttpRequest.BodyPublishers.ofString("email=" + req.getEmail()))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String responseBody = response.body();
+
+            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+            }
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
 

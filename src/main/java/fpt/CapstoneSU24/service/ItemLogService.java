@@ -73,7 +73,7 @@ public class ItemLogService {
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -115,7 +115,7 @@ public class ItemLogService {
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -183,7 +183,7 @@ public class ItemLogService {
                     authorized.setAuthorizedName(dataEditDTO.getAuthorizedName());
                     authorized.setAuthorizedEmail(dataEditDTO.getAuthorizedEmail());
                     authorized.setAssignPerson(itemLogDetail.getParty().getPartyFullName());
-                    authorized.setAssignPerson(itemLogDetail.getParty().getEmail());
+                    authorized.setAssignPersonMail(itemLogDetail.getParty().getEmail());
                     authorized.setDescription(dataEditDTO.getDescription());
                     authorized.setPhoneNumber(dataEditDTO.getPhoneNumber());
                     Authorized saveAuthorized = authorizedRepository.save(authorized);
