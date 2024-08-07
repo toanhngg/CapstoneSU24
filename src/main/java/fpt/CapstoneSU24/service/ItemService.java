@@ -315,7 +315,8 @@ public class ItemService {
         dto.setEventType(itemLog.getEvent_id().getEvent_type());
         dto.setPartyName(itemLog.getParty().getPartyFullName());
         dto.setDescription(itemLog.getDescription());
-        dto.setCheckPoint(itemLog.getPoint()!= null);
+        String point = itemLog.getPoint();
+        dto.setCheckPoint(point != null && !point.isEmpty());
 
         return dto;
     }

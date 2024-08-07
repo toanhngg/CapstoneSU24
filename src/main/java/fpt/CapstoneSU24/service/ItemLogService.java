@@ -90,7 +90,9 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             } else if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 2) {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
@@ -113,7 +115,9 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             }
             else {
@@ -135,7 +139,9 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             }
 
