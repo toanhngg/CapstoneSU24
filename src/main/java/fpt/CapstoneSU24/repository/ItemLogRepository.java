@@ -118,7 +118,7 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
                                 @Param("itemLogId") long itemLogId);
 
 
-    @Query("SELECT il FROM ItemLog il LEFT JOIN il.party p LEFT JOIN il.item i WHERE i.itemId = :itemId " +
+    @Query("SELECT il FROM ItemLog il LEFT JOIN il.party p LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.event_id.eventId <> 6 " +
             "AND p.email = :email")
     List<ItemLog> checkParty(int itemId, String email);
 
