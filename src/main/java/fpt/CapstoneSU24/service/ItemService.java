@@ -435,20 +435,20 @@ public class ItemService {
     }
     public static boolean hasNullFields(Object obj) {
         if (obj == null) {
-            return true; // Nếu object là null, trả về true
+            return false; // Nếu object là null, trả về true
         }
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
                 if (field.get(obj) == null) {
-                    return true; // Nếu có bất kỳ trường nào null, trả về true
+                    return false; // Nếu có bất kỳ trường nào null, trả về true
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
         }
 
-        return false; // Không có trường nào null
+        return true; // Không có trường nào null
     }
 
     public ResponseEntity<Integer> checkPartyFirst(CurrentOwnerCheck req) {
@@ -603,7 +603,7 @@ public class ItemService {
                     Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                     Point point = null;
-              if (!hasNullFields(authorized.getLocation()) && !hasNullFields(itemIndex.getParty())) {
+              if (hasNullFields(authorized.getLocation()) ) {
                         double pointX = pointService.generateX();
                         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                         List<Point> pointList = pointService.getPointList(pointLogs);
