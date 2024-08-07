@@ -364,9 +364,9 @@ public class ItemService {
         if (email == null || email.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is missing.");
         }
-        int check = clientService.checkOTP(req.getEmail().trim(), req.getOTP().trim(),item.getProductRecognition());
+        int check = clientService.checkOTP(req.getEmail().trim(), req.getOTP().trim(), item.getProductRecognition());
         if (check == 6)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(" OTP is not correct.");
         if (check == 3) {
             if (!item.getCurrentOwner().equals(email)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
@@ -386,10 +386,8 @@ public class ItemService {
             }
             String pdfData = item.getCertificateLink();
             return new ResponseEntity<>(pdfData, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("OTP is not correct", HttpStatus.OK);
-
         }
+        return null;
     }
 
     public ResponseEntity<Integer> checkEventAuthorized(String productRecognition) {

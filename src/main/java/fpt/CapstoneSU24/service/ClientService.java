@@ -183,7 +183,7 @@ public class ClientService implements ClientRepository {
         try {
             Item item = findByProductRecognition(productRecognition);
             List<ItemLog> list = itemLogRepository.getItemLogsByItemIdDescNotEdit(item.getItemId()); // tìm cái đầu tiên
-            if (item.getStatus() == 0) return 0; // Sản phẩm đã bị cấm
+           // if (item.getStatus() == 0) return 0; // Sản phẩm đã bị cấm
 
             try {
                 boolean check = otpService.verifyOTP(email, otp);
