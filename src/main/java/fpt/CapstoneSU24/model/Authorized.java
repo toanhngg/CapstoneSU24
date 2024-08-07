@@ -30,4 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
         private String description;
         @Column(name = "phone_number")
         private String phoneNumber;
+
+    public Authorized(String johnDoe, String mail, String number, String mail1) {
+    }
 }

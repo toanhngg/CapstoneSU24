@@ -79,8 +79,9 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
     @Query("select i from Item i where i.product.productId = :id ")
     List<Item> findByProductId(@Param("id") Integer id);
 
-    @Query("SELECT i FROM Item i WHERE i.productRecognition = :productRecognition")
+    @Query(value = "SELECT i FROM Item  i WHERE i.productRecognition = :productRecognition")
     Item findByProductRecognition(@Param("productRecognition") String productRecognition);
+
 
     //DEFINED Status của bảng ITEM là 1 là đã có current_owner 0 là chưa có current_owner
     @Modifying

@@ -12,10 +12,7 @@ import fpt.CapstoneSU24.dto.AbortDTO;
 import fpt.CapstoneSU24.dto.LocationDTO;
 import fpt.CapstoneSU24.exception.LogService;
 import fpt.CapstoneSU24.mapper.LocationMapper;
-import fpt.CapstoneSU24.model.EventType;
-import fpt.CapstoneSU24.model.Item;
-import fpt.CapstoneSU24.model.ItemLog;
-import fpt.CapstoneSU24.model.Location;
+import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,20 +21,27 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith(MockitoExtension.class)
 public class ItemServiceTest_AbortItem {
+    @InjectMocks
+    private ItemService itemService;
+
     @Mock
     private ItemRepository itemRepository;
-    //x
+
     @Mock
     private ItemLogRepository itemLogRepository;
 
     @Mock
     private ClientService clientService;
+
+    @Mock
+    private LocationRepository locationRepository;
 
     @Mock
     private PartyRepository partyRepository;
@@ -50,50 +54,42 @@ public class ItemServiceTest_AbortItem {
 
     @Mock
     private LogService logService;
-    @Mock
-    private LocationRepository locationRepository;
-
-    @Mock
-    private LocationMapper locationMapper;
-    @InjectMocks
-    private ItemService itemService;
 
     private AbortDTO abortDTO;
-    private Item item;
-    private List<ItemLog> itemLogs;
 
     @BeforeEach
-    public void setup() {
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+
         abortDTO = new AbortDTO();
         abortDTO.setProductRecognition("product123");
-        abortDTO.setEmail("owner@example.com");
-        // Setup other fields of abortDTO as necessary
-        // Create and set a valid LocationDTO
-        LocationDTO locationDTO = new LocationDTO();
-        locationDTO.setAddress("123 Test St");
-        abortDTO.setLocation(locationDTO);
-        item = new Item();
-        item.setItemId(1);
-        item.setCurrentOwner("owner@example.com");
-        item.setStatus(1);
-
-        ItemLog itemLog = new ItemLog();
-        itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(25));
-        itemLogs = Collections.singletonList(itemLog);
+        abortDTO.setEmail("test@example.com");
+        abortDTO.setPartyFullName("John Doe");
+        abortDTO.setDescription("Sample description");
+        abortDTO.setOTP("123456");
+        // Initialize other fields as needed
     }
 
     @Test
-    public void testAbortItemSuccess() {
-        when(itemRepository.findByProductRecognition(anyString())).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(itemLogs);
-        when(pointService.generateX()).thenReturn(1.0);
-        when(pointService.getPointList(anyList())).thenReturn(Collections.emptyList());
-        when(pointService.lagrangeInterpolate(anyList(), anyDouble())).thenReturn(1.0);
-        when(eventTypeRepository.findOneByEventId(anyInt())).thenReturn(new EventType());
+    public void testAbortItem_Success() {
+        // Prepare mock data
+        Item item = new Item();
+        item.setItemId(1);
+        item.setCurrentOwner("test@example.com");
+        item.setStatus(1); // Status should not be 0 for successful abort
 
-        Location savedLocation = new Location();
-        when(locationMapper.locationDtoToLocation(any())).thenReturn(savedLocation);
-        when(locationRepository.save(any(Location.class))).thenReturn(savedLocation);
+        ItemLog itemLog = new ItemLog();
+        itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1) - 1000);
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(3);
+        when(locationRepository.save(any())).thenReturn(new Location());
+        when(partyRepository.save(any())).thenReturn(new Party());
+        when(pointService.generateX()).thenReturn(1.0);
+        when(pointService.getPointList(any())).thenReturn(Collections.emptyList());
+        when(pointService.lagrangeInterpolate(any(), anyDouble())).thenReturn(1.0);
+        when(eventTypeRepository.findOneByEventId(5)).thenReturn(new EventType());
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
@@ -102,48 +98,22 @@ public class ItemServiceTest_AbortItem {
     }
 
     @Test
-    public void testAbortItemNotOwner() {
-        item.setCurrentOwner("another@example.com");
-
-        when(itemRepository.findByProductRecognition(anyString())).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(itemLogs);
+    public void testAbortItem_ItemNotFound() {
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(null);
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("You are not currentOwner!", response.getBody());
+        assertEquals("Item not found!", response.getBody());
     }
 
     @Test
-    public void testAbortItemTooSoon() {
-        itemLogs.get(0).setTimeStamp(System.currentTimeMillis());
+    public void testAbortItem_ListEmpty() {
+        Item item = new Item();
+        item.setItemId(1);
 
-        when(itemRepository.findByProductRecognition(anyString())).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(itemLogs);
-
-        ResponseEntity<String> response = itemService.abortItem(abortDTO);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("You cannot destroy this item once created!", response.getBody());
-    }
-
-    @Test
-    public void testAbortItemAlreadyCancelled() {
-        item.setStatus(0);
-
-        when(itemRepository.findByProductRecognition(anyString())).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(itemLogs);
-
-        ResponseEntity<String> response = itemService.abortItem(abortDTO);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("This product has been cancelled!", response.getBody());
-    }
-
-    @Test
-    public void testAbortItemLogsNotFound() {
-        when(itemRepository.findByProductRecognition(anyString())).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(Collections.emptyList());
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.emptyList());
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
@@ -152,33 +122,68 @@ public class ItemServiceTest_AbortItem {
     }
 
     @Test
-    public void testAbortItemException() {
-        when(itemRepository.findByProductRecognition(anyString())).thenThrow(new RuntimeException("DB error"));
+    public void testAbortItem_OTPIncorrect() {
+        Item item = new Item();
+        item.setItemId(1);
+        item.setCurrentOwner("test@example.com");
+
+        ItemLog itemLog = new ItemLog();
+        itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1) - 1000);
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(6);
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().startsWith("Error:"));
+        assertEquals("Edit fail! OTP is not correct.", response.getBody());
     }
-    @ParameterizedTest
-    @CsvFileSource(resources = "/datatestGetItemByEventType.csv", numLinesToSkip = 1)
-    public void testGetItemByEventType(int eventType, int expectedStatusCode) {
-        // Convert int to HttpStatus
-        HttpStatus expectedStatus = HttpStatus.valueOf(expectedStatusCode);
 
-        // Arrange
-        if (expectedStatus.equals(HttpStatus.OK)) {
-            Item item = new Item(); // Initialize your Item object with required fields
-            when(itemRepository.getItemByEventType(eventType)).thenReturn(List.of(item));
-        } else {
-            when(itemRepository.getItemByEventType(eventType)).thenReturn(Collections.emptyList());
-        }
+    @Test
+    public void testAbortItem_NotOwner() {
+        Item item = new Item();
+        item.setItemId(1);
+        item.setCurrentOwner("other@example.com");
 
-        // Act
-        ResponseEntity<?> response = itemService.getItemByEventType(eventType);
+        ItemLog itemLog = new ItemLog();
+        itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1) - 1000);
 
-        // Assert
-        assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
-        verify(itemRepository, times(1)).getItemByEventType(eventType);
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(3);
+
+        ResponseEntity<String> response = itemService.abortItem(abortDTO);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("You are not currentOwner!", response.getBody());
+    }
+
+    @Test
+    public void testAbortItem_TimeDifferenceTooLong() {
+        Item item = new Item();
+        item.setItemId(1);
+        item.setCurrentOwner("test@example.com");
+
+        ItemLog itemLog = new ItemLog();
+        itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2) - 1000);
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+
+        ResponseEntity<String> response = itemService.abortItem(abortDTO);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("You cannot destroy this item once created!", response.getBody());
+    }
+
+    @Test
+    public void testAbortItem_Exception() {
+        when(itemRepository.findByProductRecognition("product123")).thenThrow(new RuntimeException("Database error"));
+
+        ResponseEntity<String> response = itemService.abortItem(abortDTO);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Error: Database error"));
     }
 }

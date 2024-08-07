@@ -2,10 +2,7 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.dto.SendOTP;
 import fpt.CapstoneSU24.exception.LogService;
-import fpt.CapstoneSU24.model.Authorized;
-import fpt.CapstoneSU24.model.Item;
-import fpt.CapstoneSU24.model.ItemLog;
-import fpt.CapstoneSU24.model.Location;
+import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.EventTypeRepository;
 import fpt.CapstoneSU24.repository.ItemLogRepository;
 import fpt.CapstoneSU24.repository.ItemRepository;
@@ -15,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +21,19 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ItemServiceTest_ComfirmOTP {
+
+    @InjectMocks
+    private ItemService itemService;
+
     @Mock
     private ItemRepository itemRepository;
-    //x
+
     @Mock
     private ItemLogRepository itemLogRepository;
 
@@ -40,115 +44,115 @@ public class ItemServiceTest_ComfirmOTP {
     private PartyRepository partyRepository;
 
     @Mock
-    private PointService pointService;
-
-    @Mock
     private EventTypeRepository eventTypeRepository;
 
     @Mock
     private LogService logService;
 
-    @InjectMocks
-    private ItemService itemService; // Assuming the class containing confirmOTP is named ItemService
-
-    private SendOTP otp;
-    private String productRecognition;
-    private Item item;
-    private ItemLog itemLog;
-    private Authorized authorized;
+    private SendOTP sendOTP;
 
     @BeforeEach
-    public void setup() {
-        otp = new SendOTP();
-        otp.setEmail("test@example.com");
-        otp.setOtp("123456");
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
 
-        productRecognition = "product123";
-
-        item = new Item();
-        item.setItemId(1);
-        item.setStatus(1);
-
-        authorized = new Authorized();
-        authorized.setAuthorizedEmail("test@example.com");
-        authorized.setAuthorizedName("Test User");
-        authorized.setPhoneNumber("1234567890");
-        authorized.setDescription("Description");
-        Location location = new Location();
-        location.setAddress("123 Street");
-      //  authorized.setLocation(location);
-
-        itemLog = new ItemLog();
-        itemLog.setAuthorized(authorized);
-    }
-
-    @Test
-    public void testConfirmOTP_ItemNotFound() {
-        when(itemRepository.findByProductRecognition(productRecognition)).thenReturn(null);
-
-        ResponseEntity<Boolean> response = itemService.confirmOTP(otp, productRecognition);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertFalse(response.getBody());
-    }
-
-    @Test
-    public void testConfirmOTP_ItemStatusInvalid() {
-        item.setStatus(0);
-        when(itemRepository.findByProductRecognition(productRecognition)).thenReturn(item);
-
-        ResponseEntity<Boolean> response = itemService.confirmOTP(otp, productRecognition);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertFalse(response.getBody());
-    }
-
-    @Test
-    public void testConfirmOTP_NoItemLogsFound() {
-        when(itemRepository.findByProductRecognition(productRecognition)).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(item.getItemId())).thenReturn(Collections.emptyList());
-
-        ResponseEntity<Boolean> response = itemService.confirmOTP(otp, productRecognition);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertFalse(response.getBody());
-    }
-
-    @Test
-    public void testConfirmOTP_AuthorizedEmailMismatch() {
-        when(itemRepository.findByProductRecognition(productRecognition)).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(item.getItemId())).thenReturn(Arrays.asList(itemLog));
-
-        otp.setEmail("wrong@example.com");
-
-        ResponseEntity<Boolean> response = itemService.confirmOTP(otp, productRecognition);
-
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertFalse(response.getBody());
-    }
-
-    @Test
-    public void testConfirmOTP_OTPCheckFails() {
-        when(itemRepository.findByProductRecognition(productRecognition)).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(item.getItemId())).thenReturn(Arrays.asList(itemLog));
-        when(clientService.checkOTPinSQL(otp.getEmail().trim(), otp.getOtp().trim())).thenReturn(false);
-
-        ResponseEntity<Boolean> response = itemService.confirmOTP(otp, productRecognition);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertFalse(response.getBody());
+        sendOTP = new SendOTP();
+        sendOTP.setEmail("test@example.com");
+        sendOTP.setOtp("123456");
+        sendOTP.setDescription("Sample description");
     }
 
     @Test
     public void testConfirmOTP_Success() {
-        when(itemRepository.findByProductRecognition(productRecognition)).thenReturn(item);
-        when(itemLogRepository.getItemLogsByItemId(item.getItemId())).thenReturn(Arrays.asList(itemLog));
-        when(clientService.checkOTPinSQL(otp.getEmail().trim(), otp.getOtp().trim())).thenReturn(true);
+        Item item = new Item();
+        item.setItemId(1);
+        item.setStatus(1); // Item status should not be 0 for success
 
-        ResponseEntity<Boolean> response = itemService.confirmOTP(otp, productRecognition);
+        ItemLog itemLog = new ItemLog();
+        itemLog.setAuthorized(new Authorized("John Doe", "test@example.com", "1234567890", "authorized@example.com"));
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(2);
+        doNothing().when(itemRepository).updateItemStatusAndCurrentOwnwe(1, 1, "test@example.com");
+        when(partyRepository.save(any())).thenReturn(new Party());
+        when(eventTypeRepository.findOneByEventId(4)).thenReturn(new EventType());
+
+        ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody());
-     //   assertEquals("Database error", response.getHeaders().getFirst("Error-Message"));
+        assertTrue((Boolean) response.getBody());
+    }
 
+    @Test
+    public void testConfirmOTP_ItemNotFound() {
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(null);
+
+        ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Item not found", response.getBody());
+    }
+
+    @Test
+    public void testConfirmOTP_ItemAborted() {
+        Item item = new Item();
+        item.setItemId(1);
+        item.setStatus(0); // Item status is 0
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+
+        ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Item was aborted", response.getBody());
+    }
+
+    @Test
+    public void testConfirmOTP_IncorrectOTP() {
+        Item item = new Item();
+        item.setItemId(1);
+        item.setStatus(1);
+
+        ItemLog itemLog = new ItemLog();
+        itemLog.setAuthorized(new Authorized("John Doe", "test@example.com", "1234567890", "authorized@example.com"));
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(6);
+
+        ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Fail! OTP is not correct", response.getBody());
+    }
+
+    @Test
+    public void testConfirmOTP_NotAuthorized() {
+        Item item = new Item();
+        item.setItemId(1);
+        item.setStatus(1);
+
+        ItemLog itemLog = new ItemLog();
+        itemLog.setAuthorized(new Authorized("John Doe", "test@example.com", "1234567890", "authorized@example.com"));
+
+        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
+        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(3);
+
+        ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("You are not authorized product", response.getBody());
+    }
+
+    @Test
+    public void testConfirmOTP_Exception() {
+        when(itemRepository.findByProductRecognition("product123")).thenThrow(new RuntimeException("Database error"));
+
+        ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertTrue(response.getHeaders().containsKey("Error-Message"));
+        assertEquals("Database error", response.getHeaders().getFirst("Error-Message"));
     }
 }

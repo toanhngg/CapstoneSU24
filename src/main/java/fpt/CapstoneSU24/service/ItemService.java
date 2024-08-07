@@ -65,9 +65,7 @@ public class ItemService {
     private final CloudinaryService cloudinaryService;
     private final LogService logService;
     private final ItemMapper itemMapper;
-    private final AbortMapper abortMapper;
     private final LocationMapper locationMapper;
-    private final ProductMapper productMapper;
     private final AuthorizedMapper authorizedMapper;
 
     @Autowired
@@ -79,8 +77,8 @@ public class ItemService {
                        EventTypeRepository eventTypeRepository, ExportExcelService exportExcelService,
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
-                       AbortMapper abortMapper, ItemMapper itemMapper, LocationMapper locationMapper,
-                       ProductMapper productMapper, AuthorizedMapper authorizedMapper) {
+                       ItemMapper itemMapper, LocationMapper locationMapper,
+                       AuthorizedMapper authorizedMapper) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -100,9 +98,7 @@ public class ItemService {
         this.cloudinaryService = cloudinaryService;
         this.logService = logService;
         this.itemMapper = itemMapper;
-        this.abortMapper = abortMapper;
         this.locationMapper = locationMapper;
-        this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
@@ -304,7 +300,6 @@ public class ItemService {
         }
     }
 
-
     private ItemLogDTOResponse convertToItemLogDTO(ItemLog itemLog) {
         ItemLogDTOResponse dto = new ItemLogDTOResponse();
         dto.setItemLogId(itemLog.getItemLogId());
@@ -353,10 +348,11 @@ public class ItemService {
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
-        Item item = itemRepository.findByProductRecognition(productRecognition);
         if (productRecognition == null || productRecognition.isEmpty()) {
             return ResponseEntity.badRequest().body("Product recognition is required");
         }
+        Item item = itemRepository.findByProductRecognition(productRecognition.trim());
+
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
         }
@@ -397,7 +393,7 @@ public class ItemService {
             Item item = findByProductRecognition(productRecognition); // B1
            if (item.getStatus() == 0)
             return ResponseEntity.ok(0);
-            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
+           List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId()); // tim cai dau tien
             if (list.get(0).getAuthorized() == null) {
                 return ResponseEntity.ok(1);
             } else {
@@ -434,22 +430,23 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex);
         }
     }
+
     public static boolean hasNullFields(Object obj) {
         if (obj == null) {
-            return true; // Nếu object là null, trả về true
+            return false; // Nếu object là null, trả về true
         }
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
                 if (field.get(obj) == null) {
-                    return true; // Nếu có bất kỳ trường nào null, trả về true
+                    return false; // Nếu có bất kỳ trường nào null, trả về true
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
         }
 
-        return false; // Không có trường nào null
+        return true; // Không có trường nào null
     }
 
     public ResponseEntity<Integer> checkPartyFirst(CurrentOwnerCheck req) {
@@ -488,7 +485,7 @@ public class ItemService {
         return null;
     }
 
-        public ResponseEntity<Integer> check(CurrentOwnerCheck req) {
+    public ResponseEntity<Integer> check(CurrentOwnerCheck req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
@@ -521,7 +518,6 @@ public class ItemService {
             return ResponseEntity.badRequest().body(5); // Exception
         }
         }
-
 
     public boolean checkParty(String email, int itemId) {
         List<ItemLog> itemLogs = itemLogRepository.checkParty(itemId, email);
@@ -566,7 +562,7 @@ public class ItemService {
             String responseBody = response.body();
 
             if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not exist!");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email not exist!");
             }
 
             Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(authorized.getLocation()));
@@ -590,7 +586,7 @@ public class ItemService {
                     Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                     Point point = null;
-              if (!hasNullFields(authorized.getLocation()) && !hasNullFields(itemIndex.getParty())) {
+              if (hasNullFields(authorized.getLocation()) && hasNullFields(itemIndex.getParty())) {
                         double pointX = pointService.generateX();
                         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                         List<Point> pointList = pointService.getPointList(pointLogs);
@@ -628,10 +624,9 @@ public class ItemService {
            // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot authorize product at this time!");
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
-
 
     public ResponseEntity<?> sendOTP(String emailjson) {
         try {
@@ -665,58 +660,6 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
-
-//    public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
-//        try {
-//            String email = req.getEmail();
-//            String productRecognition = req.getProductRecognition();
-////            JSONObject jsonReq = new JSONObject(req);
-////            String email = jsonReq.getString("email");
-////            String productRecognition = jsonReq.getString("productRecognition");
-//
-//            // Kiểm tra xem item có tồn tại và có status = 0 hay không
-//            Item item = findByProductRecognition(productRecognition);
-//            if (item == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-//            }
-//            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-//
-//            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-//            if (list.isEmpty()) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
-//            }
-//            ItemLog itemIndex = list.get(0);
-//            if (itemIndex.getAuthorized() == null) {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
-//            }
-//            // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
-//            //System.out.println(email);
-//            // Kiểm tra xem email có đúng là current owner không
-//            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
-//                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
-//            }
-//            // Tạo đối tượng ClientSdi và gửi email OTP
-//            ClientSdi sdi = new ClientSdi();
-//            sdi.setEmail(itemIndex.getAuthorized().getAuthorizedEmail());
-//            sdi.setUsername(itemIndex.getAuthorized().getAuthorizedName());
-//            sdi.setName(itemIndex.getAuthorized().getAuthorizedName());
-//
-//            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
-//
-//            if (emailSent) {
-//                return ResponseEntity.ok("OTP has been sent successfully.");
-//            } else {
-//                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
-//            }
-//        } catch (JSONException e) {
-//            logService.logError(e);
-//
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
-//        } catch (Exception ex) {
-//            logService.logError(ex);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-//        }
-//    }
 
     //SendOTP Sau
     public ResponseEntity<?> confirmOTP(SendOTP otp, String productRecognition) {
@@ -833,6 +776,7 @@ public class ItemService {
             return ResponseEntity.ok(item);
         }
     }
+
     public JSONObject infoItemForMonitor(long startDate, long endDate) {
         List<Item> monthlyItem = itemRepository.findAllItemByCreatedAtBetween(startDate, endDate);
         List<Item> items = itemRepository.findAll();
@@ -841,6 +785,7 @@ public class ItemService {
         jsonObject.put("monthly",monthlyItem.size());
         return jsonObject;
     }
+
     public JSONObject logMetrics() {
             int countPoint = itemLogRepository.countPoint();
             int countItemLog = itemLogRepository.countItemId();
@@ -850,6 +795,7 @@ public class ItemService {
             jsonObject.put("countItemLog", countItemLog);
             return jsonObject;
     }
+
     public ResponseEntity<?> getInforItemByItemId(String productRecognition) {
         try {
             ItemDTO itemDTO = new ItemDTO();
@@ -864,6 +810,7 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
+
     public ResponseEntity<?> listPartyJoin(CurrentOwnerCheck req) {
         try{
             String email = req.getEmail();
