@@ -424,7 +424,7 @@ public class ItemService {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mail authorized not same mail assign person");
                     }
                 } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail!.Access denied ");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Fail! Access denied ");
                 }
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not the owner");

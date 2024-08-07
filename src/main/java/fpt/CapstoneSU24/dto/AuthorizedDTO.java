@@ -44,8 +44,9 @@ public class AuthorizedDTO {
     private String description;
 
     //@NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Phone number should be valid")
+    @Pattern(regexp = "^(\\+?[0-9]{10,15})?$", message = "Phone number should be valid")
     private String phoneNumber;
+
   @NotBlank(message = "Product recognition is required")
     @Size(max = 10, message = "ProductRecognition must be 10 characters")
     private String productRecognition;
