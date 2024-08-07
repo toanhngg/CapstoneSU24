@@ -72,8 +72,11 @@ public class ItemLogService {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName(): null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail(): null);
+
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -93,8 +96,10 @@ public class ItemLogService {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -114,7 +119,8 @@ public class ItemLogService {
             else {
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName() : null);
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
