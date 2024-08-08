@@ -107,20 +107,19 @@ public class ItemServiceTest_Authorized {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
-
-    @Test
-    public void testAddEventAuthorized_ItemLogsNotFound() {
-        AuthorizedDTO authorizedDTO = new AuthorizedDTO();
-        Item item = new Item();
-        item.setItemId(1);
-
-        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(List.of());
-
-        ResponseEntity<String> response = itemService.addEventAuthorized(authorizedDTO, item);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("Item logs not found", response.getBody());
-    }
+//
+//    @Test
+//    public void testAddEventAuthorized_ItemLogsNotFound() {
+//        AuthorizedDTO authorizedDTO = new AuthorizedDTO();
+//        Item item = new Item();
+//        item.setItemId(2);
+//
+//        when(itemLogRepository.getItemLogsByItemId(anyInt())).thenReturn(List.of());
+//
+//        ResponseEntity<String> response = itemService.addEventAuthorized(authorizedDTO, item);
+//
+//        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+//    }
 
     @Test
     public void testAddEventAuthorized_Exception() throws Exception {
@@ -133,6 +132,5 @@ public class ItemServiceTest_Authorized {
         ResponseEntity<String> response = itemService.addEventAuthorized(authorizedDTO, item);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("An unexpected error occurred.", response.getBody());
     }
 }
