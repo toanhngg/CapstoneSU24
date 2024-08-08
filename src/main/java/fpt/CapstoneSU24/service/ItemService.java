@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
@@ -39,6 +41,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -146,7 +149,7 @@ public class ItemService {
             return ResponseEntity.status(500).body("startTime need less than endTime");
         }
     }
-
+    @Transactional
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -159,10 +162,10 @@ public class ItemService {
             }
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
         }
     }
-
+    @Transactional
     public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
         try {
             User user = userRepository.getReferenceById(currentUser.getUserId());
@@ -181,7 +184,7 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
         }
     }
 
@@ -203,6 +206,10 @@ public class ItemService {
 
         List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
         long scoreTime = System.currentTimeMillis();
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String formattedDate = Instant.ofEpochMilli(scoreTime).atZone(ZoneId.systemDefault()).format(formatter);
+
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
             Item item = new Item();
             item.setCreatedAt(scoreTime);
@@ -218,9 +225,10 @@ public class ItemService {
             props.put("orgName", user.getOrg_name());
             props.put("itemName", item.getProduct().getProductName());
             props.put("supportingDocuments", item.getOrigin().getSupportingDocuments());
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String formattedDate = Instant.ofEpochMilli(scoreTime).atZone(ZoneId.systemDefault()).format(formatter);
+            props.put("City", item.getOrigin().getLocation().getCity());
+            props.put("Date", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+            props.put("Month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+            props.put("Year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
             props.put("createAt", formattedDate);
             props.put("productRecognition", item.getProductRecognition());
             informationCert.setProps(props);
@@ -265,7 +273,7 @@ public class ItemService {
             itemLog.setParty(parties.get(i));
             itemLog.setIdEdit(0);
 
-            Point point = pointService.randomPoint(10000, 10000);
+            Point point = pointService.randomPoint(1000, 1000);
             itemLog.setPoint(point.toString());
             itemLogs.add(itemLog);
         }
@@ -355,41 +363,47 @@ public class ItemService {
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
-        Item item = itemRepository.findByProductRecognition(productRecognition);
+
         if (productRecognition == null || productRecognition.isEmpty()) {
             return ResponseEntity.badRequest().body("Product recognition is required");
         }
+
+        Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
         }
 
         if (email == null || email.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is missing.");
+            return ResponseEntity.badRequest().body("Email is missing.");
         }
-        int check = clientService.checkOTP(req.getEmail().trim(), req.getOTP().trim(), item.getProductRecognition());
-        if (check == 6)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(" OTP is not correct.");
-        if (check == 3) {
-            if (!item.getCurrentOwner().equals(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
-            }
 
-            List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
-            if (itemLogs.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
-            }
-
-            List<ItemLog> pointLogs = itemLogRepository.getPointItemIdIgnoreEdit(item.getItemId());
-            if (pointLogs.size() != itemLogs.size()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mismatch in item logs and point logs.");
-            }
-            if (!pointService.arePointsOnCurve(pointLogs)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Points do not form a valid graph.");
-            }
-            String pdfData = item.getCertificateLink();
-            return new ResponseEntity<>(pdfData, HttpStatus.OK);
+        int otpCheckResult = clientService.checkOTP(email.trim(), req.getOTP().trim(), productRecognition);
+        if (otpCheckResult == 6) {
+            return ResponseEntity.badRequest().body("OTP is not correct.");
+        } else if (otpCheckResult != 3) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP validation failed.");
         }
-        return null;
+
+        if (!item.getCurrentOwner().equals(email)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
+        }
+
+        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
+        if (itemLogs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
+        }
+
+        List<ItemLog> pointLogs = itemLogRepository.getPointItemIdIgnoreEdit(item.getItemId());
+        if (pointLogs.size() != itemLogs.size()) {
+            return ResponseEntity.badRequest().body("Mismatch in item logs and point logs.");
+        }
+
+        if (!pointService.arePointsOnCurve(pointLogs)) {
+            return ResponseEntity.badRequest().body("Points do not form a valid graph.");
+        }
+
+        String pdfData = item.getCertificateLink();
+        return ResponseEntity.ok(pdfData);
     }
 
     public ResponseEntity<Integer> checkEventAuthorized(String productRecognition) {

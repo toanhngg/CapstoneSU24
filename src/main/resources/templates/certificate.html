@@ -5,8 +5,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet" type="text/css"/>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" type="text/css"/>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <style>
+        /*body {*/
+        /*    font-family: 'Roboto', sans-serif;*/
+        /*    display: flex;*/
+        /*    justify-content: center;*/
+        /*    align-items: center;*/
+        /*    height: 100vh;*/
+        /*    margin: 0;*/
+        /*    background-color: #e0e0e0;*/
+        /*    !*box-sizing: border-box;*!*/
+        /*}*/
+
+        /*.certificate {*/
+        /*    width: 272mm; !* A4 width in landscape *!*/
+        /*    height: 174mm; !* A4 height in landscape *!*/
+        /*    padding: 7mm;*/
+        /*    border: 10px solid #79abdb;*/
+        /*    background: white;*/
+        /*    text-align: center;*/
+        /*    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);*/
+        /*    box-sizing: border-box;*/
+
+        /*}*/
+
+        /*.border {*/
+        /*    border: 5px solid #413b3b;*/
+        /*    padding: 5mm;*/
+        /*    box-sizing: border-box;*/
+        /*    height: 100%;*/
+        /*}*/
         body {
             font-family: 'Roboto', sans-serif;
             display: flex;
@@ -18,8 +49,8 @@
         }
 
         .certificate {
-            width: 100%;
-            max-width: 750px; /* Giới hạn chiều rộng của giấy chứng nhận */
+            width: 272mm; /* A4 width in landscape */
+            height: 184mm; /* A4 height in landscape */
             padding: 20px;
             border: 10px solid #79abdb;
             background: white;
@@ -30,48 +61,53 @@
 
         .border {
             border: 5px solid #413b3b;
-            padding: 10px;
+            padding: 5px;
             box-sizing: border-box;
         }
+
 
         .content {
-            padding: 10px;
+            padding: 10mm;
             box-sizing: border-box;
+            height: 100%;
+            /*overflow: auto; !* Hoặc sử dụng 'hidden' nếu bạn không muốn cuộn *!*/
+
         }
 
-        .header {
-            margin-bottom: 10px;
-            height: 100px;
-        }
-
+        /*.header {*/
+        /*    margin-bottom: 10px;*/
+        /*    height: 35mm; !* Adjusted height for the logo *!*/
+        /*}*/
         .header img {
-            max-height: 100px;
-            max-width: 100%;
+            margin-top: -43px;
+            margin-bottom: 5px;
+
+            width: auto; /* Bạn có thể thay đổi kích thước này tùy theo nhu cầu */
+            height: 70px; /* Giữ tỷ lệ khung hình của ảnh */
         }
+
+        /*.header img {*/
+        /*    max-height: 100%;*/
+        /*    max-width: 100%;*/
+        /*}*/
 
         h1 {
             font-size: 2em;
             line-height: 1.2;
             color: #333;
-            margin: 10px 0;
+            margin-top: 0;
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
         }
 
         h2 {
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: #666;
             margin: 10px 0;
         }
 
-        .subtitle {
-            font-size: 1em;
-            color: #333;
-            margin: 10px 0;
-        }
-
         h3 {
-            font-size: 1.5em;
+            font-size: 1.6em;
             color: #333;
             margin: 10px 0;
             font-family: 'Dancing Script', cursive;
@@ -89,22 +125,47 @@
             margin-top: 20px;
         }
 
-        .signature2 {
-            margin-left: 50px;
+        /*.signature img {*/
+        /*    max-width: 100px;*/
+        /*    max-height: 50px;*/
+        /*    margin-top: 10px;*/
+        /*}*/
+
+        /*.signature p {*/
+        /*    text-align: center;*/
+        /*    color: #333;*/
+        /*    margin-top: 60px;*/
+        /*    !*margin-bottom: 20px;*!*/
+        /*}*/
+
+        /*.signature2 p {*/
+        /*    text-align: center;*/
+        /*    color: #333;*/
+        /*    margin-top: 60px;*/
+        /*    !*margin-bottom: 20px;*!*/
+        /*}*/
+
+        .table-content {
+            width: 100%;
+            /*margin: 20px 0;*/
+            border-collapse: collapse;
         }
-        .signature {
-            margin-right: 50px;
+
+        .table-content td {
+            padding: 4px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 13px; /* Hoặc kích thước chữ bạn muốn */
+
+        }
+
+        .table-content tr:not(:last-child) td {
+            border-bottom: 1px solid #ccc;
         }
 
         #qrContainer {
             margin-top: 20px;
-          position: relative; /* Vị trí tương đối */
-        }
-
-        #qrcode {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
         }
 
         #qrcode img {
@@ -116,33 +177,7 @@
             font-size: 0.8em;
             color: #666;
             margin-top: 10px;
-        }
-
-        #imageProduct {
-            display: none; /* Ẩn hình ảnh sản phẩm */
-        }
-        .descriptionContainer{
-margin-left: 100px;
-        }
-        .signature img {
-            max-width: 100px;
-            max-height: 50px;
-            margin-top: 10px;
-        }
-        .signature p {
-            text-align: center;
-            color: #333;
-            margin-right: 60px;
-            margin-top: 60px;
-            margin-bottom: 20px;
-        }
-        .signature2 p {
-            text-align: center;
-            text-align: center;
-            color: #333;
-            margin-left: 60px;
-            margin-top: 60px;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
 
         }
     </style>
@@ -152,67 +187,89 @@ margin-left: 100px;
     <div class="border">
         <div class="content">
             <div class="header">
-                <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1720328835/wmukpv0a5xwk1d4gom1g.jpg" alt="Logo">
+                <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1723133885/testManh123.png" alt="Logo">
             </div>
             <h1>GIẤY CHỨNG NHẬN</h1>
             <h2>SẢN PHẨM</h2>
-<!--            <p class="subtitle">Sản phẩm được cung cấp bởi</p>-->
 
             <h3 th:text="${itemName}"></h3>
 
-            <p>Xin chào, bạn</p>
+            <table class="table-content">
+                <tr>
+                    <td><strong>Mã sản phẩm:</strong></td>
+                    <td th:text="${productRecognition}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Mã tạo:</strong></td>
+                    <td th:text="${supportingDocuments}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Nhà sản xuất:</strong></td>
+                    <td th:text="${orgName}"></td>
+                </tr>
+                <tr>
+                    <td><strong>Ngày sản xuất:</strong></td>
+                    <td th:text="${createAt}"></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <p th:text="${'Chúng tôi là TraceOrigin. Chúng tôi đã được ủy quyền từ phía ' + orgName +
+                         ' để có thể ghi lại những thông tin trong quãng đời của sản phẩm. ' +
+                         'Toàn bộ quy trình của sản phẩm này đã được ghi lại và đảm bảo minh bạch.'}">
+                        </p>
+                    </td>
+                </tr>
+            </table>
 
-            <p class="description" th:text="${'Mã sản phẩm: ' + productRecognition}"></p>
-            <p class="description" th:text="${'Mã tạo: ' + supportingDocuments}"></p>
-            <p class="description" th:text="${'Nhà sản xuất : ' + orgName}"></p>
-            <p class="description" th:text="${'Ngày sản xuất: ' + createAt}"></p>
-            <p class="description">
-                Chúng tôi là TraceOrigin. Chúng tôi đã được ủy quyền từ ____
-                để có thể ghi lại những thông tin trong quãng đời của sản phẩm.
-                Toàn bộ quy trình của sản phẩm này đã được ghi lại và đảm bảo minh bạch.
-            </p>
-            <p class="description">
-                Để biết thêm thông tin, vui lòng truy cập:
-                <a href="https://trace-origin.netlify.app">https://trace-origin.netlify.app</a>.
-            </p>
-            <p class="description">
-                Thông tin liên hệ : </a>
-            </p>
-            <div style="display: flex;">
-                <div id="qrContainer">
-                    <div id="qrcode">
-                        <div id="qrText">Quét QR để xem thêm về sản phẩm</div>
+<!--            <p class="description">-->
+<!--                Để biết thêm thông tin, vui lòng truy cập:-->
+<!--                <a href="https://trace-origin.netlify.app">https://trace-origin.netlify.app</a>.-->
+<!--            </p>-->
+<!--            <p class="description">-->
+<!--                Thông tin liên hệ:-->
+<!--            </p>-->
 
-                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=YwZmJlYjM0" alt="QR Code"></div>
-<!--                    <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=' + ${productRecognition}" alt="QR Code">-->
-
-                </div>
-
-                </div>
-                <div>
-                    <div style="margin-left: 90px">
-                        <p>Hà Nội, ngày 7 tháng 7 năm 2024</p>
+            <table style="width: 95%; border-collapse: collapse;">
+                <tr>
+                    <!-- Phần mã QR -->
+                    <td style="width: 35%; text-align: center;">
+                        <div id="qrcode">
+                            <div id="qrText">Quét QR để xem thêm về sản phẩm</div>
+                            <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://trace-origin.netlify.app/item?productRecognition=' + ${productRecognition}" alt="QR Code">
+                        </div>
+                    </td>
+                    <!-- Phần chữ ký 1 -->
+                    <td style="width: 30%; text-align: right;">
+                        <p class="description" style="text-align: right;" th:text="${City + ', ngày ' + Date + ' tháng ' + Month + ' năm ' + Year}"></p>
                         <table style="margin: 0 auto;">
                             <tr>
                                 <td class="signature">
-                                    <p>Signature</p>
-                                </td>
-                                <td class="signature2">
-                                    <p>Signature</p>
+                                    <p>Chữ kí </p>
+                                    <p>Trace Origin</p>
                                 </td>
                             </tr>
                         </table>
-
-
-                        <!--                        <img src="https://via.placeholder.com/100" alt="Chữ ký">-->
-                    </div>
-                </div>
-
-            </div>
-
-            <div id="imageProduct"></div>
+                    </td>
+                    <!-- Phần chữ ký 2 -->
+                    <td style="width: 30%; text-align: center;">
+                        <table style="margin: 0 auto;">
+                            <tr>
+                                <td class="signature2">
+                                    <p>Chữ kí </p>
+                                    <p class="description" th:text="${orgName}"></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </div>
-    </div>
+        <p class="description">
+            Để biết thêm thông tin, vui lòng truy cập:
+            <a href="https://trace-origin.netlify.app">https://trace-origin.netlify.app</a>.
+            Thông tin liên hệ (CSKH) : 095768836
+        </p>
+</div>
 </div>
 </body>
 </html>
