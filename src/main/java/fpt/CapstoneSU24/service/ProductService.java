@@ -1,7 +1,7 @@
 package fpt.CapstoneSU24.service;
 
 
-import fpt.CapstoneSU24.dto.ViewProductDTOResponse;
+import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.mapper.UserMapper;
@@ -20,17 +20,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -289,7 +287,7 @@ public class ProductService {
         return jsonObject;
     }
     public ResponseEntity saveFileAI(MultipartFile weights, MultipartFile classNames, MultipartFile model, String description) throws IOException {
-        log.info("saveFileAI/"+description);
+        log.info("uploadFileAISuccessful/"+description);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 1){
@@ -320,4 +318,84 @@ public class ProductService {
         }
         return ResponseEntity.status(500).body("your account isn't permitted for this action");
     }
+
+    public ResponseEntity<?> requestScanImage(RequestScanImageDTO req) throws IOException {
+        int status = 0;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Product product = productRepository.findOneByProductId(Integer.parseInt(req.getProductId()));
+        product.setRequestScanDate(LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli());
+
+        List<String> imagePaths = req.getImage();
+        for (String imagePath : imagePaths) {
+            ImageProduct imageProduct = new ImageProduct();
+            String filePath = cloudinaryService.uploadImageAndGetPublicId(
+                    cloudinaryService.convertBase64ToImgFile(imagePath), "");
+            imageProduct.setFilePath(filePath);
+            imageProduct.setType(1);
+            imageProduct.setProduct(product);
+            product.getImageProducts().add(imageProduct);
+        }
+
+        productRepository.save(product);
+
+
+        return ResponseEntity.ok("");
+    }
+
+    public ResponseEntity<?> approvalImageRequest(ChangeStatusImageProduct req) throws IOException {
+        for (String id : req.getProductId()) {
+            Product product = productRepository.findOneByProductId(Integer.parseInt(id));
+            product.getImageProducts().forEach(img -> {
+                img.setType(3);
+                imageProductRepository.save(img);
+            });
+        }
+        return ResponseEntity.ok("Status updated successfully");
+    }
+
+    public ResponseEntity<?> getImageHadUpload(GetImageHasUploadDTO req) throws IOException {
+        Product product = productRepository.findOneByProductId(Integer.parseInt(req.getProductId()));
+        List<String> filePaths = product.getImageProducts().stream()
+                .filter(imageProduct -> imageProduct.getType() == 3 || imageProduct.getType() == 1)
+                .map(ImageProduct::getFilePath)
+                .map(cloudinaryService::getImageUrl)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(filePaths);
+    }
+
+    public ResponseEntity<?> getimageRequest(FilterListToScan req)
+    {
+        int status = 0;
+
+        Page<Product> products = null;
+        Pageable pageable = req.isDesc() ? PageRequest.of(req.getPage(), req.getSize(), Sort.by(Sort.Direction.ASC, req.getOrderBy())) :
+                !req.isDesc() ? PageRequest.of(req.getPage(), req.getSize(), Sort.by(Sort.Direction.DESC, req.getOrderBy())) :
+                        PageRequest.of(req.getPage(), req.getSize());
+        products = productRepository.findProductRequestScanList(req.getProductName(), req.getManufactorName(), req.getProductId(), pageable);
+
+        Page<ListImageToScanDTO> listImageToScanDTOS = products.map(product -> {
+            ListImageToScanDTO listImageToScanDTO = new ListImageToScanDTO();
+            listImageToScanDTO.setProductId(String.valueOf(product.getProductId()));
+            listImageToScanDTO.setProductName(product.getProductName());
+            listImageToScanDTO.setManufactorName(product.getManufacturer().getEmail());
+            listImageToScanDTO.setRequestDate(product.getRequestScanDate());
+            List<String> filePaths = product.getImageProducts().stream()
+                    .filter(imageProduct -> imageProduct.getType() == 1)
+                    .map(ImageProduct::getFilePath)
+                    .map(cloudinaryService::getImageUrl)
+                    .collect(Collectors.toList());
+            listImageToScanDTO.setFilePath(filePaths);
+            return  listImageToScanDTO;
+        });
+
+
+        return ResponseEntity.ok(listImageToScanDTOS);
+    }
+
+
 }

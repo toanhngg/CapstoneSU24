@@ -71,8 +71,12 @@ public class ItemLogService {
             if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 3) {
                 detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
                 detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName(): null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail(): null);
+
                 detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -86,13 +90,42 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
 
-            } else {
+
+            } else if (itemlogDetail.getEvent_id() != null && itemlogDetail.getEvent_id().getEventId() == 2) {
+                detailResponse.setSender(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAssignPersonMail() : null);
+                detailResponse.setReceiver(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedEmail() : null);
+                detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+                detailResponse.setAddressInParty(itemlogDetail.getAddress());
+
+                if (itemlogDetail.getLocation() != null) {
+                    detailResponse.setCoordinateX(itemlogDetail.getLocation().getCoordinateX());
+                    detailResponse.setCoordinateY(itemlogDetail.getLocation().getCoordinateY());
+                } else {
+                    detailResponse.setCoordinateX(null);
+                    detailResponse.setCoordinateY(null);
+                }
+
+                detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
+                detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
+                detailResponse.setIdEdit(itemlogDetail.getIdEdit());
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
+
+            }
+            else {
                 detailResponse.setSender(null);
                 detailResponse.setReceiver(null);
-                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
+                detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
+                detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName() : null);
+                detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -106,7 +139,9 @@ public class ItemLogService {
                 detailResponse.setTimeReceive(itemlogDetail.getTimeStamp());
                 detailResponse.setDescriptionItemLog(itemlogDetail.getDescription());
                 detailResponse.setIdEdit(itemlogDetail.getIdEdit());
-                detailResponse.setCheckPoint(itemlogDetail.getPoint() != null);
+                String point = itemlogDetail.getPoint();
+                detailResponse.setCheckPoint(point != null && !point.isEmpty());
+
 
             }
 
@@ -140,7 +175,7 @@ public class ItemLogService {
 
             // Kiểm tra quyền sở hữu
             if (itemService.checkOwner(dataEditDTO.getEmail(), item.getCurrentOwner())) {
-                int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+                int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
                 if (check == 3 || check == 0) {
@@ -160,7 +195,7 @@ public class ItemLogService {
                     authorized.setAuthorizedName(dataEditDTO.getAuthorizedName());
                     authorized.setAuthorizedEmail(dataEditDTO.getAuthorizedEmail());
                     authorized.setAssignPerson(itemLogDetail.getParty().getPartyFullName());
-                    authorized.setAssignPerson(itemLogDetail.getParty().getEmail());
+                    authorized.setAssignPersonMail(itemLogDetail.getParty().getEmail());
                     authorized.setDescription(dataEditDTO.getDescription());
                     authorized.setPhoneNumber(dataEditDTO.getPhoneNumber());
                     Authorized saveAuthorized = authorizedRepository.save(authorized);
@@ -182,13 +217,6 @@ public class ItemLogService {
         return null;
     }
 
-    private Party addParty(ItemLog itemLogDetail) {
-        return partyRepository.save(new Party(
-                itemLogDetail.getParty().getPartyFullName(),
-                itemLogDetail.getDescription(), itemLogDetail.getParty().getPhoneNumber(),
-                itemLogDetail.getParty().getEmail()));
-    }
-
     public ResponseEntity<?> editItemLogByParty(EditItemLogPartyDTO dataEditDTO) {
         /*
          * B1. Lay ra itemLogId can edit => Get ra thong tin
@@ -203,7 +231,7 @@ public class ItemLogService {
                     .orElseThrow(() -> new RuntimeException("Item not found"));
 
             // Kiểm tra quyền sở hữu
-            int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 4 || check == 0) {
@@ -217,7 +245,7 @@ public class ItemLogService {
                         .orElseThrow(() -> new RuntimeException("Event type not found"))); // Sự kiện chỉnh sửa
                 itemLogRepository.save(newItemLog);
                 // B3: Cập nhật thông tin của ItemLogId trước đó
-                Location savedLocation = locationRepository.save(dataEditDTO.getLocation());
+                Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                 String point;
                 if (!hasNullFields(itemLogDetail)) {
                     point = generateAndSetPoint(itemLogDetail);
@@ -252,19 +280,42 @@ public class ItemLogService {
             List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
             ItemLog itemLogDetail = itemLogs.get(0);
             // Kiểm tra quyền sở hữu
-            int check = clientService.checkOTPinSQL2(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 3 || check == 0) {
-                // B3: Cập nhật thông tin của ItemLogId trước đó
-                Location savedLocation = locationRepository.save(dataEditDTO.getLocation());
-                if (!hasNullFields(savedLocation)) {
-                    String point = generateAndSetPoint(itemLogDetail);
-                    itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
-                            , itemLogDetail.getItemLogId());
+                if(itemLogDetail.getLocation() == null) {
+                    // B3: Cập nhật thông tin của ItemLogId trước đó
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
+                    if (!hasNullFields(savedLocation)) {
+                        String point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
+                                , itemLogDetail.getItemLogId());
 
+                        return ResponseEntity.status(HttpStatus.OK).body("Update successfully.");
+                    }
+                }else{
+                    ItemLog newItemLog = new ItemLog();
+                    copyItemLogDetails(newItemLog, itemLogDetail);
+                    newItemLog.setTimeStamp(System.currentTimeMillis());
+                    newItemLog.setIdEdit(itemLogDetail.getItemLogId());
+
+                    newItemLog.setEvent_id(eventTypeRepository.findById(6)
+                            .orElseThrow(() -> new RuntimeException("Event type not found"))); // Sự kiện chỉnh sửa
+                    itemLogRepository.save(newItemLog);
+                    // B3: Cập nhật thông tin của ItemLogId trước đó
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
+                    String point;
+                    if (!hasNullFields(savedLocation)) {
+                        point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
+                                point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
+                    } else point = null;
+                    itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
+                            point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
                     return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
                 }
+
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! Unauthorized access.");
             }
@@ -281,7 +332,7 @@ public class ItemLogService {
             if (item == null) {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
-            int check = clientService.checkOTPinSQL2(itemLogDTO.getEmailParty().trim(), itemLogDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(itemLogDTO.getEmailParty().trim(), itemLogDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 0)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             if (check == 6)
@@ -329,7 +380,7 @@ public class ItemLogService {
                 itemLog.setParty(savedParty);
                 itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
                 itemLog.setIdEdit(0);
-                if (!hasNullFields(itemLog)) {
+                if (!hasNullFields(itemLog.getParty()) && !hasNullFields(itemLog.getLocation())) {
                     double pointX = pointService.generateX();
                     List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                     List<Point> pointList = pointService.getPointList(pointLogs);
@@ -358,7 +409,7 @@ public class ItemLogService {
         if (itemService.checkOwner(dataEditDTO.getEmailParty(), item.getCurrentOwner())) {
 //            boolean check = clientService.checkOTPinSQL(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim());
 //            if (check) {
-            int check = clientService.checkOTPinSQL2(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
+            int check = clientService.checkOTP(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
             if (check == 3 || check == 0) {
@@ -404,23 +455,6 @@ public class ItemLogService {
 
     }
 
-    //    private Location addLocation(Location location) {
-//        return locationRepository.save(new Location(
-//                        location.getAddress(),
-//                location.getCity(),
-//                location.getCountry(),
-//                location.getCoordinateX(),
-//                location.getCoordinateY(),
-//                location.getDistrict(),
-//                location.getWard()));
-//    }
-    private Authorized addAuthorized(ItemLog itemLogDetail) {
-        Authorized authorized = new Authorized();
-        authorized.setAuthorizedName(itemLogDetail.getAuthorized().getAuthorizedName());
-        authorized.setAuthorizedEmail(itemLogDetail.getAuthorized().getAuthorizedEmail());
-        return authorizedRepository.save(authorized);
-    }
-
     private String generateAndSetPoint(ItemLog itemLogDetail) {
         double pointX = pointService.generateX();
         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(itemLogDetail.getItem().getItemId());
@@ -436,7 +470,6 @@ public class ItemLogService {
         if (obj == null) {
             return true; // Nếu object là null, trả về true
         }
-
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
@@ -450,14 +483,17 @@ public class ItemLogService {
 
         return false; // Không có trường nào null
     }
+
     public ResponseEntity<?> getEventByItemId(int itemId) {
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getEvent_id().getEventId())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ItemLogs found for itemId: " + itemId));
     }
+
     public ResponseEntity<?> getLocationItemId(int itemId) {
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(itemId);
         return itemLogOptional.<ResponseEntity<?>>map(itemLog -> ResponseEntity.ok(itemLog.getLocation())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Location found for itemId: " + itemId));
     }
+
 
 
 }

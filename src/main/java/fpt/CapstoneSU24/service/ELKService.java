@@ -3,6 +3,7 @@ package fpt.CapstoneSU24.service;
 import com.tdunning.math.stats.Histogram;
 import fpt.CapstoneSU24.dto.payload.SelectedTimeRequest;
 import io.swagger.v3.core.util.Json;
+import io.swagger.v3.core.util.Json31;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -11,6 +12,8 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
@@ -25,7 +28,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class ELKService {
@@ -44,6 +50,38 @@ public class ELKService {
 
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             return ResponseEntity.status(200).body(searchResponse.getHits().getTotalHits().value);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.toString());
+        }
+    }
+    public ResponseEntity<?> getHistoryUploadAI() throws IOException {
+        try {
+            SearchRequest searchRequest = new SearchRequest("logs-generic-default");
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.matchPhrasePrefixQuery("message", "uploadFileAISuccessful"));
+//            searchSourceBuilder.size(0);
+            searchSourceBuilder.fetchSource(new String[] {"@timestamp", "message"}, null);
+            searchRequest.source(searchSourceBuilder);
+
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            JSONObject jsonObject1 = new JSONObject(searchResponse.toString());
+
+            SearchHits hits = searchResponse.getHits();
+            JSONArray newJsonArray = new JSONArray();
+
+            for (SearchHit hit : hits) {
+                Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+                String timestamp = (String) sourceAsMap.get("@timestamp");
+                String message = (String) sourceAsMap.get("message");
+
+               JSONObject jsonObject = new JSONObject();
+                jsonObject.put("timestamp", timestamp);
+                jsonObject.put("message", message);
+
+                newJsonArray.put(jsonObject);
+            }
+
+            return ResponseEntity.status(200).body(newJsonArray.toString());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(e.toString());
         }
@@ -73,7 +111,6 @@ public class ELKService {
         JSONObject aggregations = jsonObject.getJSONObject("aggregations");
         JSONObject dateHistogram = aggregations.getJSONObject("date_histogram#hourly_counts");
         JSONArray buckets = dateHistogram.getJSONArray("buckets");
-        System.out.println(buckets +  "ggfgfg");
         //convert date
         JSONArray newJsonArray = new JSONArray();
         SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");

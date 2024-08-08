@@ -103,6 +103,31 @@ public class AuthenticationService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(statusOtp);
     }
+    public ResponseEntity signupForCustomerSupport(RegisterForSupporterRequest input) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getRole().getRoleId() == 1) {
+            try {
+                if (userRepository.findOneByEmail(input.getEmail()) == null) {
+                    User user = new User();
+                    user.setEmail(input.getEmail());
+                    user.setFirstName(input.getFirstName());
+                    user.setLastName(input.getLastName());
+                    user.setPhone(input.getPhone());
+                    user.setRole(roleRepository.findOneByRoleId(3));
+                    user.setPassword(passwordEncoder.encode(input.getPassword()));
+                    user.setCreateAt(System.currentTimeMillis());
+                    userRepository.save(user);
+                    authTokenRepository.save(new AuthToken(0, user, null));
+                    return ResponseEntity.status(HttpStatus.OK).body("create successfully");
+                }
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("email already exists");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error create new account");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("require administrator for this action");
+    }
     public ResponseEntity checkMailExist(VerifyEmailRequest req) {
             if (userRepository.findOneByEmail(req.getEmail()) == null) {
                 return ResponseEntity.status(HttpStatus.OK).body("mail doesn't exist in database");

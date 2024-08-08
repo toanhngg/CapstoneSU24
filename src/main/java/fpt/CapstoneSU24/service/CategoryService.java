@@ -41,7 +41,7 @@ public class CategoryService {
 
     public ResponseEntity findAll() {
         List<Category> categoryList = categoryRepository.findAll();
-        return ResponseEntity.ok(categoryList);
+        return ResponseEntity.ok( categoryMapper.categoryToCategoryByUserDTO(categoryList));
     }
 
     public ResponseEntity<?> findAllManager() {

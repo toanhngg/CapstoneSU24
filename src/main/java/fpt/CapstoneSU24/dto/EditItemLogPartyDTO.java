@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EditItemLogPartyDTO {
-    private Location location;
+    private LocationDTO location;
     private String description;
     @Email
     @NotNull(message = "Email is not blank")

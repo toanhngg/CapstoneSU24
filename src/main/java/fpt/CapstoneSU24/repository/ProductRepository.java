@@ -37,4 +37,18 @@ public interface ProductRepository extends JpaRepository<Product, Integer>  {
     Product findOneByProductName(String productName);
     @Query("SELECT COUNT(p) FROM Product p WHERE p.category.categoryId = :categoryId")
     int countProductsByCategoryId(int categoryId);
+    @Query("SELECT p FROM Product p " +
+            "JOIN p.imageProducts ip " +
+            "WHERE ip.type = 1 " +
+            "AND (:productName = '' OR p.productName LIKE %:productName%) " +
+            "AND (:productId < 1 OR p.productId = :productId) " +
+            "AND (:manufactorName = '' OR p.manufacturer.email LIKE %:manufactorName%)")
+    Page<Product> findProductRequestScanList(@Param("productName") String productName,
+                                             @Param("manufactorName") String manufactorName,
+                                             @Param("productId") int productId,
+                                             Pageable pageable);
+    @Query("SELECT COUNT(p) FROM Product p " +
+            "JOIN p.imageProducts ip " +
+            "WHERE ip.type = 1 ")
+    int countImageType1ByProductId(int productId);
 }

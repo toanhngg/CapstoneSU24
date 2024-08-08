@@ -1,8 +1,10 @@
 package fpt.CapstoneSU24.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fpt.CapstoneSU24.model.Location;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Setter
@@ -26,7 +28,7 @@ public class AuthorizedDTO {
 
     @JsonIgnore
     //@NotBlank(message = "Assign person is required")
-    @Size(max = 5, message = "Assign person must be less than 5 characters")
+    @Size(min = 5, message = "Assign person must be more  than 5 characters")
     @Pattern(regexp = "^[a-zA-Z0-9\\p{L}\\p{M}\\s.-]+$",
             message = "AAssign person must not contain special characters")
     private String assignPerson;
@@ -38,14 +40,14 @@ public class AuthorizedDTO {
     private LocationDTO location;
 
     // @NotBlank(message = "Description is required")
-    @Size(max = 50, message = "Description must be less than 50 characters")
+    @Size(max = 50, message = "Description must be more  than 50 characters")
     private String description;
 
     //@NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Phone number should be valid")
+    @Pattern(regexp = "^(\\+?[0-9]{10,15})?$", message = "Phone number should be valid")
     private String phoneNumber;
 
-    @NotBlank(message = "Product recognition is required")
+  @NotBlank(message = "Product recognition is required")
     @Size(max = 10, message = "ProductRecognition must be 10 characters")
     private String productRecognition;
 

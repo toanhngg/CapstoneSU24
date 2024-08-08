@@ -16,6 +16,10 @@ public class ImageProduct {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    @Column(name = "type")
+    private int type = 0;
+
     public ImageProduct(){
 
     }
@@ -24,6 +28,13 @@ public class ImageProduct {
         this.imageProductId = imageProductId;
         this.filePath = filePath;
         this.product = product;
+    }
+
+    public ImageProduct(int imageProductId, String filePath, Product product, int type) {
+        this.imageProductId = imageProductId;
+        this.filePath = filePath;
+        this.product = product;
+        this.type = type;
     }
 
     public int getImageProductId() {
@@ -48,6 +59,14 @@ public class ImageProduct {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }
 

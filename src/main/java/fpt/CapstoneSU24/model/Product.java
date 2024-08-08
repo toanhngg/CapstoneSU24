@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.Length;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,8 +40,12 @@ public class Product {
     @Column(name = "warranty")
     private int warranty;
 
-//    @OneToMany(mappedBy = "product")
-//    private List<ImageProduct> imageProduct;
+    @Column(name = "requestScanDate")
+    private Long requestScanDate;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ImageProduct> imageProducts = new ArrayList<>();
+
     public Product(){}
 
     public Product(int productId, String productName, User manufacturer, Category category, String unitPrice, String dimensions, String material, String description, long createAt, float weight, int warranty) {
@@ -145,4 +150,19 @@ public class Product {
         this.warranty = warranty;
     }
 
+    public Long getRequestScanDate() {
+        return requestScanDate;
+    }
+
+    public void setRequestScanDate(Long requestScanDate) {
+        this.requestScanDate = requestScanDate;
+    }
+
+    public List<ImageProduct> getImageProducts() {
+        return imageProducts;
+    }
+
+    public void setImageProducts(List<ImageProduct> imageProducts) {
+        this.imageProducts = imageProducts;
+    }
 }

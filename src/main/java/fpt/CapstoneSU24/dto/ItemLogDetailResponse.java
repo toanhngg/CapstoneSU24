@@ -15,9 +15,13 @@ public class ItemLogDetailResponse {
     private Integer itemLogId;
     private String eventType;
     private String partyFullname;
+    private String partyEmail;
     private String sender;
     private String receiver;
+    private String receiverName;
     private String partyPhoneNumber;
+    private String authorizedPhoneNumber;
+
     private String addressInParty;
     private Double coordinateX;
     private Double coordinateY;

@@ -13,9 +13,13 @@ public class ProductDetailDTOResponse {
     private int warranty;
     private String model3D;
     private String avatar;
+    private int categoryId;
+    private String categoryName;
     private List<String> listImages;
 
-    public ProductDetailDTOResponse(int productId, String productName, String dimensions, String material, String description, long createAt, float weight, int warranty, String model3D, String avatar, List<String> listImages) {
+
+
+    public ProductDetailDTOResponse(int productId, String productName, String dimensions, String material, String description, long createAt, float weight, int warranty, String model3D, String avatar, int categoryId, String categoryName, List<String> listImages) {
         this.productId = productId;
         this.productName = productName;
         this.dimensions = dimensions;
@@ -26,7 +30,25 @@ public class ProductDetailDTOResponse {
         this.warranty = warranty;
         this.model3D = model3D;
         this.avatar = avatar;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
         this.listImages = listImages;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getModel3D() {

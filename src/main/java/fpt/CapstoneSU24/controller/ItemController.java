@@ -8,12 +8,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 @RequestMapping("/api/item")
 @RestController
+@Validated
 public class ItemController {
 
     //private static final Logger log = LoggerFactory.getLogger(ItemController.class);
@@ -42,20 +46,6 @@ public class ItemController {
         return itemService.addItem(itemLogDTO);
     }
 
-//    private double parseCoordinate(String coordinate) throws InvalidCoordinateException {
-//        try {
-//            return Double.parseDouble(coordinate);
-//        } catch (NumberFormatException ex) {
-//            throw new InvalidCoordinateException("Invalid coordinate: " + coordinate);
-//        }
-//    }
-
-//    @GetMapping("/findAllItemByProductId")
-//    public ResponseEntity<?> findAllItemByProductId(@RequestParam int ProductId) {
-//        return itemService.findByProductId(ProductId);
-//    }
-
-
     //list all item_log by product_recogine
     @GetMapping("/viewLineItem")
     public ResponseEntity<?> viewLineItem(@RequestParam String productRecognition) {
@@ -73,13 +63,6 @@ public class ItemController {
     public ResponseEntity<?> getCertificate(@Valid @RequestBody CurrentOwnerCheckDTO req) {
          return itemService.getCertificate(req);
     }
-
-//    @PostMapping(value = "/confirmCurrentOwner")
-//    public ResponseEntity<Boolean> confirmCurrentOwner(@RequestBody SendOTP otp, @RequestParam String productRecognition) {
-//        // B1: Người dùng nhập OTP confirm chính xác bằng cách check OTP trong DB và người dùng nhập
-//        // - Chính xác => Buoc tiep theo
-//        return itemService.confirmCurrentOwner(otp,productRecognition);
-//    }
 
     /**
      * API uy quyen checkCurrentOwner => authorized
@@ -108,15 +91,17 @@ public class ItemController {
         // B1. Kiểm tra xem email này có phải currentOwner với status là 1 không
         // - Nếu mà không phải currentOwner => không cho ủy quyền người tiếp theo
     }
-    @PostMapping(value = "/checPartyFirst")
-    public ResponseEntity<Integer> checPartyFirst(@Valid @RequestBody CurrentOwnerCheck req)  {
-        return itemService.checPartyFirst(req);
+    @PostMapping(value = "/checkPartyFirst")
+    @Validated
+    public ResponseEntity<Integer> checkPartyFirst(@Valid @RequestBody CurrentOwnerCheck req)  {
+        return itemService.checkPartyFirst(req);
     }
 
     @PostMapping(value = "/check")
-    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req)  {
+    public ResponseEntity<Integer> check(@Valid @RequestBody CurrentOwnerCheck req) throws URISyntaxException, IOException, InterruptedException {
         return itemService.check(req);
     }
+
 
     @PostMapping(value = "/sendOTP")
     public ResponseEntity<?> sendOTP(@Valid @RequestParam String email) {
@@ -142,6 +127,10 @@ public class ItemController {
     @GetMapping(value="getInforItemByProductRecognition")
     public  ResponseEntity<?> getInfoItemByItemId(String productRecognition){
         return itemService.getInforItemByItemId(productRecognition);
+    }
+    @PostMapping(value = "/listPartyJoin")
+    public ResponseEntity<?>  listPartyJoin(@RequestBody CurrentOwnerCheck req){
+        return itemService.listPartyJoin(req);
     }
 
 }

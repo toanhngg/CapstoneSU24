@@ -150,40 +150,40 @@ public class ClientService implements ClientRepository {
         return false;
     }
 
-    @Override
-    public Boolean checkOTP(String email, String otp) {
-        try {
-           String otpRar = (redisSortedSetService.getHash("OTPCODE",email)).toString();
-           if(otpRar.equals(otp)) {
-               System.out.println("yuuuus");
-               return true;
-           }
-           else{
-               return false;
-           }
-        } catch (Exception ex) {
-            logService.logError(ex);
-            //exp.printStackTrace();
-        }
-        return false;
-    }
-    @Override
-    public Boolean checkOTPinSQL(String email, String otp) {
-        try {
-            return otpService.verifyOTP(email, otp);
-        } catch (Exception ex) {
-            logService.logError(ex);
-            //exp.printStackTrace();
-        }
-        return false;
-    }
+//    @Override
+//    public Boolean checkOTP(String email, String otp) {
+//        try {
+//           String otpRar = (redisSortedSetService.getHash("OTPCODE",email)).toString();
+//           if(otpRar.equals(otp)) {
+//               System.out.println("yuuuus");
+//               return true;
+//           }
+//           else{
+//               return false;
+//           }
+//        } catch (Exception ex) {
+//            logService.logError(ex);
+//            //exp.printStackTrace();
+//        }
+//        return false;
+//    }
+//    @Override
+//    public Boolean checkOTPinSQL(String email, String otp) {
+//        try {
+//            return otpService.verifyOTP(email, otp);
+//        } catch (Exception ex) {
+//            logService.logError(ex);
+//            //exp.printStackTrace();
+//        }
+//        return false;
+//    }
 
     @Override
-    public int checkOTPinSQL2(String email, String otp, String productRecognition) {
+    public int checkOTP(String email, String otp, String productRecognition) {
         try {
             Item item = findByProductRecognition(productRecognition);
             List<ItemLog> list = itemLogRepository.getItemLogsByItemIdDescNotEdit(item.getItemId()); // tìm cái đầu tiên
-            if (item.getStatus() == 0) return 0; // Sản phẩm đã bị cấm
+           // if (item.getStatus() == 0) return 0; // Sản phẩm đã bị cấm
 
             try {
                 boolean check = otpService.verifyOTP(email, otp);
@@ -215,6 +215,7 @@ public class ClientService implements ClientRepository {
             return 5; // Exception
         }
 }
+
     public boolean checkParty(String email, int itemId) {
         List<ItemLog> itemLogs = itemLogRepository.checkParty(itemId, email);
         return itemLogs != null;
@@ -229,6 +230,7 @@ public class ClientService implements ClientRepository {
         }
         return email.equals(emailCurrentOwner);
     }
+
     public Item findByProductRecognition(String productRecognition) {
         if (productRecognition == null || productRecognition.isEmpty()) {
             throw new IllegalArgumentException("Product recognition cannot be null or empty");
