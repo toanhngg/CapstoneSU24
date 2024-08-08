@@ -520,11 +520,12 @@ public class ItemService {
                     return ResponseEntity.ok(3); // CurrentOwner
             }
             // Kiểm tra xem email có phải là Authorized không
-            else if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
+            if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
                 if (email.equalsIgnoreCase(list.get(0).getAuthorized().getAuthorizedEmail())) {
                     return ResponseEntity.ok(2); // Authorized
                 }
-            } else if (checkParty(email, item.getItemId())) {
+            }
+            if (checkParty(email, item.getItemId())) {
                 return ResponseEntity.ok(4); // CurrentOwner
             }
             // Không là gì
