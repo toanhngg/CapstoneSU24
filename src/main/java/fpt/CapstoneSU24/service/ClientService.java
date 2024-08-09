@@ -9,6 +9,7 @@ import fpt.CapstoneSU24.model.OTP;
 import fpt.CapstoneSU24.repository.*;
 import fpt.CapstoneSU24.util.Const;
 import fpt.CapstoneSU24.util.DataUtils;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ClientService implements ClientRepository {
@@ -74,36 +76,45 @@ public class ClientService implements ClientRepository {
     public Boolean createMailAndSaveSQL(ClientSdi sdi) {
         try {
             DataMailDTO dataMail = new DataMailDTO();
-
             dataMail.setTo(sdi.getEmail());
-            //đoc ở file const
             dataMail.setSubject(Const.SEND_MAIL_SUBJECT.CLIENT_SENDOTP);
 
             Map<String, Object> props = new HashMap<>();
-            props.put("name", sdi.getName());
-            props.put("username", sdi.getUsername());
+//            props.put("name", sdi.getName());
+//            props.put("username", sdi.getUsername());
             String codeOTP = DataUtils.generateTempPwd(6);
             props.put("codeOTP", codeOTP);
 
             dataMail.setProps(props);
-            Date expiryTime = otpService.calculateExpiryTime(2); // OTP sẽ hết hạn sau 2 phút
+            Date expiryTime = otpService.calculateExpiryTime(3); // OTP will expire in 2 minutes
 
             OTP otpCheck = otpResponsitory.findOTPByEmail(sdi.getEmail());
-           if(otpCheck == null) { // neu chua tung xac thuc bao h thi tao moi khong thi update
-               otpCheck = new OTP(sdi.getEmail(), codeOTP, expiryTime);
-               otpResponsitory.save(otpCheck);
-           }else{
-               otpService.updateOTPCode(sdi.getEmail(), codeOTP,expiryTime);
-           }
-            // tam cmt de test cho do bi spam
-          mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_SENDOTP);
+            if (otpCheck == null) { // If no previous verification, create new, otherwise update
+                otpCheck = new OTP(sdi.getEmail(), codeOTP, expiryTime);
+                otpResponsitory.save(otpCheck);
+            } else {
+                otpService.updateOTPCode(sdi.getEmail(), codeOTP, expiryTime);
+            }
+
+            // Send email asynchronously
+            CompletableFuture.runAsync(() -> {
+                try {
+                    mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_SENDOTP);
+                } catch (MessagingException e) {
+                    logService.logError(e);
+                }
+            }).exceptionally(ex -> {
+                logService.logError((Exception) ex);
+                return null;
+            });
+
             return true;
         } catch (Exception ex) {
             logService.logError(ex);
-           // exp.printStackTrace();
         }
         return false;
     }
+
     @Override
     public Boolean notification(ClientSdi sdi) {
         try {

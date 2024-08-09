@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
@@ -25,6 +26,7 @@ public class EmailService implements EmailServiceRepository {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
     }
+    @Async
     @Override
     public void sendHtmlMail(DataMailDTO dataMail, String templateName) throws MessagingException {
 

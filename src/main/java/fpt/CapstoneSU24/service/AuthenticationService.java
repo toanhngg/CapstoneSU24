@@ -145,11 +145,9 @@ public class AuthenticationService {
             String otpVerify = DataUtils.generateTempPwd(6);
             Map<String, Object> props = new HashMap<>();
             props.put("otpVerify", otpVerify);
-
             dataMail.setProps(props);
-
             //expire otp
-            Date expiryTime = otpService.calculateExpiryTime(2);
+            Date expiryTime = otpService.calculateExpiryTime(3);
             OTP otpCheck = otpRepository.findOTPByEmail(req.getEmail());
             if (otpCheck == null) {
                 otpCheck = new OTP(req.getEmail(), otpVerify, expiryTime);
