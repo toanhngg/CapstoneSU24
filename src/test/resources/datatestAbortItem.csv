@@ -1,0 +1,2 @@
+itemId,productRecognition,email,locationAddress,locationCity,locationCountry,locationDistrict,locationWard,locationCoordinateX,locationCoordinateY,description,expectedStatusCode,expectedBody
+55,"YyN2NjNDAw","thanh@gmail.com","Ngọc Hồi - Đống Đa","Hà Nội","Việt Nam","Đặng Tiến Đông","Ngọc Hồi",56,130,"Khong",200,"Abort successfully!"

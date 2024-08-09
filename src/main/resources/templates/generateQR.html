@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div id="qrcode"></div>
+
+<script>
+    // URL với mã sản phẩm
+    var productCode = "YwZmJlYjM0";
+    var url = "https://trace-origin.netlify.app/item?productRecognition=" + productCode;
+
+    // Generate QR code
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: url,
+        width: 128,
+        height: 128
+    });
+</script>
+</body>
+</html>
