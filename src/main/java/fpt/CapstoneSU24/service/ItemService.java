@@ -449,21 +449,35 @@ public class ItemService {
     }
     public static boolean hasNullFields(Object obj) {
         if (obj == null) {
-            return false; // Nếu object là null, trả về true
+            return false;
         }
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
-                if (field.get(obj) == null) {
-                    return false; // Nếu có bất kỳ trường nào null, trả về true
+                Object value = field.get(obj);
+                if (value == null) {
+                    return false;
+                }
+                if (value instanceof String && ((String) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Number && ((Number) value).doubleValue() == 0) {
+                    return false;
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
         }
 
-        return true; // Không có trường nào null
+        return true; // Không có trường nào null hoặc rỗng
     }
+
 
     public ResponseEntity<Integer> checkPartyFirst(CurrentOwnerCheck req) {
         String email = req.getEmail();
@@ -697,57 +711,6 @@ public class ItemService {
         }
     }
 
-//    public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
-//        try {
-//            String email = req.getEmail();
-//            String productRecognition = req.getProductRecognition();
-////            JSONObject jsonReq = new JSONObject(req);
-////            String email = jsonReq.getString("email");
-////            String productRecognition = jsonReq.getString("productRecognition");
-//
-//            // Kiểm tra xem item có tồn tại và có status = 0 hay không
-//            Item item = findByProductRecognition(productRecognition);
-//            if (item == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-//            }
-//            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-//
-//            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-//            if (list.isEmpty()) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
-//            }
-//            ItemLog itemIndex = list.get(0);
-//            if (itemIndex.getAuthorized() == null) {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
-//            }
-//            // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
-//            //System.out.println(email);
-//            // Kiểm tra xem email có đúng là current owner không
-//            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
-//                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
-//            }
-//            // Tạo đối tượng ClientSdi và gửi email OTP
-//            ClientSdi sdi = new ClientSdi();
-//            sdi.setEmail(itemIndex.getAuthorized().getAuthorizedEmail());
-//            sdi.setUsername(itemIndex.getAuthorized().getAuthorizedName());
-//            sdi.setName(itemIndex.getAuthorized().getAuthorizedName());
-//
-//            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
-//
-//            if (emailSent) {
-//                return ResponseEntity.ok("OTP has been sent successfully.");
-//            } else {
-//                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
-//            }
-//        } catch (JSONException e) {
-//            logService.logError(e);
-//
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
-//        } catch (Exception ex) {
-//            logService.logError(ex);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-//        }
-//    }
 
     //SendOTP Sau
     public ResponseEntity<?> confirmOTP(SendOTP otp, String productRecognition) {

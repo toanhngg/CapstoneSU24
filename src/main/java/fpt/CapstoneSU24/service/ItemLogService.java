@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -199,7 +201,7 @@ public class ItemLogService {
                     authorized.setDescription(dataEditDTO.getDescription());
                     authorized.setPhoneNumber(dataEditDTO.getPhoneNumber());
                     Authorized saveAuthorized = authorizedRepository.save(authorized);
-                    if (!hasNullFields(savedLocation) && !hasNullFields(saveAuthorized)) {
+                    if (hasNullFields(savedLocation) && hasNullFields(saveAuthorized)) {
                         point = generateAndSetPoint(itemLogDetail);
                     } else point = null;
                     itemLogRepository.updateItemLog(savedLocation.getAddress(), savedLocation.getLocationId(), saveAuthorized.getAuthorizedId(),
@@ -247,7 +249,7 @@ public class ItemLogService {
                 // B3: Cập nhật thông tin của ItemLogId trước đó
                 Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                 String point;
-                if (!hasNullFields(itemLogDetail)) {
+                if (hasNullFields(itemLogDetail)) {
                     point = generateAndSetPoint(itemLogDetail);
                     itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
                             point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
@@ -287,7 +289,7 @@ public class ItemLogService {
                 if(itemLogDetail.getLocation() == null) {
                     // B3: Cập nhật thông tin của ItemLogId trước đó
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
-                    if (!hasNullFields(savedLocation)) {
+                    if (hasNullFields(savedLocation)) {
                         String point = generateAndSetPoint(itemLogDetail);
                         itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
                                 , itemLogDetail.getItemLogId());
@@ -306,7 +308,7 @@ public class ItemLogService {
                     // B3: Cập nhật thông tin của ItemLogId trước đó
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                     String point;
-                    if (!hasNullFields(savedLocation)) {
+                    if (hasNullFields(savedLocation)) {
                         point = generateAndSetPoint(itemLogDetail);
                         itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
                                 point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
@@ -380,7 +382,7 @@ public class ItemLogService {
                 itemLog.setParty(savedParty);
                 itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
                 itemLog.setIdEdit(0);
-                if (!hasNullFields(itemLog.getParty()) && !hasNullFields(itemLog.getLocation())) {
+                if (hasNullFields(itemLog.getParty()) && hasNullFields(itemLog.getLocation())) {
                     double pointX = pointService.generateX();
                     List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                     List<Point> pointList = pointService.getPointList(pointLogs);
@@ -428,7 +430,7 @@ public class ItemLogService {
                 party.setDescription(dataEditDTO.getDescriptionItemLog());
                 Party savedParty = partyRepository.save(party);
                 log.info("transport" + transport.getTransportId());
-                if (!hasNullFields(party)) {
+                if (hasNullFields(party)) {
                     String point = generateAndSetPoint(itemLogDetail);
                     itemLogRepository.updateItemLogTransport(
                             point, dataEditDTO.getDescriptionItemLog(), -1,
@@ -466,22 +468,52 @@ public class ItemLogService {
         return point.toString();
     }
 
+//    public static boolean hasNullFields(Object obj) {
+//        if (obj == null) {
+//            return true; // Nếu object là null, trả về true
+//        }
+//        try {
+//            for (Field field : obj.getClass().getDeclaredFields()) {
+//                field.setAccessible(true); // Cho phép truy cập các trường private
+//                if (field.get(obj) == null) {
+//                    return true; // Nếu có bất kỳ trường nào null, trả về true
+//                }
+//            }
+//        } catch (IllegalAccessException e) {
+//            throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
+//        }
+//
+//        return false; // Không có trường nào null
+//    }
     public static boolean hasNullFields(Object obj) {
         if (obj == null) {
-            return true; // Nếu object là null, trả về true
+            return false;
         }
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
-                if (field.get(obj) == null) {
-                    return true; // Nếu có bất kỳ trường nào null, trả về true
+                Object value = field.get(obj);
+                if (value == null) {
+                    return false;
+                }
+                if (value instanceof String && ((String) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Number && ((Number) value).doubleValue() == 0) {
+                    return false;
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
         }
 
-        return false; // Không có trường nào null
+        return true; // Không có trường nào null hoặc rỗng
     }
 
     public ResponseEntity<?> getEventByItemId(int itemId) {
