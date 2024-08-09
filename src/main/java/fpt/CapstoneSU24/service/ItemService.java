@@ -505,7 +505,6 @@ public class ItemService {
         public ResponseEntity<Integer> check(CurrentOwnerCheck req) throws URISyntaxException, IOException, InterruptedException {
         String email = req.getEmail();
             HttpClient client = HttpClient.newHttpClient();
-            // Validate email
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
                     .POST(HttpRequest.BodyPublishers.ofString("email=" + req.getEmail()))
@@ -629,7 +628,7 @@ public class ItemService {
 
                     itemLogRepository.save(new ItemLog(
                             item,
-                            itemIndex.getAddress(),
+                            authorized.getLocation().getAddress(),
                             itemIndex.getParty(),
                             savedLocation,
                             timeInsert,
