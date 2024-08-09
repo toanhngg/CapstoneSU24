@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -618,8 +617,12 @@ public class ItemService {
                     Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                     Point point = null;
-              if (hasNullFields(authorized.getLocation()) ) {
-                        double pointX = pointService.generateX();
+            if (hasNullFields(authorized.getLocation())
+                    && (authorized.getAuthorizedEmail() != null)
+                    && (authorized.getAuthorizedName() != null)
+                    && authorized.getPhoneNumber() != null) {
+                // Your code here
+                         double pointX = pointService.generateX();
                         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                         List<Point> pointList = pointService.getPointList(pointLogs);
                         double pointY = pointService.lagrangeInterpolate(pointList, pointX);
