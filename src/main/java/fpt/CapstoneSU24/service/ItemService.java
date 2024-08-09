@@ -504,19 +504,19 @@ public class ItemService {
 
         public ResponseEntity<Integer> check(CurrentOwnerCheck req) throws URISyntaxException, IOException, InterruptedException {
         String email = req.getEmail();
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
-                    .POST(HttpRequest.BodyPublishers.ofString("email=" + req.getEmail()))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            String responseBody = response.body();
-
-            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
-            }
+//            HttpClient client = HttpClient.newHttpClient();
+//            HttpRequest request = HttpRequest.newBuilder()
+//                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
+//                    .POST(HttpRequest.BodyPublishers.ofString("email=" + req.getEmail()))
+//                    .header("Content-Type", "application/x-www-form-urlencoded")
+//                    .build();
+//
+//            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            String responseBody = response.body();
+//
+//            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+//            }
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
 
@@ -553,7 +553,7 @@ public class ItemService {
 
     public boolean checkParty(String email, int itemId) {
         List<ItemLog> itemLogs = itemLogRepository.checkParty(itemId, email);
-        return itemLogs != null;
+        return !itemLogs.isEmpty();
     }
 
     public boolean checkOwner(String email, String emailCurrentOwner) {
