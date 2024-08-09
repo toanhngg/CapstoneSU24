@@ -286,7 +286,7 @@ public class ProductService {
         jsonObject.put("monthly",monthlyProducts.size());
         return jsonObject;
     }
-    public ResponseEntity saveFileAI(MultipartFile weights, MultipartFile classNames, MultipartFile model, String description) throws IOException {
+    public ResponseEntity<?> saveFileAI(MultipartFile weights, MultipartFile classNames, MultipartFile model, String description) throws IOException {
         log.info("uploadFileAISuccessful/"+description);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -296,11 +296,11 @@ public class ProductService {
             gcsService.uploadFile(classNames, classNames.getOriginalFilename());
             gcsService.uploadFile(model, model.getOriginalFilename());
 
-            return ResponseEntity.status(200).body("save file weights.bin, classNames.json, model.json successfully");
+            return ResponseEntity.status(200).body("save file successfully");
         }
         return ResponseEntity.status(500).body("your account isn't permitted for this action");
     }
-    public ResponseEntity saveModel3D(MultipartFile file3D, int id) throws IOException {
+    public ResponseEntity<?> saveModel3D(MultipartFile file3D, int id) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if(currentUser.getRole().getRoleId() == 2){
