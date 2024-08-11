@@ -286,18 +286,18 @@ public class UserService {
 //    }
 
 
-    public ResponseEntity<String> updateStatus(int userId, int status) {
+    public ResponseEntity<?> updateStatus(int userId, int status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
-        if (userProfileDTO.getRole().getRoleId() != 1) {
-            return ResponseEntity.ok(null);
-        }
+//        if (userProfileDTO.getRole().getRoleId() != 1) {
+//            return ResponseEntity.ok(null);
+//        }
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setStatus(status);
             userRepository.save(user);
-            return ResponseEntity.ok("update " + userId + " updated to " + status + ".");
+            return ResponseEntity.ok(userProfileDTO);
         } else {
             return ResponseEntity.notFound().build();
         }

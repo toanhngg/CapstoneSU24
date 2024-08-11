@@ -70,14 +70,17 @@ public class SupportSystemService {
         User currentUser = (User) authentication.getPrincipal();
         if (currentUser.getRole().getRoleId() != 2) {
             SupportSystem supportSystem = supportSystemRepository.findOneBySupportSystemId(req.getId());
+            if(supportSystem.getSupportContent() != null) return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("the answer exíst");
             SupportSystem updateStatus = supportSystemRepository.findOneBySupportSystemId(supportSystem.getReplyId());
+            if(updateStatus != null){
+                updateStatus.setStatus(1);
+                supportSystemRepository.save(updateStatus);
+            }
             supportSystem.setSupportContent(req.getContent());
             supportSystem.setSupporterName(currentUser.getLastName() + " " + currentUser.getFirstName());
             supportSystem.setStatus(1);
-            updateStatus.setStatus(1);
             supportSystem.setSupportTimestamp(System.currentTimeMillis());
             supportSystemRepository.save(supportSystem);
-            supportSystemRepository.save(updateStatus);
 
             // add images
             if (!req.getImages().isEmpty()) {

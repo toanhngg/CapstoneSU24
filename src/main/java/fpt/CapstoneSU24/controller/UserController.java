@@ -44,7 +44,7 @@ public class UserController {
         return userService.getUsersByEmail(userRequestDTO);
     }
     @PostMapping("/updateStatus")
-    public ResponseEntity<String> updateStatus(@Valid @RequestBody UpdateStatusUserRequest req) {
+    public ResponseEntity<?> updateStatus(@Valid @RequestBody UpdateStatusUserRequest req) {
         return userService.updateStatus(req.getId(), req.getStatus());
     }
 

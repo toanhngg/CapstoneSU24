@@ -110,7 +110,7 @@ public class ProductService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         List<Item> items = itemRepository.findAllByProductId(req.getProductId());
-        if(items.size() == 0){
+        if(items.size() != 0){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("can't edit because the product have item");
         }
         if (currentUser.getRole().getRoleId() == 2) {
@@ -146,10 +146,10 @@ public class ProductService {
                     String filePathAvatar = cloudinaryService.updateImage("avatar/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getAvatar()));
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
                 }
-                if (!req.getFile3D().isEmpty()) {
-                    String filePathFile3D = cloudinaryService.updateImage("file3d/" + product.getProductId(),cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()));
-                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
-                }
+//                if (!req.getFile3D().isEmpty()) {
+//                    String filePathFile3D = cloudinaryService.updateImage("file3d/" + product.getProductId(),cloudinaryService.convertBase64ToModel3DFile(req.getFile3D()));
+//                    imageProductRepository.save(new ImageProduct(0, filePathFile3D, product));
+//                }
 
                 //            return ResponseEntity.status(200).body(new String(bytes, StandardCharsets.UTF_8));
                 return ResponseEntity.status(HttpStatus.OK).body("edit product successfully");
