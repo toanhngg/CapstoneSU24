@@ -124,7 +124,7 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE ItemLog i SET i.location.locationId = :location, i.point = :point, i.address = :address WHERE i.itemLogId = :itemLogId")
+    @Query("UPDATE ItemLog i SET i.location.locationId = :location, i.point = :point, i.address = :address WHERE i.event_id.eventId <> 6 AND  i.itemLogId = :itemLogId")
     void updateItemLogLocation(@Param("location") int location,
                                @Param("point") String point,
                                @Param("address") String address,
