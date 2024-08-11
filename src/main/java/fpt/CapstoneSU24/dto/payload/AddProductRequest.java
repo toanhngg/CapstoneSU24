@@ -34,6 +34,10 @@ public class AddProductRequest {
 //    @NotNull(message = "The file3D is required")
 //    private String file3D;
 
+//    public String getFile3D() {
+//        return file3D;
+//    }
+
     public String getProductName() {
         return productName;
     }

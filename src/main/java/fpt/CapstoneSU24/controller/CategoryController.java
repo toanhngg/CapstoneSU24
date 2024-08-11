@@ -65,4 +65,8 @@ public class CategoryController {
     public ResponseEntity findCategoryByManufacturer(@Valid @RequestBody IdRequest req) {
         return categoryService.findCategoryByManufacturer(req);
     }
+    @GetMapping("/findCategoryAuthentication")
+    public ResponseEntity findCategoryAuthentication() {
+        return categoryService.findCategoryAuthentication();
+    }
 }

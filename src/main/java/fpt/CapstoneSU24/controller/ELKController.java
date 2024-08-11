@@ -32,4 +32,8 @@ public class ELKController {
     public ResponseEntity<?> getNumberTraceDiagram() throws IOException {
         return elkService.getNumberTraceDiagram();
     }
+    @GetMapping("/getHistoryUploadAI")
+    public ResponseEntity<?> getHistoryUploadAI() throws IOException {
+        return elkService.getHistoryUploadAI();
+    }
 }

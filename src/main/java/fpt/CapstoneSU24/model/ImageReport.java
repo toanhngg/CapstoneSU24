@@ -3,7 +3,7 @@ package fpt.CapstoneSU24.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "image_report") // Đặt tên bảng trong cơ sở dữ liệu
+@Table(name = "report_image") // Đặt tên bảng trong cơ sở dữ liệu
 public class ImageReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,17 +17,9 @@ public class ImageReport {
     private String imagePath;
 
     @ManyToOne
-    @JoinColumn(name = "report_id", nullable = false)
+    @JoinColumn(name = "report_id", nullable = true)
     private Report report;
 
-    public ImageReport() {
-    }
-
-    public ImageReport(String imageName, String imagePath, Report report) {
-        this.imageName = imageName;
-        this.imagePath = imagePath;
-        this.report = report;
-    }
 
     public int getId() {
         return id;

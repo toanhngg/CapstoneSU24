@@ -10,9 +10,10 @@ public class UserViewDetailDTO {
     private  String phone;
     private Location location;
     private String profileImage;
+    private String orgImage;
     private String org_name;
 
-    public UserViewDetailDTO(String email, String firstName, String lastName, String description, String phone, Location location, String profileImage, String org_name) {
+    public UserViewDetailDTO(String email, String firstName, String lastName, String description, String phone, Location location, String profileImage, String orgImage, String org_name) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -20,7 +21,16 @@ public class UserViewDetailDTO {
         this.phone = phone;
         this.location = location;
         this.profileImage = profileImage;
+        this.orgImage = orgImage;
         this.org_name = org_name;
+    }
+
+    public String getOrgImage() {
+        return orgImage;
+    }
+
+    public void setOrgImage(String orgImage) {
+        this.orgImage = orgImage;
     }
 
     public String getEmail() {

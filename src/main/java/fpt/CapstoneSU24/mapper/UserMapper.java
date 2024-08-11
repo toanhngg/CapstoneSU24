@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.mapper;
 
+import fpt.CapstoneSU24.dto.SupporterDTOResponse;
 import fpt.CapstoneSU24.dto.UserVerifyDTOResponse;
 import fpt.CapstoneSU24.dto.UserViewDTO;
 import fpt.CapstoneSU24.dto.UserViewDetailDTO;
@@ -23,6 +24,13 @@ public abstract class UserMapper {
     @Mapping(source = "org_name", target = "org_name")
     @Mapping(target = "profileImage", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract UserVerifyDTOResponse usersToUserDTOs(User users);
+    @Mapping(source = "userId", target = "userId")
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "phone", target = "phone")
+    @Mapping(source = "firstName", target = "firstName")
+    @Mapping(source = "lastName", target = "lastName")
+//    @Mapping(source = "password", target = "password")
+    public abstract SupporterDTOResponse usersToSupporterDTOResponse(User users);
     @Mapping(source = "email", target = "email")
     @Mapping(source = "firstName", target = "firstName")
     @Mapping(source = "lastName", target = "lastName")
@@ -30,6 +38,7 @@ public abstract class UserMapper {
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "location", target = "location")
     @Mapping(source = "org_name", target = "org_name")
+    @Mapping(target = "orgImage", ignore = true) // Ignore avatar for now, we'll set it manually
     @Mapping(target = "profileImage", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract UserViewDetailDTO usersToUserViewDetailDTO(User users);
     @Mapping(source = "userId", target = "userId")
@@ -49,6 +58,8 @@ public abstract class UserMapper {
     @AfterMapping
     protected void setAfter(User user, @MappingTarget UserViewDetailDTO usersToUserViewDetailDTO) {
         usersToUserViewDetailDTO.setProfileImage(cloudinaryService.getImageUrl(user.getProfileImage()));
+        usersToUserViewDetailDTO.setOrgImage(cloudinaryService.getImageUrl(user.getOrgImage()));
+
     }
     @AfterMapping
     protected void setAfter(User user, @MappingTarget UserViewDTO userViewDTO) {

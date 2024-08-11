@@ -4,9 +4,11 @@ import fpt.CapstoneSU24.dto.ProductDTOResponse;
 import fpt.CapstoneSU24.dto.ProductDetailDTOResponse;
 import fpt.CapstoneSU24.dto.ProductImageDTOResponse;
 import fpt.CapstoneSU24.dto.ViewProductDTOResponse;
+import fpt.CapstoneSU24.model.Category;
 import fpt.CapstoneSU24.model.ImageProduct;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.Product;
+import fpt.CapstoneSU24.repository.CategoryRepository;
 import fpt.CapstoneSU24.repository.ImageProductRepository;
 import fpt.CapstoneSU24.repository.ItemRepository;
 import fpt.CapstoneSU24.service.CloudinaryService;
@@ -33,6 +35,8 @@ public abstract class ProductMapper {
     private ItemMapper itemMapper;
     @Autowired
     private GCSService gcsService;
+    @Autowired
+    private CategoryRepository categoryRepository;
     @Mapping(source = "productId", target = "productId")
     @Mapping(source = "productName", target = "productName")
     @Mapping(source = "description", target = "description")
@@ -97,21 +101,26 @@ public abstract class ProductMapper {
         }
     }
     @AfterMapping
-    protected void setAvatar(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
+    protected void setAfter(Product product, @MappingTarget ProductDetailDTOResponse productDTO) throws IOException {
+
+        //set avatar
         ImageProduct imageProduct = imageProductRepository.findAllByFilePath("avatar/"+product.getProductId());
         if (imageProduct != null) {
             productDTO.setAvatar(cloudinaryService.getImageUrl(imageProduct.getFilePath()));
         }
-    }
-    @AfterMapping
-    protected void setModel3D(Product product, @MappingTarget ProductDetailDTOResponse productDTO) throws IOException {
-            productDTO.setModel3D(gcsService.getFileLink(String.valueOf(product.getProductId())));
-    }
-    @AfterMapping
-    protected void setListImages(Product product, @MappingTarget ProductDetailDTOResponse productDTO) {
+
+        //set model 3d
+        productDTO.setModel3D(gcsService.getFileLink(String.valueOf(product.getProductId())));
+
+        //set images
         List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(product.getProductId()).stream().map(filePath -> cloudinaryService.getImageUrl(filePath)).collect(Collectors.toList());
         productDTO.setListImages(imageProducts);
+
+        //set category
+        productDTO.setCategoryId(product.getCategory().getCategoryId());
+        productDTO.setCategoryName(product.getCategory().getName());
     }
+
     @AfterMapping
     protected void setListImagesItem(Product product, @MappingTarget ProductImageDTOResponse productDTO) {
         List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(

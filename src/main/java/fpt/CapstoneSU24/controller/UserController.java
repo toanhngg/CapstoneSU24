@@ -4,10 +4,7 @@ import fpt.CapstoneSU24.dto.B03.B03_GetDataGridDTO;
 import fpt.CapstoneSU24.dto.B03.B03_RequestDTO;
 import fpt.CapstoneSU24.dto.OrgNameUserDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
-import fpt.CapstoneSU24.dto.payload.FilterSearchManufacturerRequest;
-import fpt.CapstoneSU24.dto.payload.IdRequest;
-import fpt.CapstoneSU24.dto.payload.OrgNameRequest;
-import fpt.CapstoneSU24.dto.payload.UpdateStatusUserRequest;
+import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.model.Role;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.service.UserService;
@@ -47,7 +44,7 @@ public class UserController {
         return userService.getUsersByEmail(userRequestDTO);
     }
     @PostMapping("/updateStatus")
-    public ResponseEntity<String> updateStatus(@Valid @RequestBody UpdateStatusUserRequest req) {
+    public ResponseEntity<?> updateStatus(@Valid @RequestBody UpdateStatusUserRequest req) {
         return userService.updateStatus(req.getId(), req.getStatus());
     }
 
@@ -121,6 +118,15 @@ public class UserController {
     public ResponseEntity<?> countRegisteredUser() {
         return userService.countRegisteredUser();
     }
+    @PostMapping("/listAllCustomerSupport")
+    public ResponseEntity<?> listAllCustomerSupport(@Valid @RequestBody FilterSearchSupporterRequest req) {
+        return userService.listAllCustomerSupport(req);
+    }
+    @PostMapping("/deleteSupporter")
+    public ResponseEntity<?> deleteSupporter(@Valid @RequestBody IdRequest req) {
+        return userService.deleteSupporter(req);
+    }
+
 }
 
 

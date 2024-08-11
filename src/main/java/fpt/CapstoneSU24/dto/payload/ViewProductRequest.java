@@ -9,13 +9,13 @@ public class ViewProductRequest {
     @NotNull(message = "The id is required")
     @Min(value = 1, message = "The id must be a positive number")
     private Integer id;
-    @NotNull(message = "The category is required")
-    private String category;
+    @NotNull(message = "The categoryId is required")
+    private Integer categoryId;
     public Integer getId() {
         return id;
     }
 
-    public String getCategory() {
-        return category;
+    public Integer getCategoryId() {
+        return categoryId;
     }
 }

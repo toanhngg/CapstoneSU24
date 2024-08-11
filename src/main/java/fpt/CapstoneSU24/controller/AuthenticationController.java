@@ -26,6 +26,10 @@ public class AuthenticationController {
     public ResponseEntity<?> signup(@Valid @RequestBody RegisterRequest registerRequest) {
    return authenticationService.signup(registerRequest);
     }
+    @PostMapping("/signupForCustomerSupport")
+    public ResponseEntity<?> signupForCustomerSupport(@Valid @RequestBody RegisterForSupporterRequest req) {
+        return authenticationService.signupForCustomerSupport(req);
+    }
     @PostMapping("/checkMailExist")
     public ResponseEntity<?> checkMailExist(@Valid @RequestBody VerifyEmailRequest verifyEmailRequest) {
         return authenticationService.checkMailExist(verifyEmailRequest);

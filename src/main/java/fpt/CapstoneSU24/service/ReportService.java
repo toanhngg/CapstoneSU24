@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -31,10 +32,12 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final EpochDate epochDate;
+    private final ClientService clientService;
     @Autowired
-    public ReportService(ReportRepository reportRepository,EpochDate epochDate){
+    public ReportService(ReportRepository reportRepository,EpochDate epochDate, ClientService clientService){
         this.epochDate = epochDate;
         this.reportRepository = reportRepository;
+        this.clientService = clientService;
     }
     @Autowired
     private CloudinaryService cloudinaryService;
@@ -46,6 +49,7 @@ public class ReportService {
     private ItemRepository itemRepository;
     @Autowired
     private EmailService emailService;
+
 
 
     public ResponseEntity<?> getListReports(RequestListReport requestFilterTable) {
@@ -103,12 +107,28 @@ public class ReportService {
     }
 
 
-    public ResponseEntity<Report> createReport(CreateReportRequest request) throws MessagingException {
+    public ResponseEntity<?> createReport(CreateReportRequest request) throws MessagingException {
+
+        int check = clientService.checkOTP(request.getCreateBy(), request.getOtp(), request.getProductCode());
+        if(check != 3)
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Không thể tìm thấy OTP hoặc OTP không hợp lệ");
+        }
         Report report = new Report();
-        Item item = itemRepository.findOneByItemId(1);
-        User user = userRepository.findOneByUserId(22);
+//        Party party = partyRepository.findByPartyEmail(request.getCreateBy());
+//        if (party == null) {
+
+        Party    party = new Party();
+            party.setEmail(request.getCreateBy());
+            party.setPhoneNumber("99999");
+            party.setDescription("Party chi tao report");
+            partyRepository.save(party);
+//        }
+        Item item = itemRepository.findByProductRecognition(request.getProductCode());
+        User user = item.getProduct().getManufacturer();
         report.setReportTo(user);
-        report.setCreateBy(partyRepository.findOneByPartyId(1));
+        report.setCreateBy(partyRepository.findOneByPartyId(party.getPartyId()));
         report.setItemId(item);
         report.setCreateOn(System.currentTimeMillis());
         report.setUpdateOn(System.currentTimeMillis());
@@ -119,29 +139,36 @@ public class ReportService {
         report.setStatus(0);
         report.setPriority(request.getPriority());
 
-        String reportCode =item.getProductRecognition() + "-" + reportRepository.countItem(item.getItemId());
+        String reportCode = item.getProductRecognition() + "-" + reportRepository.countItem(item.getItemId());
         report.setCode(reportCode);
+
+        Report savedReport = reportRepository.save(report); // Lưu báo cáo trước để có ID hợp lệ
 
         List<ImageReport> imageReports = request.getImageReports().stream()
                 .map(imageData -> {
                     try {
                         String filePath = cloudinaryService.uploadImageAndGetPublicId(
                                 cloudinaryService.convertBase64ToImgFile(imageData), "");
-                        return new ImageReport("", filePath, report);
+                        ImageReport imageReport = new ImageReport();
+                        imageReport.setImagePath(filePath);
+                        imageReport.setReport(savedReport); // Gán báo cáo đã lưu trữ
+                        return imageReport;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 })
                 .collect(Collectors.toList());
-        report.setImageReports(imageReports);
 
-        Report savedReport = reportRepository.save(report);
+        savedReport.setImageReports(imageReports);
+
+
+        reportRepository.save(savedReport);
 
         String subjectMail = "[" + reportCode + "] " + request.getTitle();
         String templateMail = Const.TEMPLATE_FILE_NAME.ANNOUCE_NEW_ISSUE;
 
         DataMailDTO dataMail = new DataMailDTO();
-        dataMail.setTo("dtm.it2002@gmail.com");
+        dataMail.setTo(user.getEmail());
         dataMail.setSubject(subjectMail);
 
         Map<String, Object> props = new HashMap<>();
@@ -161,6 +188,7 @@ public class ReportService {
 
         return ResponseEntity.ok(savedReport);
     }
+
 
     private String getPriorityLabel(int priority) {
         switch (priority) {
@@ -215,11 +243,11 @@ public class ReportService {
         String templateMail = Const.TEMPLATE_FILE_NAME.REPLY_ISSUE;
 
         DataMailDTO dataMail = new DataMailDTO();
-        dataMail.setTo("dtm.it2002@gmail.com");
+        dataMail.setTo(user.getEmail());
         dataMail.setSubject(subjectMail);
 
         Map<String, Object> props = new HashMap<>();
-        props.put("userName", user.getPartyFullName());
+        props.put("userName", user.getEmail());
         props.put("title", report.getTitle());
         props.put("responseDetail", request.getResponseDetail());
         dataMail.setProps(props);

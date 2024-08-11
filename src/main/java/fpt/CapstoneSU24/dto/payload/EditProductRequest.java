@@ -28,8 +28,8 @@ public class EditProductRequest {
     private List<String> images;
     @NotNull(message = "The avatar is required")
     private String avatar;
-    @NotNull(message = "The file3D is required")
-    private String file3D;
+//    @NotNull(message = "The file3D is required")
+//    private String file3D;
 
     public Integer getProductId() {
         return productId;
@@ -71,7 +71,7 @@ public class EditProductRequest {
         return avatar;
     }
 
-    public String getFile3D() {
-        return file3D;
-    }
+//    public String getFile3D() {
+//        return file3D;
+//    }
 }

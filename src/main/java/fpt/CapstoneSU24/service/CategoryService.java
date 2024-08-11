@@ -3,11 +3,13 @@ package fpt.CapstoneSU24.service;
 import fpt.CapstoneSU24.dto.CategoryForManagerDTO;
 import fpt.CapstoneSU24.dto.UserProfileDTO;
 import fpt.CapstoneSU24.dto.payload.*;
+import fpt.CapstoneSU24.mapper.CategoryMapper;
 import fpt.CapstoneSU24.model.Category;
 import fpt.CapstoneSU24.model.Item;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.CategoryRepository;
 import fpt.CapstoneSU24.repository.ProductRepository;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,19 +29,19 @@ public class CategoryService {
     private final  CategoryRepository categoryRepository;
 
     private  UserService userService;
-
-
+    private CategoryMapper categoryMapper;
     private final  ProductRepository productRepository;
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository, ProductRepository productRepository) {
+    public CategoryService(CategoryRepository categoryRepository,CategoryMapper categoryMapper, ProductRepository productRepository) {
         this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
         this.productRepository = productRepository;
     }
 
     public ResponseEntity findAll() {
         List<Category> categoryList = categoryRepository.findAll();
-        return ResponseEntity.ok(categoryList);
+        return ResponseEntity.ok( categoryMapper.categoryToCategoryByUserDTO(categoryList));
     }
 
     public ResponseEntity<?> findAllManager() {
@@ -147,9 +149,20 @@ public class CategoryService {
     public ResponseEntity<?> findCategoryByManufacturer(IdRequest req) {
         try {
             List<Category> categories = categoryRepository.findCategoryByManufacturer(req.getId());
+            return ResponseEntity.status(200).body(categoryMapper.categoryToCategoryByUserDTO(categories));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error when fetching data");
+        }
+    }
+    public ResponseEntity<?> findCategoryAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        try {
+            List<Category> categories = categoryRepository.findCategoryByManufacturer(currentUser.getUserId());
             return ResponseEntity.status(200).body(categories);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error when fetching data");
         }
     }
+
 }
