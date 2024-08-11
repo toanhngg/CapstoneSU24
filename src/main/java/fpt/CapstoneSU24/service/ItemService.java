@@ -72,6 +72,8 @@ public class ItemService {
     private final LocationMapper locationMapper;
     private final ProductMapper productMapper;
     private final AuthorizedMapper authorizedMapper;
+    private final GCSService gcsService;
+
 
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
@@ -83,7 +85,7 @@ public class ItemService {
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
                        AbortMapper abortMapper, ItemMapper itemMapper, LocationMapper locationMapper,
-                       ProductMapper productMapper, AuthorizedMapper authorizedMapper) {
+                       ProductMapper productMapper, AuthorizedMapper authorizedMapper,GCSService gcsService) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -107,6 +109,7 @@ public class ItemService {
         this.locationMapper = locationMapper;
         this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
+        this.gcsService = gcsService;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
@@ -350,7 +353,9 @@ public class ItemService {
             int productId = itemLog.getItem().getProduct().getProductId();
             List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
                     .stream().map(cloudinaryService::getImageUrl).toList();
+
             originDTO.setImage(imageProducts);
+            originDTO.setModel3D(gcsService.getFileLink(String.valueOf(itemLog.getItem().getProduct().getProductId())));
             return new ResponseEntity<>(originDTO, HttpStatus.OK);
         } catch (Exception ex) {
             logService.logError(ex);
