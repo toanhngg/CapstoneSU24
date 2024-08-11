@@ -423,21 +423,37 @@ public class ItemLogService {
                         .orElseThrow(() -> new RuntimeException("Event type not found"))); // Sự kiện chỉnh sửa
                 itemLogRepository.save(newItemLog);
                 Party party = new Party();
-                Transport transport = transportRepository.getReferenceById(dataEditDTO.getTransportId());
-                party.setEmail(transport.getTransportEmail());
-                party.setPartyFullName(transport.getTransportName());
-                party.setPhoneNumber(transport.getTransportContact());
-                party.setDescription(dataEditDTO.getDescriptionItemLog());
-                Party savedParty = partyRepository.save(party);
-                log.info("transport" + transport.getTransportId());
-                if (hasNullFields(party)) {
-                    String point = generateAndSetPoint(itemLogDetail);
-                    itemLogRepository.updateItemLogTransport(
-                            point, dataEditDTO.getDescriptionItemLog(), -1,
-                            savedParty.getPartyId(), itemLogDetail.getItemLogId());
+                if(dataEditDTO.getTransportId() != 0){
+                    Transport transport = transportRepository.getReferenceById(dataEditDTO.getTransportId());
+                    party.setEmail(transport.getTransportEmail());
+                    party.setPartyFullName(transport.getTransportName());
+                    party.setPhoneNumber(transport.getTransportContact());
+                    party.setDescription(dataEditDTO.getDescriptionItemLog());
+                    Party savedParty = partyRepository.save(party);
+                    log.info("transport" + transport.getTransportId());
+                    if (hasNullFields(party)) {
+                        String point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogTransport(
+                                point, dataEditDTO.getDescriptionItemLog(), -1,
+                                savedParty.getPartyId(), itemLogDetail.getItemLogId());
 
-                    return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+                        return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+                    }
+                }else {
+                    party.setEmail("");
+                    party.setPartyFullName("");
+                    party.setPhoneNumber("");
+                    party.setDescription("Không trung chuyển qua nhà vận chuyển");
+                    Party savedParty = partyRepository.save(party);
+                        String point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogTransport(
+                                point, dataEditDTO.getDescriptionItemLog(), -1,
+                                savedParty.getPartyId(), itemLogDetail.getItemLogId());
+
+                        return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+
                 }
+
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! Unauthorized access.");
 

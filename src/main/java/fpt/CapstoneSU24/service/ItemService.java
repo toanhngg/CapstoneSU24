@@ -627,7 +627,6 @@ public class ItemService {
 
                // if (timeDifference > TimeUnit.DAYS.toMillis(3)) {
                     Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
-//                    authorizedEntity.setLocation(savedLocation);
                     Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                     Point point = null;
@@ -635,7 +634,6 @@ public class ItemService {
                     && (authorized.getAuthorizedEmail() != null)
                     && (authorized.getAuthorizedName() != null)
                     && authorized.getPhoneNumber() != null) {
-                // Your code here
                          double pointX = pointService.generateX();
                         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                         List<Point> pointList = pointService.getPointList(pointLogs);

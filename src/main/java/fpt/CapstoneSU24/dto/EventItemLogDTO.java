@@ -35,8 +35,8 @@ public class EventItemLogDTO {
     private String emailParty;
 
 
-    @Positive(message = "TransportId must be a positive number")
-    private int transportId;
+//    @Positive(message = "TransportId must be a positive number")
+    private Integer transportId;
 
     private String OTP;
 }
