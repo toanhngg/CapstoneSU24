@@ -3,8 +3,8 @@ package fpt.CapstoneSU24.util;
 public class Const {
     public final static class SEND_MAIL_SUBJECT {
         public final static String CLIENT_REGISTER = "XÁC NHẬN TẠO MỚI THÔNG TIN NGƯỜI DÙNG";
-        public final static String CLIENT_NOTIFICATION = "THÔNG BÁO OTP XÁC THỰC NGƯỜI DÙNG";
-        public final static String CLIENT_SENDOTP = "XÁC NHẬN ỦY QUYỀN NGƯỜI DÙNG";
+        public final static String CLIENT_NOTIFICATION = "THÔNG BÁO ỦY QUYỀN NGƯỜI DÙNG";
+        public final static String CLIENT_SENDOTP = "THÔNG BÁO OTP XÁC THỰC NGƯỜI DÙNG";
         public final static String VERIFY_EMAIL = "THÔNG BÁO XÁC THỰC TÀI KHOẢN";
         public final static String SUBJECT_LOCKUSER = "THÔNG BÁO KHÓA TÀI KHOẢN NGƯỜI DÙNG";
         public final static String SUBJECT_UNLOCKUSER = "THÔNG BÁO MỞ KHÓA TÀI KHOẢN NGƯỜI DÙNG";

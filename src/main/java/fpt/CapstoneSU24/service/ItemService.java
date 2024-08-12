@@ -781,46 +781,46 @@ public class ItemService {
             if (list.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("List not found!");
             }
-            ItemLog itemIndex = list.get(0);
-            long timeDifference = timeInsert - itemIndex.getTimeStamp();
+            //  ItemLog itemIndex = list.get(0);
+            //long timeDifference = timeInsert - itemIndex.getTimeStamp();
 
-            long DaysInMillis = TimeUnit.DAYS.toMillis(1);
-            if (timeDifference > DaysInMillis) {
-                if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
-                    int check = clientService.checkOTP(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(),item.getProductRecognition());
-                    if (check == 6)
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-                    if (check == 3) {
-                        if (item.getStatus() == 0)
-                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+            // long DaysInMillis = TimeUnit.DAYS.toMillis(1);
+            // if (timeDifference > DaysInMillis) {
+            if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
+                int check = clientService.checkOTP(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(), item.getProductRecognition());
+                if (check == 6)
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
+                if (check == 3) {
+                    if (item.getStatus() == 0)
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
 
-                        Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
 
-                        Party partySaved = new Party();
-                        partySaved.setPartyFullName(abortDTO.getPartyFullName());
-                        partySaved.setEmail(item.getCurrentOwner());
-                        partyRepository.save(partySaved);
-                        double pointX = pointService.generateX();
-                        List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                        List<Point> pointList = pointService.getPointList(pointLogs);
-                        double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-                        Point point = new Point(pointX, pointY);
-                        itemLogRepository.save(new ItemLog(item, abortDTO.getLocation().getAddress(), partySaved, savedLocation,
-                                System.currentTimeMillis(), abortDTO.getDescription(), null, eventTypeRepository.findOneByEventId(5),
-                                1, abortDTO.getImageItemLog(), point.toString(),0));
-                        itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
-                        return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
-                    }
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+                    Party partySaved = new Party();
+                    partySaved.setPartyFullName(abortDTO.getPartyFullName());
+                    partySaved.setEmail(item.getCurrentOwner());
+                    partyRepository.save(partySaved);
+                    double pointX = pointService.generateX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                    Point point = new Point(pointX, pointY);
+                    itemLogRepository.save(new ItemLog(item, abortDTO.getLocation().getAddress(), partySaved, savedLocation,
+                            System.currentTimeMillis(), abortDTO.getDescription(), null, eventTypeRepository.findOneByEventId(5),
+                            1, abortDTO.getImageItemLog(), point.toString(), 0));
+                    itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
+                    return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
                 }
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+        }
 
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot destroy this item once created!");
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot destroy this item once created!");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
         }
+        return null;
     }
 
     public ResponseEntity<?> getItemByEventType(int eventType) {
