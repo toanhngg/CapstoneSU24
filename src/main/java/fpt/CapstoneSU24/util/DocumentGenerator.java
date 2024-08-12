@@ -88,8 +88,8 @@ public class DocumentGenerator {
             // Create PdfDocument
             PdfDocument pdf = new PdfDocument(writer);
             // Set landscape orientation
-            pdf.setDefaultPageSize(PageSize.A4);
-            PageSize pageSize = PageSize.A4;
+            pdf.setDefaultPageSize(PageSize.A4.rotate());
+            PageSize pageSize = PageSize.A4.rotate();
             pdf.setDefaultPageSize(pageSize);
 
             // Convert HTML to PDF

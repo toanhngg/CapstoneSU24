@@ -53,17 +53,24 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
 //    List<ItemLog> getListItemLogsByIdEdit(@Param("idEdit") int idEdit);
 
     @Query("SELECT new fpt.CapstoneSU24.dto.ItemLogDetailResponse(" +
-            "il.itemLogId, il.event_id.event_type, p.partyFullName, il.authorized.assignPersonMail, " +
-            "il.authorized.authorizedEmail, p.phoneNumber, il.address, " +
-            "loc.coordinateX, loc.coordinateY, il.timeStamp, il.description) " +
+            "il.itemLogId, " +
+            "il.event_id.event_type, " +
+            "p.partyFullName, " +
+            "a.assignPersonMail, " +
+            "a.authorizedEmail, " +
+            "p.phoneNumber, " +
+            "il.address, " +
+            "loc.coordinateX, " +
+            "loc.coordinateY, " +
+            "il.timeStamp, " +
+            "il.description) " +
             "FROM ItemLog il " +
             "LEFT JOIN il.location loc " +
             "LEFT JOIN il.party p " +
+            "LEFT JOIN il.authorized a " +
             "WHERE il.idEdit = :itemLogId " +
             "ORDER BY il.itemLogId ASC")
     List<ItemLogDetailResponse> getListItemLogsByIdEdit(@Param("itemLogId") int itemLogId);
-
-
 
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.event_id.eventId <> 6 ORDER BY il.itemLogId asc")
     List<ItemLog> getItemLogsByItemIdAscNotEdit(@Param("itemId") int itemId);
@@ -118,13 +125,13 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
                                 @Param("itemLogId") long itemLogId);
 
 
-    @Query("SELECT il FROM ItemLog il LEFT JOIN il.party p LEFT JOIN il.item i WHERE i.itemId = :itemId " +
+    @Query("SELECT il FROM ItemLog il LEFT JOIN il.party p LEFT JOIN il.item i WHERE il.event_id.eventId <> 6 AND  i.itemId = :itemId " +
             "AND p.email = :email")
     List<ItemLog> checkParty(int itemId, String email);
 
     @Modifying
     @Transactional
-    @Query("UPDATE ItemLog i SET i.location.locationId = :location, i.point = :point, i.address = :address WHERE i.itemLogId = :itemLogId")
+    @Query("UPDATE ItemLog i SET i.location.locationId = :location, i.point = :point, i.address = :address WHERE  i.itemLogId = :itemLogId")
     void updateItemLogLocation(@Param("location") int location,
                                @Param("point") String point,
                                @Param("address") String address,

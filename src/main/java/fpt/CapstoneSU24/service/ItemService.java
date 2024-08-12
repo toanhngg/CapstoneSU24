@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
@@ -39,6 +40,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -70,6 +72,8 @@ public class ItemService {
     private final LocationMapper locationMapper;
     private final ProductMapper productMapper;
     private final AuthorizedMapper authorizedMapper;
+    private final GCSService gcsService;
+
 
     @Autowired
     public ItemService(LocationRepository locationRepository, ProductRepository productRepository,
@@ -81,7 +85,7 @@ public class ItemService {
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
                        AbortMapper abortMapper, ItemMapper itemMapper, LocationMapper locationMapper,
-                       ProductMapper productMapper, AuthorizedMapper authorizedMapper) {
+                       ProductMapper productMapper, AuthorizedMapper authorizedMapper,GCSService gcsService) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -105,6 +109,7 @@ public class ItemService {
         this.locationMapper = locationMapper;
         this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
+        this.gcsService = gcsService;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
@@ -146,7 +151,7 @@ public class ItemService {
             return ResponseEntity.status(500).body("startTime need less than endTime");
         }
     }
-
+    @Transactional
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -159,10 +164,10 @@ public class ItemService {
             }
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
         }
     }
-
+    @Transactional
     public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
         try {
             User user = userRepository.getReferenceById(currentUser.getUserId());
@@ -181,7 +186,7 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
         }
     }
 
@@ -203,6 +208,10 @@ public class ItemService {
 
         List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
         long scoreTime = System.currentTimeMillis();
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String formattedDate = Instant.ofEpochMilli(scoreTime).atZone(ZoneId.systemDefault()).format(formatter);
+
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
             Item item = new Item();
             item.setCreatedAt(scoreTime);
@@ -218,9 +227,10 @@ public class ItemService {
             props.put("orgName", user.getOrg_name());
             props.put("itemName", item.getProduct().getProductName());
             props.put("supportingDocuments", item.getOrigin().getSupportingDocuments());
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String formattedDate = Instant.ofEpochMilli(scoreTime).atZone(ZoneId.systemDefault()).format(formatter);
+            props.put("City", item.getOrigin().getLocation().getCity());
+            props.put("Date", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+            props.put("Month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+            props.put("Year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
             props.put("createAt", formattedDate);
             props.put("productRecognition", item.getProductRecognition());
             informationCert.setProps(props);
@@ -265,7 +275,7 @@ public class ItemService {
             itemLog.setParty(parties.get(i));
             itemLog.setIdEdit(0);
 
-            Point point = pointService.randomPoint(10000, 10000);
+            Point point = pointService.randomPoint(1000, 1000);
             itemLog.setPoint(point.toString());
             itemLogs.add(itemLog);
         }
@@ -343,7 +353,9 @@ public class ItemService {
             int productId = itemLog.getItem().getProduct().getProductId();
             List<String> imageProducts = imageProductRepository.findAllFilePathNotStartingWithAvatar(productId)
                     .stream().map(cloudinaryService::getImageUrl).toList();
+
             originDTO.setImage(imageProducts);
+            originDTO.setModel3D(gcsService.getFileLink(String.valueOf(itemLog.getItem().getProduct().getProductId())));
             return new ResponseEntity<>(originDTO, HttpStatus.OK);
         } catch (Exception ex) {
             logService.logError(ex);
@@ -355,41 +367,47 @@ public class ItemService {
     public ResponseEntity<?> getCertificate(CurrentOwnerCheckDTO req) {
         String email = req.getEmail();
         String productRecognition = req.getProductRecognition();
-        Item item = itemRepository.findByProductRecognition(productRecognition);
+
         if (productRecognition == null || productRecognition.isEmpty()) {
             return ResponseEntity.badRequest().body("Product recognition is required");
         }
+
+        Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
         }
 
         if (email == null || email.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is missing.");
+            return ResponseEntity.badRequest().body("Email is missing.");
         }
-        int check = clientService.checkOTP(req.getEmail().trim(), req.getOTP().trim(), item.getProductRecognition());
-        if (check == 6)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(" OTP is not correct.");
-        if (check == 3) {
-            if (!item.getCurrentOwner().equals(email)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
-            }
 
-            List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
-            if (itemLogs.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
-            }
-
-            List<ItemLog> pointLogs = itemLogRepository.getPointItemIdIgnoreEdit(item.getItemId());
-            if (pointLogs.size() != itemLogs.size()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mismatch in item logs and point logs.");
-            }
-            if (!pointService.arePointsOnCurve(pointLogs)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Points do not form a valid graph.");
-            }
-            String pdfData = item.getCertificateLink();
-            return new ResponseEntity<>(pdfData, HttpStatus.OK);
+        int otpCheckResult = clientService.checkOTP(email.trim(), req.getOTP().trim(), productRecognition);
+        if (otpCheckResult == 6) {
+            return ResponseEntity.badRequest().body("OTP is not correct.");
+        } else if (otpCheckResult != 3) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP validation failed.");
         }
-        return null;
+
+        if (!item.getCurrentOwner().equals(email)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
+        }
+
+        List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
+        if (itemLogs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
+        }
+
+        List<ItemLog> pointLogs = itemLogRepository.getPointItemIdIgnoreEdit(item.getItemId());
+        if (pointLogs.size() != itemLogs.size()) {
+            return ResponseEntity.badRequest().body("Mismatch in item logs and point logs.");
+        }
+
+        if (!pointService.arePointsOnCurve(pointLogs)) {
+            return ResponseEntity.badRequest().body("Points do not form a valid graph.");
+        }
+
+        String pdfData = item.getCertificateLink();
+        return ResponseEntity.ok(pdfData);
     }
 
     public ResponseEntity<Integer> checkEventAuthorized(String productRecognition) {
@@ -436,21 +454,35 @@ public class ItemService {
     }
     public static boolean hasNullFields(Object obj) {
         if (obj == null) {
-            return false; // Nếu object là null, trả về true
+            return false;
         }
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
-                if (field.get(obj) == null) {
-                    return false; // Nếu có bất kỳ trường nào null, trả về true
+                Object value = field.get(obj);
+                if (value == null) {
+                    return false;
+                }
+                if (value instanceof String && ((String) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Number && ((Number) value).doubleValue() == 0) {
+                    return false;
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
         }
 
-        return true; // Không có trường nào null
+        return true; // Không có trường nào null hoặc rỗng
     }
+
 
     public ResponseEntity<Integer> checkPartyFirst(CurrentOwnerCheck req) {
         String email = req.getEmail();
@@ -490,20 +522,19 @@ public class ItemService {
 
         public ResponseEntity<Integer> check(CurrentOwnerCheck req) throws URISyntaxException, IOException, InterruptedException {
         String email = req.getEmail();
-            HttpClient client = HttpClient.newHttpClient();
-            // Validate email
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
-                    .POST(HttpRequest.BodyPublishers.ofString("email=" + req.getEmail()))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            String responseBody = response.body();
-
-            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
-            }
+//            HttpClient client = HttpClient.newHttpClient();
+//            HttpRequest request = HttpRequest.newBuilder()
+//                    .uri(new URI("https://melink.vn/checkmail/checkemail.php"))
+//                    .POST(HttpRequest.BodyPublishers.ofString("email=" + req.getEmail()))
+//                    .header("Content-Type", "application/x-www-form-urlencoded")
+//                    .build();
+//
+//            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            String responseBody = response.body();
+//
+//            if (!("<span style='color:green'><b>Valid!</b>").equals(responseBody)) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+//            }
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
 
@@ -520,11 +551,12 @@ public class ItemService {
                     return ResponseEntity.ok(3); // CurrentOwner
             }
             // Kiểm tra xem email có phải là Authorized không
-            else if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
+            if (list != null && !list.isEmpty() && list.get(0).getAuthorized() != null) {
                 if (email.equalsIgnoreCase(list.get(0).getAuthorized().getAuthorizedEmail())) {
                     return ResponseEntity.ok(2); // Authorized
                 }
-            } else if (checkParty(email, item.getItemId())) {
+            }
+            if (checkParty(email, item.getItemId())) {
                 return ResponseEntity.ok(4); // CurrentOwner
             }
             // Không là gì
@@ -539,7 +571,7 @@ public class ItemService {
 
     public boolean checkParty(String email, int itemId) {
         List<ItemLog> itemLogs = itemLogRepository.checkParty(itemId, email);
-        return itemLogs != null;
+        return !itemLogs.isEmpty();
     }
 
     public boolean checkOwner(String email, String emailCurrentOwner) {
@@ -600,12 +632,14 @@ public class ItemService {
 
                // if (timeDifference > TimeUnit.DAYS.toMillis(3)) {
                     Authorized authorizedEntity = authorizedMapper.authorizedDtoToAuthorized(authorized);
-//                    authorizedEntity.setLocation(savedLocation);
                     Authorized authorizedSaved = authorizedRepository.save(authorizedEntity);
 
                     Point point = null;
-              if (hasNullFields(authorized.getLocation()) ) {
-                        double pointX = pointService.generateX();
+            if (hasNullFields(authorized.getLocation())
+                    && (authorized.getAuthorizedEmail() != null)
+                    && (authorized.getAuthorizedName() != null)
+                    && authorized.getPhoneNumber() != null) {
+                         double pointX = pointService.generateX();
                         List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                         List<Point> pointList = pointService.getPointList(pointLogs);
                         double pointY = pointService.lagrangeInterpolate(pointList, pointX);
@@ -614,7 +648,7 @@ public class ItemService {
 
                     itemLogRepository.save(new ItemLog(
                             item,
-                            itemIndex.getAddress(),
+                            authorized.getLocation().getAddress(),
                             itemIndex.getParty(),
                             savedLocation,
                             timeInsert,
@@ -629,9 +663,10 @@ public class ItemService {
 
                     // Send email notification
                     ClientSdi sdi = new ClientSdi();
+                    sdi.setProductName(item.getProduct().getProductName() + " với mã sản phẩm là : " + item.getProductRecognition());
                     sdi.setEmail(authorized.getAuthorizedEmail());
-                    sdi.setUsername(authorized.getAuthorizedName());
-                    sdi.setName(authorized.getAuthorizedName());
+//                    sdi.setUsername(authorized.getAuthorizedName());
+//                    sdi.setName(authorized.getAuthorizedName());
                     clientService.notification(sdi);
 
                     return ResponseEntity.status(HttpStatus.OK).body("Authorization successful!");
@@ -680,57 +715,6 @@ public class ItemService {
         }
     }
 
-//    public ResponseEntity<?> sendOTP(CurrentOwnerCheckDTO req) {
-//        try {
-//            String email = req.getEmail();
-//            String productRecognition = req.getProductRecognition();
-////            JSONObject jsonReq = new JSONObject(req);
-////            String email = jsonReq.getString("email");
-////            String productRecognition = jsonReq.getString("productRecognition");
-//
-//            // Kiểm tra xem item có tồn tại và có status = 0 hay không
-//            Item item = findByProductRecognition(productRecognition);
-//            if (item == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-//            }
-//            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
-//
-//            List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
-//            if (list.isEmpty()) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ItemLog not found!");
-//            }
-//            ItemLog itemIndex = list.get(0);
-//            if (itemIndex.getAuthorized() == null) {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has not been authorized!");
-//            }
-//            // System.out.println(itemIndex.getAuthorized().getAuthorizedEmail());
-//            //System.out.println(email);
-//            // Kiểm tra xem email có đúng là current owner không
-//            if (!(itemIndex.getAuthorized().getAuthorizedEmail()).equals(email)) {
-//                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not the current owner.");
-//            }
-//            // Tạo đối tượng ClientSdi và gửi email OTP
-//            ClientSdi sdi = new ClientSdi();
-//            sdi.setEmail(itemIndex.getAuthorized().getAuthorizedEmail());
-//            sdi.setUsername(itemIndex.getAuthorized().getAuthorizedName());
-//            sdi.setName(itemIndex.getAuthorized().getAuthorizedName());
-//
-//            boolean emailSent = clientService.createMailAndSaveSQL(sdi);
-//
-//            if (emailSent) {
-//                return ResponseEntity.ok("OTP has been sent successfully.");
-//            } else {
-//                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send OTP.");
-//            }
-//        } catch (JSONException e) {
-//            logService.logError(e);
-//
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON request.");
-//        } catch (Exception ex) {
-//            logService.logError(ex);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-//        }
-//    }
 
     //SendOTP Sau
     public ResponseEntity<?> confirmOTP(SendOTP otp, String productRecognition) {
@@ -797,46 +781,46 @@ public class ItemService {
             if (list.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("List not found!");
             }
-            ItemLog itemIndex = list.get(0);
-            long timeDifference = timeInsert - itemIndex.getTimeStamp();
+            //  ItemLog itemIndex = list.get(0);
+            //long timeDifference = timeInsert - itemIndex.getTimeStamp();
 
-            long DaysInMillis = TimeUnit.DAYS.toMillis(1);
-            if (timeDifference > DaysInMillis) {
-                if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
-                    int check = clientService.checkOTP(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(),item.getProductRecognition());
-                    if (check == 6)
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-                    if (check == 3) {
-                        if (item.getStatus() == 0)
-                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+            // long DaysInMillis = TimeUnit.DAYS.toMillis(1);
+            // if (timeDifference > DaysInMillis) {
+            if (checkOwner(abortDTO.getEmail(), item.getCurrentOwner())) {
+                int check = clientService.checkOTP(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(), item.getProductRecognition());
+                if (check == 6)
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
+                if (check == 3) {
+                    if (item.getStatus() == 0)
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
 
-                        Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
+                    Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));
 
-                        Party partySaved = new Party();
-                        partySaved.setPartyFullName(abortDTO.getPartyFullName());
-                        partySaved.setEmail(item.getCurrentOwner());
-                        partyRepository.save(partySaved);
-                        double pointX = pointService.generateX();
-                        List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
-                        List<Point> pointList = pointService.getPointList(pointLogs);
-                        double pointY = pointService.lagrangeInterpolate(pointList, pointX);
-                        Point point = new Point(pointX, pointY);
-                        itemLogRepository.save(new ItemLog(item, abortDTO.getLocation().getAddress(), partySaved, savedLocation,
-                                System.currentTimeMillis(), abortDTO.getDescription(), null, eventTypeRepository.findOneByEventId(5),
-                                1, abortDTO.getImageItemLog(), point.toString(),0));
-                        itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
-                        return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
-                    }
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+                    Party partySaved = new Party();
+                    partySaved.setPartyFullName(abortDTO.getPartyFullName());
+                    partySaved.setEmail(item.getCurrentOwner());
+                    partyRepository.save(partySaved);
+                    double pointX = pointService.generateX();
+                    List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
+                    List<Point> pointList = pointService.getPointList(pointLogs);
+                    double pointY = pointService.lagrangeInterpolate(pointList, pointX);
+                    Point point = new Point(pointX, pointY);
+                    itemLogRepository.save(new ItemLog(item, abortDTO.getLocation().getAddress(), partySaved, savedLocation,
+                            System.currentTimeMillis(), abortDTO.getDescription(), null, eventTypeRepository.findOneByEventId(5),
+                            1, abortDTO.getImageItemLog(), point.toString(), 0));
+                    itemRepository.updateItemStatus(abortDTO.getProductRecognition(), 0);
+                    return ResponseEntity.status(HttpStatus.OK).body("Abort successfully!");
                 }
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not currentOwner!");
+        }
 
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot destroy this item once created!");
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You cannot destroy this item once created!");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex.getMessage());
         }
+        return null;
     }
 
     public ResponseEntity<?> getItemByEventType(int eventType) {

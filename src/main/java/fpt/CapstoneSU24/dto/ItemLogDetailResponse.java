@@ -19,8 +19,8 @@ public class ItemLogDetailResponse {
     private String sender;
     private String receiver;
     private String receiverName;
-    private String partyPhoneNumber;
-    private String authorizedPhoneNumber;
+    private String phoneNumber;
+   // private String authorizedPhoneNumber;
 
     private String addressInParty;
     private Double coordinateX;
@@ -30,13 +30,13 @@ public class ItemLogDetailResponse {
     private Integer IdEdit;
     private Boolean checkPoint;
 
-    public ItemLogDetailResponse(Integer itemLogId, String eventType, String partyFullname, String sender, String receiver, String partyPhoneNumber, String addressInParty, Double coordinateX, Double coordinateY, Long timeReceive, String descriptionItemLog) {
+    public ItemLogDetailResponse(Integer itemLogId, String eventType, String partyFullname, String sender, String receiver, String phoneNumber, String addressInParty, Double coordinateX, Double coordinateY, Long timeReceive, String descriptionItemLog) {
         this.itemLogId = itemLogId;
         this.eventType = eventType;
         this.partyFullname = partyFullname;
         this.sender = sender;
         this.receiver = receiver;
-        this.partyPhoneNumber = partyPhoneNumber;
+        this.phoneNumber = phoneNumber;
         this.addressInParty = addressInParty;
         this.coordinateX = coordinateX;
         this.coordinateY = coordinateY;
