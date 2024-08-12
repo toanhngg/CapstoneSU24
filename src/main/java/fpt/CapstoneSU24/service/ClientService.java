@@ -125,8 +125,8 @@ public class ClientService implements ClientRepository {
             dataMail.setSubject(Const.SEND_MAIL_SUBJECT.CLIENT_NOTIFICATION);
 
             Map<String, Object> props = new HashMap<>();
-            props.put("name", sdi.getName());
-            props.put("username", sdi.getUsername());
+            props.put("productName", sdi.getProductName());
+            props.put("email", sdi.getEmail());
             dataMail.setProps(props);
             mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_NOTIFICATION);
             return true;
