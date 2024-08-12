@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Service
 public class GCSService {
@@ -36,11 +37,34 @@ public class GCSService {
                 .getService();
     }
 
+    public String uploadFile(MultipartFile file, String name, int id) throws IOException {
+        deleteFileIfExists("model3D", id + "");
+        byte[] content = file.getBytes();
+        Storage storage = getStorage();
+        Blob blob = storage.create(Blob.newBuilder(bucketName, name).build(), content);
+        return blob.getMediaLink();
+    }
     public String uploadFile(MultipartFile file, String name) throws IOException {
         byte[] content = file.getBytes();
         Storage storage = getStorage();
         Blob blob = storage.create(Blob.newBuilder(bucketName, name).build(), content);
         return blob.getMediaLink();
+    }
+    public void deleteFileIfExists(String folderName, String baseFileName) throws IOException {
+            Storage storage = getStorage();
+
+        Iterable<Blob> blobs = storage.list(bucketName, Storage.BlobListOption.prefix(folderName + "/")).iterateAll();
+
+            for (Blob blob : blobs) {
+                String filePath = blob.getName();
+                String[] pathParts = filePath.split("/");
+                if (pathParts.length > 1) {
+                    String fileName = pathParts[pathParts.length - 1];
+                    if (fileName.startsWith(baseFileName + ".")) {
+                        boolean deleted = storage.delete(bucketName, filePath);
+                    }
+                }
+            }
     }
     public String getFileLink(String fileName) throws IOException {
         Storage storage = getStorage();

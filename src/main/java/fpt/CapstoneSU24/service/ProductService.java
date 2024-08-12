@@ -306,14 +306,13 @@ public class ProductService {
         if(currentUser.getRole().getRoleId() == 2){
             String originalFilename = file3D.getOriginalFilename();
 
-            // Kiểm tra và lấy đuôi file
             String fileExtension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
                 int dotIndex = originalFilename.lastIndexOf(".");
                 fileExtension = originalFilename.substring(dotIndex);
             }
             String newFileName = "model3D/"+ id + fileExtension;
-           String path = gcsService.uploadFile(file3D, newFileName);
+           String path = gcsService.uploadFile(file3D, newFileName, id);
             return ResponseEntity.status(200).body("save model 3d successfully");
         }
         return ResponseEntity.status(500).body("your account isn't permitted for this action");
@@ -373,9 +372,9 @@ public class ProductService {
         int status = 0;
 
         Page<Product> products = null;
-        Pageable pageable = req.isDesc() ? PageRequest.of(req.getPage(), req.getSize(), Sort.by(Sort.Direction.ASC, req.getOrderBy())) :
-                !req.isDesc() ? PageRequest.of(req.getPage(), req.getSize(), Sort.by(Sort.Direction.DESC, req.getOrderBy())) :
-                        PageRequest.of(req.getPage(), req.getSize());
+        Sort.Direction direction =  req.isDesc()  ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, req.getOrderBy());
+        Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), sort);
         products = productRepository.findProductRequestScanList(req.getProductName(), req.getManufactorName(), req.getProductId(), pageable);
 
         Page<ListImageToScanDTO> listImageToScanDTOS = products.map(product -> {
