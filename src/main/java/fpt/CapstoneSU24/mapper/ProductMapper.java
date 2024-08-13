@@ -80,6 +80,12 @@ public abstract class ProductMapper {
     @Mapping(target = "listImages", ignore = true) // Ignore avatar for now, we'll set it manually
     public abstract ProductImageDTOResponse productToProductImageDTOResponse(Product product);
 
+
+
+
+
+
+
     @AfterMapping
     protected void setAvatar(Product product, @MappingTarget ViewProductDTOResponse productDTO) {
         ImageProduct imageProduct = imageProductRepository.findAllByFilePath("avatar/"+product.getProductId());

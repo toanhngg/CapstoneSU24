@@ -180,7 +180,6 @@ public class ProductService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
         }
     }
-
     public ResponseEntity ViewProductByManufacturerId(ViewProductRequest req) {
 //        try {
 //            Page<Product> products = null;
@@ -200,9 +199,9 @@ public class ProductService {
             List<Product> products = new ArrayList<>();
             if(req.getCategoryId() == 0)
             {
-                 products = productRepository.findAllProduct(req.getId());
+                products = productRepository.findAllProduct(req.getId());
             }else {
-                 products = productRepository.findAllProduct(req.getId(), req.getCategoryId());
+                products = productRepository.findAllProduct(req.getId(), req.getCategoryId());
             }
             List<ViewProductDTOResponse> productDTOs = products.stream()
                     .map(productMapper::productToViewProductDTOResponse)
@@ -398,4 +397,8 @@ public class ProductService {
     }
 
 
+    public ResponseEntity<?> getInfoByProductId(int productId) {
+        ProductResponseCustomDTO productDetail = productRepository.findDetailProductAndUser(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(productDetail);
+    }
 }
