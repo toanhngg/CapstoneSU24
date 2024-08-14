@@ -236,7 +236,7 @@ public class ItemLogService {
             int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-            if (check == 4 || check == 0) {
+            if (check == 4 || check == 0 || check == 8) {
                 // B2: Lưu thông tin của itemLogId đó thành một dòng itemLogId khác
                 ItemLog newItemLog = new ItemLog();
                 copyItemLogDetails(newItemLog, itemLogDetail);
@@ -462,7 +462,12 @@ public class ItemLogService {
     }
 
     private void copyItemLogDetails(ItemLog target, ItemLog source) {
-        target.setAddress(source.getLocation().getAddress());
+        if (source.getLocation() != null) {
+            target.setAddress(source.getLocation().getAddress());
+        } else {
+            target.setAddress(null);
+        }
+
         target.setDescription(source.getDescription());
         target.setAuthorized(source.getAuthorized());
         target.setStatus(source.getStatus());
@@ -470,6 +475,7 @@ public class ItemLogService {
         target.setItem(source.getItem());
         target.setLocation(source.getLocation());
         target.setParty(source.getParty());
+
 
     }
 

@@ -200,6 +200,9 @@ public class ClientService implements ClientRepository {
                 boolean check = otpService.verifyOTP(email, otp);
                 if (!check) return 6; // OTP sai
 
+                if (checkOwner(email, item.getCurrentOwner()) && checkParty(email, item.getItemId())) {
+                    return 8;
+                }
                 if (checkOwner(email, item.getCurrentOwner())) {
                     return 3;
                 } else if (list != null && !list.isEmpty()) {
