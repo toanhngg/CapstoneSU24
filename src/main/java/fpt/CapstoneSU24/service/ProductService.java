@@ -333,9 +333,7 @@ public class ProductService {
         List<String> imagePaths = req.getImage();
         for (String imagePath : imagePaths) {
             ImageProduct imageProduct = new ImageProduct();
-            String filePath = cloudinaryService.uploadImageAndGetPublicId(
-                    cloudinaryService.convertBase64ToImgFile(imagePath), "");
-            imageProduct.setFilePath(filePath);
+            imageProduct.setFilePath(imagePath);
             imageProduct.setType(1);
             imageProduct.setProduct(product);
             product.getImageProducts().add(imageProduct);
@@ -351,8 +349,10 @@ public class ProductService {
         for (String id : req.getProductId()) {
             Product product = productRepository.findOneByProductId(Integer.parseInt(id));
             product.getImageProducts().forEach(img -> {
-                img.setType(3);
-                imageProductRepository.save(img);
+                if (img.getType() == 1) {
+                    img.setType(3);
+                    imageProductRepository.save(img);
+                }
             });
         }
         return ResponseEntity.ok("Status updated successfully");
@@ -363,7 +363,6 @@ public class ProductService {
         List<String> filePaths = product.getImageProducts().stream()
                 .filter(imageProduct -> imageProduct.getType() == 3 || imageProduct.getType() == 1)
                 .map(ImageProduct::getFilePath)
-                .map(cloudinaryService::getImageUrl)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(filePaths);
     }
@@ -387,7 +386,6 @@ public class ProductService {
             List<String> filePaths = product.getImageProducts().stream()
                     .filter(imageProduct -> imageProduct.getType() == 1)
                     .map(ImageProduct::getFilePath)
-                    .map(cloudinaryService::getImageUrl)
                     .collect(Collectors.toList());
             listImageToScanDTO.setFilePath(filePaths);
             return  listImageToScanDTO;
