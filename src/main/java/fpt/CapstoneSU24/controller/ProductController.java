@@ -92,4 +92,8 @@ public class ProductController {
     public ResponseEntity<?> getImageHadUpload(@RequestBody GetImageHasUploadDTO getImageHasUploadDTO) throws IOException {
         return productService.getImageHadUpload(getImageHasUploadDTO);
     }
+    @GetMapping("/getInfoByProductId")
+    public ResponseEntity<?> getInfoByProductId(@RequestParam int productId) {
+        return productService.getInfoByProductId(productId);
+    }
 }

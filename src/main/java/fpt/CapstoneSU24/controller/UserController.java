@@ -109,6 +109,10 @@ public class UserController {
     public ResponseEntity<String> updateDescription(@RequestBody String description) {
         return userService.updateDescription(description);
     }
+//    @PostMapping("/updateOrgName")
+//    public ResponseEntity<String> updateOrgName(@RequestBody String description) {
+//        return userService.updateOrgName(description);
+//    }
     @GetMapping("/top5OrgNames")
     public ResponseEntity<List<OrgNameUserDTO>> getTop5OrgNames() {
         List<OrgNameUserDTO> topOrgNames = userService.getTop5OrgNames();

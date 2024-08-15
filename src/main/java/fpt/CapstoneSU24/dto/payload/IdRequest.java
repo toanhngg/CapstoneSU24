@@ -11,6 +11,13 @@ public class IdRequest {
     @Min(value = 1, message = "The id must be a positive number")
     private Integer id;
 
+    public IdRequest() {
+    }
+
+    public IdRequest(Integer id) {
+        this.id = id;
+    }
+
     public Integer getId() {
         return id;
     }

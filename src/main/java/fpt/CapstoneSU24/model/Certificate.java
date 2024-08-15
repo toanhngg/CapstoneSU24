@@ -10,15 +10,15 @@ public class Certificate {
     @Column(name = "certificate_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int certificateId;
-    @Column(name = "certificate_name", columnDefinition = "nvarchar(50)")
+    @Column(name = "certificate_name", columnDefinition = "nvarchar(500)")
     private String certificateName;
-    @Column(name = "issuing_authority", columnDefinition = "nvarchar(50)")
+    @Column(name = "issuing_authority", columnDefinition = "nvarchar(500)")
     private String issuingAuthority;
     @Column(name = "images", columnDefinition = "nvarchar(MAX)")
     private String images;
     @Column(name = "issuance_date")
     private long issuanceDate;
-    @Column(name = "note", columnDefinition = "nvarchar(255)")
+    @Column(name = "note", columnDefinition = "nvarchar(MAX)")
     private String note;
     @ManyToOne
     @JoinColumn(name = "manufacturer_id")

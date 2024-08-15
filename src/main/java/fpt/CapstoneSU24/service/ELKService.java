@@ -86,21 +86,26 @@ public class ELKService {
             return ResponseEntity.status(500).body(e.toString());
         }
     }
-
+/* now-15m
+*  now/h
+*  now/d
+*  now/w
+*  now/m
+* */
     public ResponseEntity<?> getNumberVisitsDiagram(SelectedTimeRequest req) throws IOException {
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .size(0)
                 .query(QueryBuilders.boolQuery()
                         .filter(QueryBuilders.rangeQuery("@timestamp")
-                                .gte(req.getType().equals("15m") ? "now-15m" : req.getType().equals("1h")? "now/h" : "now/d")
+                                .gte(req.getType())
                                 .lte("now")
                                 .timeZone("GMT+7"))
                         .filter(QueryBuilders.matchQuery("message", "itemviewLineItem"))
                 )
                 .aggregation(AggregationBuilders.dateHistogram("hourly_counts")
                         .field("@timestamp")
-                        .fixedInterval(req.getType().equals("15m")? new DateHistogramInterval("15m"): (req.getType().equals("1")?  DateHistogramInterval.MINUTE: DateHistogramInterval.HOUR ))
+                        .fixedInterval(req.getType().equals("now-15m")? new DateHistogramInterval("15m"): req.getType().equals("now/h")?  DateHistogramInterval.MINUTE: req.getType().equals("now/d")? DateHistogramInterval.HOUR : DateHistogramInterval.DAY )
                         .timeZone(ZoneId.of("GMT+7"))
                 );
 

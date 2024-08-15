@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.service;
 
+import fpt.CapstoneSU24.dto.DataMailDTO;
 import fpt.CapstoneSU24.dto.SearchSupportSystemByUserDTO;
 import fpt.CapstoneSU24.dto.SearchSupportSystemDTO;
 import fpt.CapstoneSU24.dto.payload.AddSupportRequest;
@@ -8,6 +9,8 @@ import fpt.CapstoneSU24.mapper.SupportSystemMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.ImageSupportSystemRepository;
 import fpt.CapstoneSU24.repository.SupportSystemRepository;
+import fpt.CapstoneSU24.util.Const;
+import jakarta.mail.MessagingException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class SupportSystemService {
@@ -28,13 +33,19 @@ public class SupportSystemService {
     private final SupportSystemRepository supportSystemRepository;
     private final ImageSupportSystemRepository imageSupportSystemRepository;
     private final SupportSystemMapper supportSystemMapper;
+    private final EmailService mailService;
 
     @Autowired
-    public SupportSystemService(SupportSystemMapper supportSystemMapper, SupportSystemRepository supportSystemRepository, CloudinaryService cloudinaryService, ImageSupportSystemRepository imageSupportSystemRepository) {
+    public SupportSystemService(SupportSystemMapper supportSystemMapper,
+                                SupportSystemRepository supportSystemRepository,
+                                CloudinaryService cloudinaryService,
+                                ImageSupportSystemRepository imageSupportSystemRepository,
+                                EmailService  mailService) {
         this.supportSystemMapper = supportSystemMapper;
         this.cloudinaryService = cloudinaryService;
         this.supportSystemRepository = supportSystemRepository;
         this.imageSupportSystemRepository = imageSupportSystemRepository;
+        this.mailService = mailService;
     }
 
      /*
@@ -65,7 +76,7 @@ public class SupportSystemService {
         }
     }
 
-    public ResponseEntity<?> replyBySupporter(ReplySupportRequest req) throws IOException {
+    public ResponseEntity<?> replyBySupporter(ReplySupportRequest req) throws IOException, MessagingException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (currentUser.getRole().getRoleId() != 2) {
@@ -89,7 +100,11 @@ public class SupportSystemService {
                     imageSupportSystemRepository.save(new ImageSupportSystem(0, filePath,1, supportSystem));
                 }
             }
-
+            //gui mail o day
+            DataMailDTO dataMail = new DataMailDTO();
+            dataMail.setTo(supportSystem.getUser().getEmail());
+            dataMail.setSubject(Const.SEND_MAIL_SUBJECT.SUBJECT_REPLY_SUPPORT_USER);
+            mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.REPLY_REPLY_SUPPORT_USER);
             return ResponseEntity.status(HttpStatus.OK).body("reply by supporter successful");
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not permit to access");

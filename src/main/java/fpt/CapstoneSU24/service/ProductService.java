@@ -143,7 +143,8 @@ public class ProductService {
                 }
                 //save ava
                 if (!req.getAvatar().isEmpty()) {
-                    String filePathAvatar = cloudinaryService.updateImage("avatar/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getAvatar()));
+                    imageProductRepository.deleteImageProductWithFilePathStartingWithAvatar(product.getProductId());
+                    String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
                 }
 //                if (!req.getFile3D().isEmpty()) {
@@ -180,7 +181,6 @@ public class ProductService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error when fetching data");
         }
     }
-
     public ResponseEntity ViewProductByManufacturerId(ViewProductRequest req) {
 //        try {
 //            Page<Product> products = null;
@@ -200,9 +200,9 @@ public class ProductService {
             List<Product> products = new ArrayList<>();
             if(req.getCategoryId() == 0)
             {
-                 products = productRepository.findAllProduct(req.getId());
+                products = productRepository.findAllProduct(req.getId());
             }else {
-                 products = productRepository.findAllProduct(req.getId(), req.getCategoryId());
+                products = productRepository.findAllProduct(req.getId(), req.getCategoryId());
             }
             List<ViewProductDTOResponse> productDTOs = products.stream()
                     .map(productMapper::productToViewProductDTOResponse)
@@ -306,6 +306,7 @@ public class ProductService {
         if(currentUser.getRole().getRoleId() == 2){
             String originalFilename = file3D.getOriginalFilename();
 
+            // Kiểm tra và lấy đuôi file
             String fileExtension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
                 int dotIndex = originalFilename.lastIndexOf(".");
@@ -372,9 +373,9 @@ public class ProductService {
         int status = 0;
 
         Page<Product> products = null;
-        Sort.Direction direction =  req.isDesc()  ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Sort sort = Sort.by(direction, req.getOrderBy());
-        Pageable pageable = PageRequest.of(req.getPage(), req.getSize(), sort);
+        Pageable pageable = req.isDesc() ? PageRequest.of(req.getPage(), req.getSize(), Sort.by(Sort.Direction.ASC, req.getOrderBy())) :
+                !req.isDesc() ? PageRequest.of(req.getPage(), req.getSize(), Sort.by(Sort.Direction.DESC, req.getOrderBy())) :
+                        PageRequest.of(req.getPage(), req.getSize());
         products = productRepository.findProductRequestScanList(req.getProductName(), req.getManufactorName(), req.getProductId(), pageable);
 
         Page<ListImageToScanDTO> listImageToScanDTOS = products.map(product -> {
@@ -397,4 +398,8 @@ public class ProductService {
     }
 
 
+    public ResponseEntity<?> getInfoByProductId(int productId) {
+        ProductResponseCustomDTO productDetail = productRepository.findDetailProductAndUser(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(productDetail);
+    }
 }

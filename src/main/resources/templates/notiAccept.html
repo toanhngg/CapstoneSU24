@@ -57,12 +57,24 @@
         <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1723133885/testManh123.png" alt="Logo">
     </div>
     <div class="email-body">
-        <p th:text="${'Xin chào, ' + name}"></p>
-        <p>Chúng tôi xin thông báo rằng tài khoản của bạn đã được mở khóa và bạn có thể truy cập lại hệ thống.</p>
-        <p>Nếu bạn gặp bất kỳ vấn đề nào khi đăng nhập, vui lòng liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi để được trợ giúp.</p>
-        <p>Thông tin tài khoản của bạn:</p>
-        <p th:text="${'- Tên đăng nhập: ' + username}"></p>
+        <p th:text="'Xin chào bạn,'"></p>
+        <p>Trace Origin xin gửi đến bạn thông báo từ hệ thống.</p>
+
+        <!-- Hiển thị nội dung khi accept = 1 -->
+        <div th:if="${accept == 1}">
+            <p><span>Chứng chỉ doanh nghiêp mà bạn cung cấp cho hệ thống đã được xác minh.</span></p>
+            <p>Bạn có thể truy cập vào hệ thống và đăng tải các sản phẩm của doanh nghiệp của bạn. Xin cảm ơn!</p>
+        </div>
+
+        <!-- Hiển thị nội dung khi accept khác 1 -->
+        <div th:if="${accept != 1}">
+            <p><span>Chứng chỉ doanh nghiêp mà bạn cung cấp cho hệ thống không đủ thông tin để xác minh.</span></p>
+            <p>Xin vui lòng gửi lại thông tin chứng chỉ một cách đầy đủ rõ nét để hệ thống chúng tôi xem xét và phê duyệt. Xin cảm ơn!</p>
+        </div>
+
+        <p>Đây là email tự động, vui lòng không trả lời.</p>
     </div>
+
     <div class="email-footer">
         <p>Thông tin liên hệ: <a href="mailto:system.traceorigin@gmail.com">
             system.traceorigin@gmail.com</a></p>
