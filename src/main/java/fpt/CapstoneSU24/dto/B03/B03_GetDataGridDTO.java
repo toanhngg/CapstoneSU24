@@ -20,6 +20,15 @@ public class B03_GetDataGridDTO {
     private String phone;
     private String city;
     private Integer status;
+    private String OrgName;
+
+    public String getOrgName() {
+        return OrgName;
+    }
+
+    public void setOrgName(String orgName) {
+        OrgName = orgName;
+    }
 
     public long getRecordNumber() {
         return recordNumber;

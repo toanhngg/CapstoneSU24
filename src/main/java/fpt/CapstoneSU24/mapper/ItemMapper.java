@@ -41,14 +41,19 @@ public abstract class ItemMapper {
         Optional<ItemLog> itemLogOptional = itemLogRepository.findFirstByItem_ItemIdOrderByItemLogIdDesc(item.getItemId());
         if (itemLogOptional.isPresent()) {
             ItemLog itemLog = itemLogOptional.get();
-            itemViewDTOResponse.setCoordinateX(itemLog.getLocation().getCoordinateX());
-            itemViewDTOResponse.setCoordinateY(itemLog.getLocation().getCoordinateY());
-            itemViewDTOResponse.setAddress(itemLog.getLocation().getAddress());
+            if(itemLog.getLocation() != null){
+                itemViewDTOResponse.setCoordinateX(itemLog.getLocation().getCoordinateX());
+                itemViewDTOResponse.setCoordinateY(itemLog.getLocation().getCoordinateY());
+                itemViewDTOResponse.setAddress(itemLog.getLocation().getAddress());
+            }else{
+                itemViewDTOResponse.setCoordinateX(0);
+                itemViewDTOResponse.setCoordinateY(0);
+                itemViewDTOResponse.setAddress("");
+            }
             itemViewDTOResponse.setStatusEventType(itemLog.getEvent_id().getEvent_type());
         } else {
-            // Handle the case where no log entry was found
-            itemViewDTOResponse.setCoordinateX(0); // or some default value
-            itemViewDTOResponse.setCoordinateY(0); // or some default value
+            itemViewDTOResponse.setCoordinateX(0);
+            itemViewDTOResponse.setCoordinateY(0);
             itemViewDTOResponse.setAddress("");
             itemViewDTOResponse.setStatusEventType("");
         }

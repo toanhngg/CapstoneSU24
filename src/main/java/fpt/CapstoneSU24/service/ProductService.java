@@ -143,7 +143,8 @@ public class ProductService {
                 }
                 //save ava
                 if (!req.getAvatar().isEmpty()) {
-                    String filePathAvatar = cloudinaryService.updateImage("avatar/" + product.getProductId(),cloudinaryService.convertBase64ToImgFile(req.getAvatar()));
+                    imageProductRepository.deleteImageProductWithFilePathStartingWithAvatar(product.getProductId());
+                    String filePathAvatar = cloudinaryService.uploadImageAndGetPublicId(cloudinaryService.convertBase64ToImgFile(req.getAvatar()), "avatar/" + product.getProductId());
                     imageProductRepository.save(new ImageProduct(0, filePathAvatar, product));
                 }
 //                if (!req.getFile3D().isEmpty()) {
@@ -312,7 +313,7 @@ public class ProductService {
                 fileExtension = originalFilename.substring(dotIndex);
             }
             String newFileName = "model3D/"+ id + fileExtension;
-           String path = gcsService.uploadFile(file3D, newFileName);
+           String path = gcsService.uploadFile(file3D, newFileName, id);
             return ResponseEntity.status(200).body("save model 3d successfully");
         }
         return ResponseEntity.status(500).body("your account isn't permitted for this action");
@@ -332,9 +333,7 @@ public class ProductService {
         List<String> imagePaths = req.getImage();
         for (String imagePath : imagePaths) {
             ImageProduct imageProduct = new ImageProduct();
-            String filePath = cloudinaryService.uploadImageAndGetPublicId(
-                    cloudinaryService.convertBase64ToImgFile(imagePath), "");
-            imageProduct.setFilePath(filePath);
+            imageProduct.setFilePath(imagePath);
             imageProduct.setType(1);
             imageProduct.setProduct(product);
             product.getImageProducts().add(imageProduct);
@@ -350,8 +349,10 @@ public class ProductService {
         for (String id : req.getProductId()) {
             Product product = productRepository.findOneByProductId(Integer.parseInt(id));
             product.getImageProducts().forEach(img -> {
-                img.setType(3);
-                imageProductRepository.save(img);
+                if (img.getType() == 1) {
+                    img.setType(3);
+                    imageProductRepository.save(img);
+                }
             });
         }
         return ResponseEntity.ok("Status updated successfully");
@@ -362,7 +363,6 @@ public class ProductService {
         List<String> filePaths = product.getImageProducts().stream()
                 .filter(imageProduct -> imageProduct.getType() == 3 || imageProduct.getType() == 1)
                 .map(ImageProduct::getFilePath)
-                .map(cloudinaryService::getImageUrl)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(filePaths);
     }
@@ -386,7 +386,6 @@ public class ProductService {
             List<String> filePaths = product.getImageProducts().stream()
                     .filter(imageProduct -> imageProduct.getType() == 1)
                     .map(ImageProduct::getFilePath)
-                    .map(cloudinaryService::getImageUrl)
                     .collect(Collectors.toList());
             listImageToScanDTO.setFilePath(filePaths);
             return  listImageToScanDTO;

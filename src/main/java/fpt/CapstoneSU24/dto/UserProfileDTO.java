@@ -31,6 +31,16 @@ public class UserProfileDTO {
 
     private String OrgIMG;
 
+    private String OrgName;
+
+    public String getOrgName() {
+        return OrgName;
+    }
+
+    public void setOrgName(String orgName) {
+        OrgName = orgName;
+    }
+
     public String getOrgIMG() {
         return OrgIMG;
     }

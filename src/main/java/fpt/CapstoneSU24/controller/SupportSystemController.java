@@ -6,6 +6,7 @@ import fpt.CapstoneSU24.dto.payload.AddSupportRequest;
 import fpt.CapstoneSU24.dto.payload.ReplySupportRequest;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.service.SupportSystemService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class SupportSystemController {
     }
 
     @PostMapping("/replyBySupporter")
-    public ResponseEntity<?> replyBySupporter(@Valid @RequestBody ReplySupportRequest req) throws IOException {
+    public ResponseEntity<?> replyBySupporter(@Valid @RequestBody ReplySupportRequest req) throws IOException, MessagingException {
         return supportSystemService.replyBySupporter(req);
     }
 
