@@ -63,6 +63,6 @@ public abstract class UserMapper {
     }
     @AfterMapping
     protected void setAfter(User user, @MappingTarget UserViewDTO userViewDTO) {
-        userViewDTO.setProfileImage(cloudinaryService.getImageUrl(user.getProfileImage()));
+        userViewDTO.setProfileImage(cloudinaryService.getImageUrl(user.getOrgImage()));
     }
 }

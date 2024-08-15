@@ -24,16 +24,15 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Query("SELECT DISTINCT c FROM Product o JOIN Category c ON o.category.categoryId = c.categoryId WHERE o.manufacturer.userId = :id")
     List<Category> findCategoryByManufacturer(@Param("id")  int id);
 
-    @Query("SELECT new fpt.CapstoneSU24.dto.CategoryForManagerDTO(c.categoryId, c.name, " +
-            "CASE WHEN p IS NOT NULL THEN 1 ELSE 0 END) " +
-            "FROM Category c LEFT JOIN Product p ON c.categoryId = p.category.categoryId " +
-            "GROUP BY c.categoryId, c.name")
-
-    List<CategoryForManagerDTO> findCategoryForManagerDTOs();
+//    @Query("SELECT new fpt.CapstoneSU24.dto.CategoryForManagerDTO(c.categoryId, c.name, " +
+//            "CASE WHEN p IS NOT NULL THEN 1 ELSE 0 END) " +
+//            "FROM Category c LEFT JOIN Product p ON c.categoryId = p.category.categoryId " +
+//            "GROUP BY c.categoryId, c.name")
+//    List<CategoryForManagerDTO> findCategoryForManagerDTOs();
 
     @Query("SELECT c FROM Category c LEFT JOIN c.products p WHERE p IS NULL")
     List<Category> findCategoriesWithoutProducts();
 
-    @Query("SELECT MAX(c.id) FROM Category c")
+    @Query("SELECT MAX(c.categoryId) FROM Category c")
     Long findMaxId();
 }

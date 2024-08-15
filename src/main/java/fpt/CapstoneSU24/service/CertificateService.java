@@ -2,9 +2,13 @@ package fpt.CapstoneSU24.service;
 
 import fpt.CapstoneSU24.dto.Certificate.CertificateListDTO;
 import fpt.CapstoneSU24.dto.Certificate.CreateCertificateRequest;
+import fpt.CapstoneSU24.dto.DataMailDTO;
+import fpt.CapstoneSU24.dto.sdi.ClientSdi;
 import fpt.CapstoneSU24.model.Certificate;
 import fpt.CapstoneSU24.model.User;
 import fpt.CapstoneSU24.repository.CertificateRepository;
+import fpt.CapstoneSU24.util.Const;
+import fpt.CapstoneSU24.util.DataUtils;
 import org.json.JSONObject;
 import fpt.CapstoneSU24.dto.Certificate.CreateCertificateRequest;
 import fpt.CapstoneSU24.dto.ListCertificateDTOResponse;
@@ -30,7 +34,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CertificateService {
@@ -39,16 +45,19 @@ public class CertificateService {
     private final CloudinaryService cloudinaryService;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final EmailService mailService;
 
     @Autowired
     public CertificateService(CertificateRepository certificateRepository,
                               UserRepository userRepository,
-                              CloudinaryService cloudinaryService, EpochDate epochDate, UserMapper userMapper) {
+                              CloudinaryService cloudinaryService, EpochDate epochDate, UserMapper userMapper,
+                              EmailService mailService) {
         this.certificateRepository = certificateRepository;
         this.epochDate = epochDate;
         this.cloudinaryService = cloudinaryService;
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.mailService = mailService;
     }
 
     public ResponseEntity<?> getListCertificateByManuId(IdRequest req) {
@@ -77,18 +86,25 @@ public class CertificateService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (currentUser.getRole().getRoleId() == 1) {
+            User user = userRepository.findOneByUserId(req.getManufacturerId());
             try {
                 if (req.getIsAccept() == 1) {
                     int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
-                    User user = userRepository.findOneByUserId(req.getManufacturerId());
                     user.setStatus(1);
                     userRepository.save(user);
                 } else {
                     int n = certificateRepository.updateCertificateNoteByManufacturerId(req.getManufacturerId(), req.getNote());
-                    User user = userRepository.findOneByUserId(req.getManufacturerId());
                     user.setStatus(7);
                     userRepository.save(user);
                 }
+                //gui mail o day
+                DataMailDTO dataMail = new DataMailDTO();
+                Map<String, Object> props = new HashMap<>();
+                props.put("accept", req.getIsAccept());
+                dataMail.setTo(user.getEmail());
+                dataMail.setSubject(Const.SEND_MAIL_SUBJECT.SUBJECT_REPLY_USER);
+                mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.REPLY_USER);
+
                 return ResponseEntity.ok("update status for manufacturer id " + req.getManufacturerId());
             } catch (Exception e) {
                 return ResponseEntity.status(500).body("error");
@@ -113,7 +129,7 @@ public class CertificateService {
     public ResponseEntity<?> deleteCertCertId(IdRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 1) {
+        if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 7) {
             try {
                 Certificate c = certificateRepository.findOneByCertificateId(req.getId());
                 if(c != null){

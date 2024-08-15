@@ -111,7 +111,7 @@ public class UserService {
                 userProfileDTO.setOrgIMG(cloudinaryService.getImageUrl(currentUser.getOrgImage()));
                 userProfileDTO.setWard(currentUser.getLocation().getWard());
                 userProfileDTO.setDistrict(currentUser.getLocation().getDistrict());
-
+                userProfileDTO.setOrgName(currentUser.getOrg_name());
                 if (userId > 0 && !isAdmin) {
                     if (checkUser == null || (checkUser.getUserId() != userId)) {
                         userProfileDTO.setEmail("");
@@ -125,6 +125,19 @@ public class UserService {
             System.out.println("loi: " + e.getMessage());
         }
         return userProfileDTO;
+    }
+
+    public ResponseEntity<String> updateOrgName(String req) {
+        JSONObject jsonReq = new JSONObject(req);
+        String description = jsonReq.has("orgName") ? jsonReq.getString("orgName") : "";
+        User user;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if ((authentication.getPrincipal() instanceof User)) {
+            user = (User) authentication.getPrincipal();
+            user.setOrg_name(description);
+            userRepository.save(user);
+        }
+        return ResponseEntity.status(200).body("orgName update success");
     }
 
     public ResponseEntity<?> viewAllManufacturer(FilterSearchManufacturerRequest req) {
@@ -219,7 +232,7 @@ public class UserService {
             B03_GetDataGridDTO.setDistrict(user.getLocation().getDistrict());
             B03_GetDataGridDTO.setWard(user.getLocation().getWard());
             B03_GetDataGridDTO.setCity(user.getLocation().getCity());
-
+            B03_GetDataGridDTO.setOrgName(user.getOrg_name());
             return B03_GetDataGridDTO;
         });
 
@@ -286,18 +299,18 @@ public class UserService {
 //    }
 
 
-    public ResponseEntity<String> updateStatus(int userId, int status) {
+    public ResponseEntity<?> updateStatus(int userId, int status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
-        if (userProfileDTO.getRole().getRoleId() != 1) {
-            return ResponseEntity.ok(null);
-        }
+//        if (userProfileDTO.getRole().getRoleId() != 1) {
+//            return ResponseEntity.ok(null);
+//        }
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setStatus(status);
             userRepository.save(user);
-            return ResponseEntity.ok("update " + userId + " updated to " + status + ".");
+            return ResponseEntity.ok(userProfileDTO);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -528,6 +541,8 @@ public class UserService {
             }
             return ResponseEntity.status(200).body("description update success");
     }
+
+
 
     public ResponseEntity<?> countRegisteredUser() {
         List<User> users = userRepository.findAll();

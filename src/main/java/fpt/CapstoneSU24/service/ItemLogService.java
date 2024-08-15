@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -75,8 +77,8 @@ public class ItemLogService {
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName(): null);
                 detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail(): null);
 
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
-                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+                detailResponse.setPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+//                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -100,8 +102,8 @@ public class ItemLogService {
                 detailResponse.setReceiverName(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getAuthorizedName() : null);
                 detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
-                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+                detailResponse.setPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+//                detailResponse.setAuthorizedPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -125,7 +127,7 @@ public class ItemLogService {
                 detailResponse.setReceiver(null);
                 detailResponse.setPartyEmail(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getEmail() : null);
                 detailResponse.setPartyFullname(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPartyFullName() : null);
-                detailResponse.setPartyPhoneNumber(itemlogDetail.getAuthorized() != null ? itemlogDetail.getAuthorized().getPhoneNumber() : null);
+                detailResponse.setPhoneNumber(itemlogDetail.getParty() != null ? itemlogDetail.getParty().getPhoneNumber() : null);
                 detailResponse.setAddressInParty(itemlogDetail.getAddress());
 
                 if (itemlogDetail.getLocation() != null) {
@@ -199,7 +201,7 @@ public class ItemLogService {
                     authorized.setDescription(dataEditDTO.getDescription());
                     authorized.setPhoneNumber(dataEditDTO.getPhoneNumber());
                     Authorized saveAuthorized = authorizedRepository.save(authorized);
-                    if (!hasNullFields(savedLocation) && !hasNullFields(saveAuthorized)) {
+                    if (hasNullFields(savedLocation) && hasNullFields(saveAuthorized)) {
                         point = generateAndSetPoint(itemLogDetail);
                     } else point = null;
                     itemLogRepository.updateItemLog(savedLocation.getAddress(), savedLocation.getLocationId(), saveAuthorized.getAuthorizedId(),
@@ -234,7 +236,7 @@ public class ItemLogService {
             int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-            if (check == 4 || check == 0) {
+            if (check == 4 || check == 0 || check == 8) {
                 // B2: Lưu thông tin của itemLogId đó thành một dòng itemLogId khác
                 ItemLog newItemLog = new ItemLog();
                 copyItemLogDetails(newItemLog, itemLogDetail);
@@ -247,7 +249,7 @@ public class ItemLogService {
                 // B3: Cập nhật thông tin của ItemLogId trước đó
                 Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                 String point;
-                if (!hasNullFields(itemLogDetail)) {
+                if (hasNullFields(itemLogDetail)) {
                     point = generateAndSetPoint(itemLogDetail);
                     itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
                             point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
@@ -287,7 +289,7 @@ public class ItemLogService {
                 if(itemLogDetail.getLocation() == null) {
                     // B3: Cập nhật thông tin của ItemLogId trước đó
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
-                    if (!hasNullFields(savedLocation)) {
+                    if (hasNullFields(savedLocation)) {
                         String point = generateAndSetPoint(itemLogDetail);
                         itemLogRepository.updateItemLogLocation(savedLocation.getLocationId(), point, dataEditDTO.getLocation().getAddress()
                                 , itemLogDetail.getItemLogId());
@@ -306,7 +308,7 @@ public class ItemLogService {
                     // B3: Cập nhật thông tin của ItemLogId trước đó
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                     String point;
-                    if (!hasNullFields(savedLocation)) {
+                    if (hasNullFields(savedLocation)) {
                         point = generateAndSetPoint(itemLogDetail);
                         itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
                                 point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
@@ -380,7 +382,7 @@ public class ItemLogService {
                 itemLog.setParty(savedParty);
                 itemLog.setEvent_id(eventTypeRepository.findOneByEventId(2));
                 itemLog.setIdEdit(0);
-                if (!hasNullFields(itemLog.getParty()) && !hasNullFields(itemLog.getLocation())) {
+                if (hasNullFields(itemLog.getParty()) && hasNullFields(itemLog.getLocation())) {
                     double pointX = pointService.generateX();
                     List<ItemLog> pointLogs = itemLogRepository.getPointItemId(item.getItemId());
                     List<Point> pointList = pointService.getPointList(pointLogs);
@@ -421,21 +423,37 @@ public class ItemLogService {
                         .orElseThrow(() -> new RuntimeException("Event type not found"))); // Sự kiện chỉnh sửa
                 itemLogRepository.save(newItemLog);
                 Party party = new Party();
-                Transport transport = transportRepository.getReferenceById(dataEditDTO.getTransportId());
-                party.setEmail(transport.getTransportEmail());
-                party.setPartyFullName(transport.getTransportName());
-                party.setPhoneNumber(transport.getTransportContact());
-                party.setDescription(dataEditDTO.getDescriptionItemLog());
-                Party savedParty = partyRepository.save(party);
-                log.info("transport" + transport.getTransportId());
-                if (!hasNullFields(party)) {
-                    String point = generateAndSetPoint(itemLogDetail);
-                    itemLogRepository.updateItemLogTransport(
-                            point, dataEditDTO.getDescriptionItemLog(), -1,
-                            savedParty.getPartyId(), itemLogDetail.getItemLogId());
+                if(dataEditDTO.getTransportId() != 0){
+                    Transport transport = transportRepository.getReferenceById(dataEditDTO.getTransportId());
+                    party.setEmail(transport.getTransportEmail());
+                    party.setPartyFullName(transport.getTransportName());
+                    party.setPhoneNumber(transport.getTransportContact());
+                    party.setDescription(dataEditDTO.getDescriptionItemLog());
+                    Party savedParty = partyRepository.save(party);
+                    log.info("transport" + transport.getTransportId());
+                    if (hasNullFields(party)) {
+                        String point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogTransport(
+                                point, dataEditDTO.getDescriptionItemLog(), -1,
+                                savedParty.getPartyId(), itemLogDetail.getItemLogId());
 
-                    return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+                        return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+                    }
+                }else {
+                    party.setEmail("");
+                    party.setPartyFullName("");
+                    party.setPhoneNumber("");
+                    party.setDescription("Không trung chuyển qua nhà vận chuyển");
+                    Party savedParty = partyRepository.save(party);
+                        String point = generateAndSetPoint(itemLogDetail);
+                        itemLogRepository.updateItemLogTransport(
+                                point, dataEditDTO.getDescriptionItemLog(), -1,
+                                savedParty.getPartyId(), itemLogDetail.getItemLogId());
+
+                        return ResponseEntity.status(HttpStatus.OK).body("Edit successfully.");
+
                 }
+
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! Unauthorized access.");
 
@@ -444,7 +462,12 @@ public class ItemLogService {
     }
 
     private void copyItemLogDetails(ItemLog target, ItemLog source) {
-        target.setAddress(source.getLocation().getAddress());
+        if (source.getLocation() != null) {
+            target.setAddress(source.getLocation().getAddress());
+        } else {
+            target.setAddress(null);
+        }
+
         target.setDescription(source.getDescription());
         target.setAuthorized(source.getAuthorized());
         target.setStatus(source.getStatus());
@@ -452,6 +475,7 @@ public class ItemLogService {
         target.setItem(source.getItem());
         target.setLocation(source.getLocation());
         target.setParty(source.getParty());
+
 
     }
 
@@ -466,22 +490,52 @@ public class ItemLogService {
         return point.toString();
     }
 
+//    public static boolean hasNullFields(Object obj) {
+//        if (obj == null) {
+//            return true; // Nếu object là null, trả về true
+//        }
+//        try {
+//            for (Field field : obj.getClass().getDeclaredFields()) {
+//                field.setAccessible(true); // Cho phép truy cập các trường private
+//                if (field.get(obj) == null) {
+//                    return true; // Nếu có bất kỳ trường nào null, trả về true
+//                }
+//            }
+//        } catch (IllegalAccessException e) {
+//            throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
+//        }
+//
+//        return false; // Không có trường nào null
+//    }
     public static boolean hasNullFields(Object obj) {
         if (obj == null) {
-            return true; // Nếu object là null, trả về true
+            return false;
         }
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true); // Cho phép truy cập các trường private
-                if (field.get(obj) == null) {
-                    return true; // Nếu có bất kỳ trường nào null, trả về true
+                Object value = field.get(obj);
+                if (value == null) {
+                    return false;
+                }
+                if (value instanceof String && ((String) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
+                    return false;
+                }
+                if (value instanceof Number && ((Number) value).doubleValue() == 0) {
+                    return false;
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to access field: " + e.getMessage(), e);
         }
 
-        return false; // Không có trường nào null
+        return true; // Không có trường nào null hoặc rỗng
     }
 
     public ResponseEntity<?> getEventByItemId(int itemId) {

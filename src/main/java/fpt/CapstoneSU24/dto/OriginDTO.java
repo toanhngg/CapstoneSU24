@@ -25,4 +25,6 @@ public class OriginDTO {
    // private double CoordinateY;
   //  private String AddressOrigin;
     private List<String> image;
+    private String model3D;
+
 }
