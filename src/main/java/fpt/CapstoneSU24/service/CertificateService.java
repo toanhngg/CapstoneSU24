@@ -97,7 +97,7 @@ public class CertificateService {
                     user.setStatus(7);
                     userRepository.save(user);
                 }
-                //gui mail o dayy
+                //gui mail o dayysdfasfsafsafsad
                 DataMailDTO dataMail = new DataMailDTO();
                 Map<String, Object> props = new HashMap<>();
                 props.put("accept", req.getIsAccept());
