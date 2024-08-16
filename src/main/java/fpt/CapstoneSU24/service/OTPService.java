@@ -49,7 +49,8 @@ public class OTPService {
             // OTP đã hết hạn
             return false;
         }
-        return (otp.getCodeOTP().trim()).equals(codeOTP);
+        boolean check = (otp.getCodeOTP().trim()).equals(codeOTP);
+        return check;
     }
 
 
