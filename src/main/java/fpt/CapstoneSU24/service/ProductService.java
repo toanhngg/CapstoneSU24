@@ -172,7 +172,11 @@ public class ProductService {
                     req.getType().equals("asc") ? PageRequest.of(req.getPageNumber(), req.getPageSize(), Sort.by(Sort.Direction.ASC, "createAt")) :
                             PageRequest.of(req.getPageNumber(), req.getPageSize());
             if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                products = productRepository.findAllProductWithDate(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%", req.getStartDate(), req.getEndDate(), pageable);
+//                if ((req.getName() != null && !req.getName().trim().isEmpty()) || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
+//                    products = productRepository.findAllProductWithDateAndKeyword(currentUser.getUserId(), "%" + req.getCategoryName() + "%", "%" + req.getName() + "%", req.getStartDate(), req.getEndDate(), pageable);
+//                } else{
+                    products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
+               // }
             } else {
                 products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
             }

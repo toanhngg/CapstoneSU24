@@ -384,7 +384,7 @@ public class ItemService {
         int otpCheckResult = clientService.checkOTP(email.trim(), req.getOTP().trim(), productRecognition);
         if (otpCheckResult == 6) {
             return ResponseEntity.badRequest().body("OTP is not correct.");
-        } else if (otpCheckResult != 3) {
+        } else if (otpCheckResult != 3 || otpCheckResult != 8) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP validation failed.");
         }
 
@@ -435,7 +435,7 @@ public class ItemService {
                 int check = clientService.checkOTP(authorized.getAssignPersonMail().trim(), authorized.getOTP().trim(),item.getProductRecognition());
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-                if (check == 3) {
+                if (check == 3 || check == 8) {
                     if (!authorized.getAuthorizedEmail().equals(authorized.getAssignPersonMail())) {
                         return addEventAuthorized(authorized, item);
                     } else {
@@ -790,7 +790,7 @@ public class ItemService {
                 int check = clientService.checkOTP(abortDTO.getEmail().trim(), abortDTO.getOTP().trim(), item.getProductRecognition());
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
-                if (check == 3) {
+                if (check == 3 || check == 8) {
                     if (item.getStatus() == 0)
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
 

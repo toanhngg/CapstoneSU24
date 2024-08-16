@@ -122,8 +122,7 @@ public class SecurityConfiguration {
                                 "api/customercare/searchCustomerCare",
                                 "api/itemlog/updateItemLog",
                                 "api/item/checkPartyFirst",
-                                "api/item/listPartyJoin",
-                                "api/product/getInfoByProductId"
+                                "api/item/listPartyJoin"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess

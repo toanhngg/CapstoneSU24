@@ -20,8 +20,15 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id")
     List<Product> findAllByManufacturerId(@Param("id") int id);
 
-    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE :categoryName AND o.productName LIKE :productName")
-    Page<Product> findAllProduct(@Param("id") int id, @Param("categoryName") String categoryName, @Param("productName") String productName, Pageable pageable);
+    @Query("SELECT o FROM Product o " +
+            "WHERE o.manufacturer.userId = :id " +
+            "AND (:categoryName IS NULL OR :categoryName = '' OR o.category.name LIKE CONCAT(:categoryName, '%')) " +
+            "AND (:productName IS NULL OR :productName = '' OR o.productName LIKE CONCAT(:productName, '%')) ")
+    Page<Product> findAllProduct(
+            @Param("id") int id,
+            @Param("categoryName") String categoryName,
+            @Param("productName") String productName,
+            Pageable pageable);
 
     @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.categoryId = :categoryId")
     List<Product> findAllProduct(@Param("id") int id, @Param("categoryId") int categoryId);
@@ -29,8 +36,21 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id")
     List<Product> findAllProduct(@Param("id") int id);
 
-    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE ':categoryName%' AND o.productName LIKE ':productName%' AND o.createAt <= :endDate AND o.createAt >= :startDate")
-    Page<Product> findAllProductWithDate(@Param("id") int id, @Param("categoryName") String categoryName, @Param("productName") String productName, @Param("startDate") long startDate, @Param("endDate") long endDate, Pageable pageable);
+    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND " +
+            "((o.category.name LIKE CONCAT(:categoryName, '%')) OR " +
+            "(o.productName LIKE CONCAT(:productName, '%')) OR " +
+            "(o.createAt BETWEEN :startDate AND :endDate))")
+    Page<Product> findAllProductWithDate(@Param("id") int id,
+                                         @Param("categoryName") String categoryName,
+                                         @Param("productName") String productName,
+                                         @Param("startDate") Long startDate,
+                                         @Param("endDate") Long endDate,
+                                         Pageable pageable);
+
+//    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE ':categoryName%' AND o.productName LIKE ':productName%' AND o.createAt <= :endDate AND o.createAt >= :startDate")
+//    Page<Product> findAllProductWithDateAndKeyword(@Param("id") int id, @Param("categoryName") String categoryName, @Param("productName") String productName, @Param("startDate") long startDate, @Param("endDate") long endDate, Pageable pageable);
+    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE CONCAT(:categoryName, '%') AND o.productName LIKE CONCAT(:productName, '%') AND o.createAt BETWEEN :startDate AND :endDate")
+   Page<Product> findAllProductWithDateAndKeyword(@Param("id") int id, @Param("categoryName") String categoryName, @Param("productName") String productName, @Param("startDate") Long startDate, @Param("endDate") Long endDate, Pageable pageable);
 
     Page<Product> findAllByProductNameContaining(String productName, Pageable pageable);
 
