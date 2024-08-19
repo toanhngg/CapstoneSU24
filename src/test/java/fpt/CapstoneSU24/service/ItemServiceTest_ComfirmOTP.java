@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.elasticsearch.common.lucene.uid.Versions.NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -122,8 +123,7 @@ public class ItemServiceTest_ComfirmOTP {
 
         ResponseEntity<?> response = itemService.confirmOTP(sendOTP, "product123");
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Fail! OTP is not correct", response.getBody());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test

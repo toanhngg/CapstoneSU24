@@ -30,7 +30,7 @@ public class ItemServiceTest_ViewOrigin {
 
     @Mock
     private ItemLogRepository itemLogRepository;
-      //x
+
     @Mock
     private ImageProductRepository imageProductRepository;
 
