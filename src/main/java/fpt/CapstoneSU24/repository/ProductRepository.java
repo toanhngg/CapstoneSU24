@@ -37,12 +37,19 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findAllProduct(@Param("id") int id);
 
     @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND " +
-            "o.createAt <= :endDate AND o.createAt >= :startDate")
+            "(:categoryName IS NULL OR :categoryName = '' OR o.category.name LIKE CONCAT(:categoryName, '%')) AND " +
+            "(:productName IS NULL OR :productName = '' OR o.productName LIKE CONCAT(:productName, '%')) AND " +
+            "(:startDate IS NULL OR :endDate IS NULL OR (o.createAt BETWEEN :startDate AND :endDate))")
     Page<Product> findAllProductWithDate(
             @Param("id") int id,
+            @Param("categoryName") String categoryName,
+            @Param("productName") String productName,
             @Param("startDate") Long startDate,
             @Param("endDate") Long endDate,
             Pageable pageable);
+
+
+
 
 
 //    @Query("SELECT o FROM Product o WHERE o.manufacturer.userId = :id AND o.category.name LIKE ':categoryName%' AND o.productName LIKE ':productName%' AND o.createAt <= :endDate AND o.createAt >= :startDate")
