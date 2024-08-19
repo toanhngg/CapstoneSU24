@@ -102,11 +102,14 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE ItemLog i SET i.address = :address,i.location.locationId = :locationId," +
-            "i.point =:point,i.description =:description,i.idEdit = :idItem WHERE i.itemLogId = :itemLogId")
-    void updateItemLogByParty(@Param("address") String address,@Param("locationId") int locationId,
-                       @Param("point") String point, @Param("itemLogId") int itemLogId,
-                       @Param("description") String description,@Param("idItem") int idItem);
+    @Query("UPDATE ItemLog i SET i.address = :address, i.location.locationId = :locationId, " +
+            "i.point = :point, i.description = :description, i.idEdit = :idItem WHERE i.itemLogId = :itemLogId")
+    void updateItemLogByParty(@Param("address") String address,
+                              @Param("locationId") int locationId,
+                              @Param("point") String point,
+                              @Param("itemLogId") int itemLogId,
+                              @Param("description") String description,
+                              @Param("idItem") int idItem);
 
     @Modifying
     @Transactional

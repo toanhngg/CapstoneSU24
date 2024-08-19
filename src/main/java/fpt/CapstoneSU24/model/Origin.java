@@ -15,7 +15,7 @@ public class Origin {
     private String email;
     @Column(name = "phone")
     private String phone;
-    @Column(name = "org_name")
+    @Column(name = "org_name", columnDefinition = "nvarchar(255)")
     private String org_name;
     @Column(name = "full_name_manufacturer", columnDefinition = "nvarchar(255)")
     private String fullNameManufacturer;

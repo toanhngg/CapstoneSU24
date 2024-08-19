@@ -110,7 +110,7 @@ public class ReportService {
     public ResponseEntity<?> createReport(CreateReportRequest request) throws MessagingException {
 
         int check = clientService.checkOTP(request.getCreateBy(), request.getOtp(), request.getProductCode());
-        if(check != 3)
+        if(check != 3 && check != 8 )
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Không thể tìm thấy OTP hoặc OTP không hợp lệ");

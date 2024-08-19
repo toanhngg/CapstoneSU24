@@ -43,7 +43,7 @@ public class ItemLog {
     @OneToOne(mappedBy = "itemLog", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private ImageItemLog imageItemLog;
-    @Column(name = "point", columnDefinition = "nvarchar(50)")
+    @Column(name = "point", columnDefinition = "nvarchar(255)")
     private String point;
     @Column(name = "idEdit", columnDefinition = "int")
     private Integer  idEdit;

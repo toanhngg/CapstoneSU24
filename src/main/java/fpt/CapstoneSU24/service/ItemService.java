@@ -384,7 +384,7 @@ public class ItemService {
         int otpCheckResult = clientService.checkOTP(email.trim(), req.getOTP().trim(), productRecognition);
         if (otpCheckResult == 6) {
             return ResponseEntity.badRequest().body("OTP is not correct.");
-        } else if (otpCheckResult != 3 || otpCheckResult != 8) {
+        } else if (otpCheckResult != 3 && otpCheckResult != 8) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP validation failed.");
         }
 
