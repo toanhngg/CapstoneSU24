@@ -249,7 +249,7 @@ public class ItemLogService {
                 // B3: Cập nhật thông tin của ItemLogId trước đó
                 Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(dataEditDTO.getLocation()));
                 String point;
-                if (hasNullFields(itemLogDetail)) {
+                if (hasNullFields(savedLocation)) {
                     point = generateAndSetPoint(itemLogDetail);
                     itemLogRepository.updateItemLogByParty(dataEditDTO.getLocation().getAddress(), savedLocation.getLocationId(),
                             point, itemLogDetail.getItemLogId(), dataEditDTO.getDescription(), -1);
