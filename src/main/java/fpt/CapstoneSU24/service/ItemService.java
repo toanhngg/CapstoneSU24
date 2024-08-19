@@ -121,13 +121,13 @@ public class ItemService {
         try {
             if (req.getEventTypeId() != 0) {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
                 } else {
                     items = itemRepository.findAllItem(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getEventTypeId(), pageable);
                 }
             } else {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getStartDate(), req.getEndDate(), pageable);
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", req.getStartDate(), req.getEndDate(), pageable);
                 } else {
                     items = itemRepository.findAllItem(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", pageable);
                 }
