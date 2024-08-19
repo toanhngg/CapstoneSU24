@@ -175,7 +175,9 @@ public class ProductService {
 //                if ((req.getName() != null && !req.getName().trim().isEmpty()) || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
 //                    products = productRepository.findAllProductWithDateAndKeyword(currentUser.getUserId(), "%" + req.getCategoryName() + "%", "%" + req.getName() + "%", req.getStartDate(), req.getEndDate(), pageable);
 //                } else{
-                    products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
+                    products = productRepository.findAllProductWithDate(currentUser.getUserId(), req.getStartDate(), req.getEndDate(), pageable);
+
+                // products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);
                // }
             } else {
                 products = productRepository.findAllProduct(currentUser.getUserId(), "%"+req.getCategoryName()+"%", "%"+req.getName()+"%",pageable);

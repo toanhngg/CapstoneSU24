@@ -56,7 +56,7 @@ public class PointService {
         public boolean isPointOnCurve(List<Point> points, Point p) {
             double x = p.getX();  // Giá trị x của điểm cần kiểm tra
             double yTarget = p.getY();  // Giá trị y của điểm cần kiểm tra
-            double tolerance = 1e-6;  // Độ chính xác mong muốn
+            double tolerance = 1e-4;  // Độ chính xác mong muốn
 
             double interpolatedY = lagrangeInterpolate(points, x);  // Nội suy giá trị y tại x
 
