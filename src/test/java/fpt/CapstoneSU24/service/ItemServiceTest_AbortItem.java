@@ -62,7 +62,7 @@ public class ItemServiceTest_AbortItem {
         MockitoAnnotations.openMocks(this);
 
         abortDTO = new AbortDTO();
-        abortDTO.setProductRecognition("product123");
+        abortDTO.setProductRecognition("ExMmZiNzFh");
         abortDTO.setEmail("test@example.com");
         abortDTO.setPartyFullName("John Doe");
         abortDTO.setDescription("Sample description");
@@ -81,7 +81,7 @@ public class ItemServiceTest_AbortItem {
         ItemLog itemLog = new ItemLog();
         itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1) - 1000);
 
-        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenReturn(item);
         when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
         when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(3);
         when(locationRepository.save(any())).thenReturn(new Location());
@@ -99,7 +99,7 @@ public class ItemServiceTest_AbortItem {
 
     @Test
     public void testAbortItem_ItemNotFound() {
-        when(itemRepository.findByProductRecognition("product123")).thenReturn(null);
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenReturn(null);
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
@@ -112,7 +112,7 @@ public class ItemServiceTest_AbortItem {
         Item item = new Item();
         item.setItemId(1);
 
-        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenReturn(item);
         when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.emptyList());
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
@@ -130,9 +130,9 @@ public class ItemServiceTest_AbortItem {
         ItemLog itemLog = new ItemLog();
         itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1) - 1000);
 
-        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenReturn(item);
         when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
-        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(6);
+        when(clientService.checkOTP("test@example.com", "123456", "ExMmZiNzFh")).thenReturn(6);
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
@@ -149,9 +149,9 @@ public class ItemServiceTest_AbortItem {
         ItemLog itemLog = new ItemLog();
         itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1) - 1000);
 
-        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenReturn(item);
         when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
-        when(clientService.checkOTP("test@example.com", "123456", "product123")).thenReturn(3);
+        when(clientService.checkOTP("test@example.com", "123456", "ExMmZiNzFh")).thenReturn(3);
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 
@@ -168,7 +168,7 @@ public class ItemServiceTest_AbortItem {
         ItemLog itemLog = new ItemLog();
         itemLog.setTimeStamp(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2) - 1000);
 
-        when(itemRepository.findByProductRecognition("product123")).thenReturn(item);
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenReturn(item);
         when(itemLogRepository.getItemLogsByItemId(1)).thenReturn(Collections.singletonList(itemLog));
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
@@ -179,7 +179,7 @@ public class ItemServiceTest_AbortItem {
 
     @Test
     public void testAbortItem_Exception() {
-        when(itemRepository.findByProductRecognition("product123")).thenThrow(new RuntimeException("Database error"));
+        when(itemRepository.findByProductRecognition("ExMmZiNzFh")).thenThrow(new RuntimeException("Database error"));
 
         ResponseEntity<String> response = itemService.abortItem(abortDTO);
 

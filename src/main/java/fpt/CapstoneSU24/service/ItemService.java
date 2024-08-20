@@ -792,6 +792,9 @@ public class ItemService {
     public ResponseEntity<String> abortItem(AbortDTO abortDTO) {
         try {
             Item item = itemRepository.findByProductRecognition(abortDTO.getProductRecognition());
+            if (item == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Item not found!");
+            }
             long timeInsert = System.currentTimeMillis();
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             if (list.isEmpty()) {

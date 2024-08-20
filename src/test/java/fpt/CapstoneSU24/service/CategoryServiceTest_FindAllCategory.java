@@ -87,4 +87,5 @@ public class CategoryServiceTest_FindAllCategory {
             assertEquals(0, categoryList.get(0).getStatus());
             assertEquals(0, categoryList.get(1).getStatus());
         }
+
 }
