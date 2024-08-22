@@ -8,6 +8,7 @@ import fpt.CapstoneSU24.model.Party;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,5 +140,18 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
                                @Param("point") String point,
                                @Param("address") String address,
                                @Param("itemLogId") int itemLogId);
-
+    @Procedure(name = "InsertItemLog")
+    void insertItemLog(
+            String address,
+            String description,
+            Integer status,
+            Long timestamp,
+            Integer authorizedId,
+            Integer eventId,
+            Integer itemId,
+            Integer locationId,
+            Integer partyId,
+            String point,
+            Integer idEdit
+    );
 }
