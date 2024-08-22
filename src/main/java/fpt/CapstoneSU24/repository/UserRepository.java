@@ -28,7 +28,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u " +
             "WHERE (:email IS NULL OR :email = '' OR u.email LIKE %:email%) " +
             "AND (:roleId IS NULL OR u.role.roleId = :roleId) " +
-            "AND (:status IS NULL OR u.status = :status) " +
+            "AND ((:status IS NULL OR u.status = :status) " +
+            "OR (:status = 0 AND u.status NOT IN (1, 2))) " +
             "AND (:dateFrom IS NULL OR u.createAt >= :dateFrom) " +
             "AND (:city IS NULL OR :city = '' OR u.location.city LIKE %:city%) " +
             "AND (:dateTo IS NULL OR u.createAt <= :dateTo)")
