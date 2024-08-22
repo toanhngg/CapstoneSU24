@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.itextpdf.html2pdf.HtmlConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -14,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class CloudinaryService {
@@ -78,16 +80,32 @@ public class CloudinaryService {
         }
 
     }
-    public String uploadPdfToCloudinary(byte[] pdfData, String fileName) throws IOException {
-        try {
-            Map uploadResult = cloudinary.uploader().upload(pdfData,
-                    ObjectUtils.asMap("resource_type", "auto", "public_id", fileName));
-            return (String) uploadResult.get("secure_url");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+//    public String uploadPdfToCloudinary(byte[] pdfData, String fileName) throws IOException {
+//        try {
+//            Map uploadResult = cloudinary.uploader().upload(pdfData,
+//                    ObjectUtils.asMap("resource_type", "auto", "public_id", fileName));
+//            return (String) uploadResult.get("secure_url");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
+
+    @Async
+    public CompletableFuture<String> uploadPdfToCloudinary(byte[] pdfData, String fileName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Map uploadResult = cloudinary.uploader().upload(pdfData,
+                        ObjectUtils.asMap("resource_type", "auto", "public_id", fileName));
+                return (String) uploadResult.get("secure_url");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
     }
+
+
     public MultipartFile convertBase64ToImgFile(String base64String) throws IOException {
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(base64String);

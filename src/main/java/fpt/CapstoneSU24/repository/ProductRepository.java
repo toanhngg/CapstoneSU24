@@ -98,5 +98,11 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "LEFT JOIN p.manufacturer u " +
             "WHERE p.productId = :id")
     ProductResponseCustomDTO findDetailProductAndUser(@Param("id") Integer id);
+
+
+    //select * from [user] u left join product p on u.[user_id]  = p.manufacturer_id
+    //where product_id = 37 and u.[user_id] = 3
+    @Query("SELECT p FROM Product p LEFT JOIN p.manufacturer u WHERE u.userId = :id AND p.productId = :productId")
+    Product listProduct(@Param("id") int id, @Param("productId") int productId);
 }
 

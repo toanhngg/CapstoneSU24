@@ -406,4 +406,9 @@ public class ProductService {
         ProductResponseCustomDTO productDetail = productRepository.findDetailProductAndUser(productId);
         return ResponseEntity.status(HttpStatus.OK).body(productDetail);
     }
+
+    public Boolean productForManu(int userId, int productId) {
+        Product productDetail = productRepository.listProduct(userId,productId);
+        return productDetail != null;
+    }
 }

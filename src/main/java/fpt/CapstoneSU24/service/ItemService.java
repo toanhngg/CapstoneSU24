@@ -20,10 +20,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -73,6 +76,7 @@ public class ItemService {
     private final ProductMapper productMapper;
     private final AuthorizedMapper authorizedMapper;
     private final GCSService gcsService;
+    private final ProductService productService;
 
 
     @Autowired
@@ -85,7 +89,8 @@ public class ItemService {
                        UserRepository userRepository, PointService pointService, SpringTemplateEngine templateEngine,
                        DocumentGenerator documentGenerator, CloudinaryService cloudinaryService, LogService logService,
                        AbortMapper abortMapper, ItemMapper itemMapper, LocationMapper locationMapper,
-                       ProductMapper productMapper, AuthorizedMapper authorizedMapper,GCSService gcsService) {
+                       ProductMapper productMapper, AuthorizedMapper authorizedMapper,GCSService gcsService,
+                       ProductService productService) {
         this.locationRepository = locationRepository;
         this.itemRepository = itemRepository;
         this.partyRepository = partyRepository;
@@ -110,6 +115,7 @@ public class ItemService {
         this.productMapper = productMapper;
         this.authorizedMapper = authorizedMapper;
         this.gcsService = gcsService;
+        this.productService = productService;
     }
     private static final Logger log = LoggerFactory.getLogger(ItemService.class);
 
@@ -121,13 +127,13 @@ public class ItemService {
         try {
             if (req.getEventTypeId() != 0) {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", req.getStartDate(), req.getEndDate(), req.getEventTypeId(), pageable);
                 } else {
                     items = itemRepository.findAllItem(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getEventTypeId(), pageable);
                 }
             } else {
                 if (req.getStartDate() != 0 && req.getEndDate() != 0) {
-                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", req.getStartDate(), req.getEndDate(), pageable);
+                    items = itemRepository.findAllItemWithDate(req.getProductId(), "%" + req.getName() + "%", req.getStartDate(), req.getEndDate(), pageable);
                 } else {
                     items = itemRepository.findAllItem(req.getProductId(), "%" + req.getName() + "%", "%" + req.getProductRecognition() + "%", pageable);
                 }
@@ -151,22 +157,69 @@ public class ItemService {
             return ResponseEntity.status(500).body("startTime need less than endTime");
         }
     }
-    @Transactional
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
+            Boolean product =  productService.productForManu(currentUser.getUserId(),itemLogDTO.getProductId());
+          if(product) {
+              if (currentUser.getRole().getRoleId() == 2) {
+                  return handleAddItem(itemLogDTO, currentUser);
+              } else {
+                  return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+              }
+          }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not exist");
 
-            if (currentUser.getRole().getRoleId() == 2) {
-                return handleAddItem(itemLogDTO, currentUser);
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
-            }
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
         }
     }
+
+//    @Transactional
+//    public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
+//        try {
+//            User user = userRepository.getReferenceById(currentUser.getUserId());
+//            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
+//
+//            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
+//            CompletableFuture<List<Item>> futureItems = createItems(itemLogDTO, user, saveOrigin);
+//            CompletableFuture<List<Party>> futureParties = createParties(itemLogDTO, user);
+//            CompletableFuture.allOf(futureItems, futureParties).join();
+//            List<Item> items = futureItems.join();
+//            List<Party> parties = futureParties.join();
+//            CompletableFuture<List<ItemLog>> futureItemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
+//            List<ItemLog> itemLogs = futureItemLogs.join();
+//
+//            itemRepository.saveAll(items);
+//            partyRepository.saveAll(parties);
+//            // Gọi Stored Procedure để chèn dữ liệu vào item_log
+//            for (ItemLog itemLog : itemLogs) {
+//                itemLogRepository.insertItemLog(
+//                        itemLog.getAddress(),
+//                        itemLog.getDescription(),
+//                        itemLog.getStatus(),
+//                        itemLog.getTimeStamp(),
+//                        itemLog.getAuthorized() != null ? itemLog.getAuthorized().getAuthorizedId() : null,
+//                        itemLog.getEvent_id().getEventId(),
+//                        itemLog.getItem().getItemId(),
+//                        itemLog.getLocation().getLocationId(),
+//                        itemLog.getParty().getPartyId(),
+//                        itemLog.getPoint(),
+//                        itemLog.getIdEdit()
+//                );
+//            }
+//
+//
+//
+//            return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
+//        } catch (Exception ex) {
+//            logService.logError(ex);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+//        }
+//    }
+
     @Transactional
     public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
         try {
@@ -174,23 +227,27 @@ public class ItemService {
             Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
 
             Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
+            CompletableFuture<List<Item>> futureItems = createItems(itemLogDTO, user, saveOrigin);
+            CompletableFuture<List<Party>> futureParties = createParties(itemLogDTO, user);
+            CompletableFuture.allOf(futureItems, futureParties).join();
+            List<Item> items = futureItems.join();
+            List<Party> parties = futureParties.join();
+            CompletableFuture<List<ItemLog>> futureItemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
+            List<ItemLog> itemLogs = futureItemLogs.join();
 
-            List<Item> items = createItems(itemLogDTO, user, saveOrigin);
-            List<Party> parties = createParties(itemLogDTO, user);
-            List<ItemLog> itemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
-
-            // Save all entities in batch
+            // Lưu tất cả các thực thể trong một lần
             itemRepository.saveAll(items);
             partyRepository.saveAll(parties);
             itemLogRepository.saveAll(itemLogs);
             return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
         }
     }
 
-    private Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
+    @Transactional
+    protected Origin createAndSaveOrigin(ItemLogDTO itemLogDTO, User user, Location savedLocation) throws NoSuchAlgorithmException {
         long scoreTime = System.currentTimeMillis();
         Origin origin = new Origin();
         origin.setCreatedAt(scoreTime);
@@ -204,50 +261,64 @@ public class ItemService {
         return originRepository.save(origin);
     }
 
-    private List<Item> createItems(ItemLogDTO itemLogDTO, User user, Origin saveOrigin) throws IOException {
-
-        List<Item> items = new ArrayList<>(itemLogDTO.getQuantity());
+    @Async
+    @Transactional
+    protected CompletableFuture<List<Item>> createItems(ItemLogDTO itemLogDTO, User user, Origin saveOrigin) {
+        List<CompletableFuture<Item>> futureItems = new ArrayList<>();
         long scoreTime = System.currentTimeMillis();
         LocalDate currentDate = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String formattedDate = Instant.ofEpochMilli(scoreTime).atZone(ZoneId.systemDefault()).format(formatter);
 
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
-            Item item = new Item();
-            item.setCreatedAt(scoreTime);
-            item.setCurrentOwner(user.getEmail());
-            String productRecog = qrCodeGenerator.generateProductCode(itemLogDTO.getProductId());
-            item.setProductRecognition(productRecog);
-            item.setStatus(1);
-            item.setOrigin(saveOrigin);
-            item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
+            int index = i; // Giữ lại chỉ số cho lambda
+            futureItems.add(CompletableFuture.supplyAsync(() -> {
+                Item item = new Item();
+                item.setCreatedAt(scoreTime);
+                item.setCurrentOwner(user.getEmail());
+                String productRecog = qrCodeGenerator.generateProductCode(itemLogDTO.getProductId());
+                item.setProductRecognition(productRecog);
+                item.setStatus(1);
+                item.setOrigin(saveOrigin);
+                item.setProduct(productRepository.findOneByProductId(itemLogDTO.getProductId()));
 
-            InformationCert informationCert = new InformationCert();
-            Map<String, Object> props = new HashMap<>();
-            props.put("orgName", user.getOrg_name());
-            props.put("itemName", item.getProduct().getProductName());
-            props.put("supportingDocuments", item.getOrigin().getSupportingDocuments());
-            props.put("City", item.getOrigin().getLocation().getCity());
-            props.put("Date", currentDate.format(DateTimeFormatter.ofPattern("dd")));
-            props.put("Month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
-            props.put("Year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
-            props.put("createAt", formattedDate);
-            props.put("productRecognition", item.getProductRecognition());
-            informationCert.setProps(props);
+                InformationCert informationCert = new InformationCert();
+                Map<String, Object> props = new HashMap<>();
+                props.put("orgName", user.getOrg_name());
+                props.put("itemName", item.getProduct().getProductName());
+                props.put("supportingDocuments", item.getOrigin().getSupportingDocuments());
+                props.put("City", item.getOrigin().getLocation().getCity());
+                props.put("Date", currentDate.format(DateTimeFormatter.ofPattern("dd")));
+                props.put("Month", currentDate.format(DateTimeFormatter.ofPattern("MM")));
+                props.put("Year", currentDate.format(DateTimeFormatter.ofPattern("yyyy")));
+                props.put("createAt", formattedDate);
+                props.put("productRecognition", item.getProductRecognition());
+                informationCert.setProps(props);
 
-            Context context = new Context();
-            context.setVariables(informationCert.getProps());
-            String html = templateEngine.process(Const.TEMPLATE_FILE_NAME.CERTIFICATE, context);
-            byte[] cert = documentGenerator.generatePdfFromHtml(html);
-            // byte[] cert = documentGenerator.generateImageFromHtml(html);
-            String certLink = cloudinaryService.uploadPdfToCloudinary(cert, "trace_origin_cert_of+" + productRecog);
-            item.setCertificateLink(certLink);
-            items.add(item);
+                Context context = new Context();
+                context.setVariables(informationCert.getProps());
+                String html = templateEngine.process(Const.TEMPLATE_FILE_NAME.CERTIFICATE, context);
+                byte[] cert = new byte[0];
+                try {
+                    cert = documentGenerator.generatePdfFromHtml(html);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                // Upload chứng chỉ song song
+                CompletableFuture<String> futureUrl = cloudinaryService.uploadPdfToCloudinary(cert, "trace_origin_cert_of+" + productRecog);
+                String certLink = futureUrl.join();
+                item.setCertificateLink(certLink);
+                return item;
+            }));
         }
-        return items;
+        // Chờ tất cả các CompletableFuture hoàn thành và thu thập kết quả
+        List<Item> items = futureItems.stream().map(CompletableFuture::join).collect(Collectors.toList());
+        return CompletableFuture.completedFuture(items);
     }
 
-    private List<Party> createParties(ItemLogDTO itemLogDTO, User user) {
+    @Transactional
+    @Async
+    protected CompletableFuture<List<Party>> createParties(ItemLogDTO itemLogDTO, User user) {
         List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
             Party party = new Party();
@@ -257,10 +328,12 @@ public class ItemService {
             party.setPhoneNumber(user.getPhone());
             parties.add(party);
         }
-        return parties;
+        return CompletableFuture.supplyAsync(() -> parties) ;
     }
 
-    private List<ItemLog> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, List<Party> parties) {
+    @Transactional
+    @Async
+    protected CompletableFuture<List<ItemLog>> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, List<Party> parties) {
         List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
         long scoreTime = System.currentTimeMillis();
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
@@ -269,6 +342,7 @@ public class ItemService {
             itemLog.setDescription(itemLogDTO.getDescriptionOrigin());
             itemLog.setEvent_id(eventTypeRepository.findOneByEventId(1)); // tạo mới
             itemLog.setStatus(1);
+            itemLog.setAuthorized(null);
             itemLog.setTimeStamp(scoreTime);
             itemLog.setItem(items.get(i));
             itemLog.setLocation(savedLocation);
@@ -279,7 +353,7 @@ public class ItemService {
             itemLog.setPoint(point.toString());
             itemLogs.add(itemLog);
         }
-        return itemLogs;
+        return  CompletableFuture.supplyAsync(() -> itemLogs);
     }
 
     public ResponseEntity<?> viewLineItem(String productRecognition) {

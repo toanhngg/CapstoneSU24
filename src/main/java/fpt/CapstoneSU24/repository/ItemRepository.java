@@ -63,12 +63,10 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
             "AND (i.product.productId = :id)" +
             "AND i.currentOwner LIKE :currentOwner " +
             "AND (il.event_id.eventId = :eventType)" +
-            "AND ((:productRecognition IS NULL OR i.productRecognition LIKE CONCAT(:productRecognition, '%') " +
-            "OR i.createdAt <= :endDate AND i.createdAt >= :startDate))")
+            "AND i.createdAt <= :endDate AND i.createdAt >= :startDate")
     Page<Item> findAllItemWithDate(
             @Param("id") int id,
             @Param("currentOwner") String currentOwner,
-            @Param("productRecognition") String productRecognition,
             @Param("startDate") long startDate,
             @Param("endDate") long endDate,
             @Param("eventType") Integer eventType, Pageable pageable);
@@ -76,12 +74,10 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query("SELECT o FROM Item o WHERE o.product.productId = :id " +
             "AND o.currentOwner LIKE :currentOwner " +
-            "AND ((:productRecognition IS NULL OR o.productRecognition LIKE CONCAT(:productRecognition, '%') " +
-            "OR o.createdAt <= :endDate AND o.createdAt >= :startDate))")
+            "AND o.createdAt <= :endDate AND o.createdAt >= :startDate")
     Page<Item> findAllItemWithDate(
             @Param("id") int id,
             @Param("currentOwner") String currentOwner,
-            @Param("productRecognition") String productRecognition,
             @Param("startDate") long startDate,
             @Param("endDate") long endDate,
             Pageable pageable);

@@ -11,7 +11,7 @@ import lombok.Setter;
 public class ItemLogDTO {
     @NotNull(message = "The quantity is required")
     @Min(value = 1, message = "The quantity must be at least 1")
-    @Max(value = 1000, message = "The quantity must not exceed 1,000")
+    @Max(value = 100, message = "The quantity must not exceed 100")
     private int quantity;
     private LocationDTO location;
     private String descriptionOrigin;
