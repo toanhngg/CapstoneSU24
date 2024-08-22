@@ -59,8 +59,11 @@
     <div class="email-body">
         <p th:text="${'Xin chào, ' + name}"></p>
         <p>Trace Origin xin gửi đến bạn thông báo từ hệ thống.</p>
-        <p th:text="${'Chúng tôi đã phát hiện bất thường trong tài khoản của bạn. Chúng tôi nhận thấy rằng tài khoản của bạn đang đăng tải những sản phẩm trái phép và không rõ nguồn gốc xuất xứ. Vì lý do này, chúng tôi sẽ phải vô hiệu hóa sản phẩm: ' + productName + '.'}"></p>
-        <p>Tất cả các nhật kí của sản phẩm này sẽ bị chúng tôi vô hiệu hóa cho đến khi sản phẩm này được xác minh lại. Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi để được hỗ trợ.</p>
+        Trace Origin đã xem xét lại và chấp nhận mở khóa lại sản phẩm của bạn.
+        Các nhật kí về sản phẩm của bạn vẫn sẽ được tiếp tục.
+        <p th:text="${'Sau khi chúng tôi nhận được khiếu nại về sản phẩm ' + productName + ' của bạn.Trace Origin đã xem xét lại và chấp nhận mở khóa lại sản phẩm và không phát hiện ra sự bất thường nào nữa. Vì vậy chúng tôi đưa ra quyết định'}"></p>
+        <strong>Mở khóa lại sản phẩm của bạn.</strong>
+        <p>Các nhật kí về sản phẩm của bạn vẫn sẽ được tiếp tục. Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi để được hỗ trợ.</p>
         <p>Vui lòng truy cập vào hệ thống để biết thêm thông tin chi tiết. Xin cảm ơn!</p>
         <p>Đây là email tự động, vui lòng không trả lời.</p>
     </div>

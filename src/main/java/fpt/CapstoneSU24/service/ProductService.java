@@ -7,6 +7,7 @@ import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.mapper.UserMapper;
 import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
+import fpt.CapstoneSU24.util.Const;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,10 +40,7 @@ public class ProductService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final GCSService gcsService;
-    private final LocationRepository locationRepository;
-    private final PartyRepository partyRepository;
-    private final ItemLogRepository itemLogRepository;
-    private final EventTypeRepository eventTypeRepository;
+    private final EmailService mailService;
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
 
@@ -52,11 +49,7 @@ public class ProductService {
                              CategoryRepository categoryRepository,
                              ImageProductRepository imageProductRepository, ItemRepository itemRepository,
                              CloudinaryService cloudinaryService,ProductMapper productMapper,
-                          UserRepository userRepository, UserMapper userMapper,
-                          LocationRepository locationRepository,
-                          PartyRepository partyRepository,
-                          ItemLogRepository itemLogRepository,
-                          EventTypeRepository eventTypeRepository) {
+                          UserRepository userRepository, UserMapper userMapper, EmailService mailService) {
         this.productRepository = productRepository;
         this.imageProductRepository = imageProductRepository;
         this.itemRepository = itemRepository;
@@ -66,10 +59,7 @@ public class ProductService {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.gcsService = gcsService;
-        this.locationRepository = locationRepository;
-        this.partyRepository = partyRepository;
-        this.itemLogRepository = itemLogRepository;
-        this.eventTypeRepository = eventTypeRepository;
+        this.mailService = mailService;
 
     }
 
@@ -445,8 +435,33 @@ public class ProductService {
             for (Item item : items) {
                 if (item.getStatus() == 2) {
                     itemRepository.updateItemStatus(item.getProductRecognition(), 1); // Mở khóa
+                    String subject = Const.SEND_MAIL_SUBJECT.SUBJECT_WARNING; // Changed subject
+                    String template = Const.TEMPLATE_FILE_NAME.REPLY_WARNNING_USER; // Changed template
+
+                    DataMailDTO dataMail = new DataMailDTO();
+                    dataMail.setTo(currentUser.getEmail());
+                    dataMail.setSubject(subject);
+
+                    Map<String, Object> props = new HashMap<>();
+                    props.put("name", currentUser.getFirstName() + " " + currentUser.getLastName());
+                    props.put("productName",product.getProductName() );
+                    dataMail.setProps(props);
+                    mailService.sendHtmlMail(dataMail, template);
                 }else{
                     itemRepository.updateItemStatus(item.getProductRecognition(), 2); // Tam khóa
+                    String subject = Const.SEND_MAIL_SUBJECT.SUBJECT_OPEN_DISABLE; // Changed subject
+                    String template = Const.TEMPLATE_FILE_NAME.REPLY_DISABLE_PRODUCT; // Changed template
+
+                    DataMailDTO dataMail = new DataMailDTO();
+                    dataMail.setTo(currentUser.getEmail());
+                    dataMail.setSubject(subject);
+
+                    Map<String, Object> props = new HashMap<>();
+                    props.put("name", currentUser.getFirstName() + " " + currentUser.getLastName());
+                    props.put("productName",product.getProductName() );
+
+                    dataMail.setProps(props);
+                    mailService.sendHtmlMail(dataMail, template);
                 }
             }
             return ResponseEntity.status(HttpStatus.OK).body("Product and related items disabled successfully!");

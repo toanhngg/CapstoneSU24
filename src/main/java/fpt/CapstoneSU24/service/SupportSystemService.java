@@ -104,7 +104,7 @@ public class SupportSystemService {
             DataMailDTO dataMail = new DataMailDTO();
             dataMail.setTo(supportSystem.getUser().getEmail());
             dataMail.setSubject(Const.SEND_MAIL_SUBJECT.SUBJECT_REPLY_SUPPORT_USER);
-            mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.REPLY_REPLY_SUPPORT_USER);
+            mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.REPLY_SUPPORT_USER);
             return ResponseEntity.status(HttpStatus.OK).body("reply by supporter successful");
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("not permit to access");
