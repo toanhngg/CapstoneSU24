@@ -470,24 +470,24 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<String> checkStatus(IdRequest req) {
+    public ResponseEntity<Integer> checkStatus(IdRequest req) {
 
         try {
             List<Item> items = itemRepository.findAllByProductId(req.getId());
             if (items.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No items found for the product ID=" + req.getId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(0);
             }
             boolean allItemsInStatusTwo = items.stream().allMatch(item -> item.getStatus() == 2);
 
             if (allItemsInStatusTwo) {
-                return ResponseEntity.status(HttpStatus.OK).body("All items are in status 2.");
+                return ResponseEntity.status(HttpStatus.OK).body(1);
             } else {
-                return ResponseEntity.status(HttpStatus.OK).body("Not all items are in status 2.");
+                return ResponseEntity.status(HttpStatus.OK).body(2);
             }
 
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(3);
         }
     }
 }

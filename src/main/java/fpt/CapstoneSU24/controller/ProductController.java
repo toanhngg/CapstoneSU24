@@ -100,8 +100,8 @@ public class ProductController {
     public ResponseEntity<?> disableProductById(@Valid @RequestBody IdRequest req) {
         return productService.disableProductById(req);
     }
-    @GetMapping("/checkStatus")
-    public ResponseEntity<String> checkItemStatus(@Valid @RequestBody IdRequest req) {
+    @PostMapping("/checkStatus")
+    public ResponseEntity<Integer> checkItemStatus(@Valid @RequestBody IdRequest req) {
         return productService.checkStatus(req);
     }
 }
