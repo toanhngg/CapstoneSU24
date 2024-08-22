@@ -315,8 +315,6 @@ public class UserService {
             return ResponseEntity.notFound().build();
         }
     }
-
-
     public Boolean lockUser(String req) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -353,6 +351,51 @@ public class UserService {
             props.put("username", user.getUsername());
             dataMail.setProps(props);
 
+            mailService.sendHtmlMail(dataMail, template);
+
+            // Update user status
+            user.setStatus(status);
+            userRepository.save(user);
+
+            return true;
+        } catch (JSONException | MessagingException | NullPointerException | NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public Boolean warningUser(String req) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserProfileDTO userProfileDTO = getUserProfile(authentication, -1);
+
+            if (userProfileDTO == null || userProfileDTO.getRole().getRoleId() != 1) {
+                return false;
+            }
+
+            JSONObject jsonObject = new JSONObject(req);
+            int userId = jsonObject.has("userId") ? jsonObject.getInt("userId") : -1;
+            int status = jsonObject.has("status") ? jsonObject.getInt("status") : -1;
+
+            if (status != 1 && status != 2) { // Changed & to && for logical AND
+                return false;
+            }
+
+            String subject = Const.SEND_MAIL_SUBJECT.SUBJECT_WARNING; // Changed subject
+            String template = Const.TEMPLATE_FILE_NAME.REPLY_REPLY_WARNNING_USER; // Changed template
+
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty()) {
+                return false;
+            }
+            User user = userOptional.get();
+
+            DataMailDTO dataMail = new DataMailDTO();
+            dataMail.setTo(user.getEmail());
+            dataMail.setSubject(subject);
+
+            Map<String, Object> props = new HashMap<>();
+            props.put("name", user.getFirstName() + " " + user.getLastName());
+            dataMail.setProps(props);
             mailService.sendHtmlMail(dataMail, template);
 
             // Update user status
@@ -613,4 +656,6 @@ public class UserService {
                 throw e;
             }
     }
+
+
 }

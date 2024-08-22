@@ -11,6 +11,7 @@ public class Const {
         public final static String SUBJECT_CHANGEPASS = "THÔNG BÁO THAY ĐỔI MẬT KHẨU";
         public final static String SUBJECT_REPLY_USER = "THÔNG BÁO VỀ PHÊ DUYỆT CHỨNG CHỈ DOANH NGHIỆP";
         public final static String SUBJECT_REPLY_SUPPORT_USER = "GIẢI ĐÁP VỀ VẤN ĐỀ HỆ THỐNG";
+        public final static String SUBJECT_WARNING = "THÔNG BÁO CẢNH BÁO TÀI KHOẢN NGƯỜI DÙNG";
 
     }
 
@@ -27,6 +28,7 @@ public class Const {
         public final static String REPLY_ISSUE = "reply-issue-notification";
         public final static String REPLY_USER = "notiAccept";
         public final static String REPLY_REPLY_SUPPORT_USER = "notiSupport";
+        public final static String REPLY_REPLY_WARNNING_USER = "notiWarning";
 
 
     }

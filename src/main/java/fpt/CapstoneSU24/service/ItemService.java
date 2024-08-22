@@ -157,6 +157,7 @@ public class ItemService {
             return ResponseEntity.status(500).body("startTime need less than endTime");
         }
     }
+
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -176,49 +177,6 @@ public class ItemService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
         }
     }
-
-//    @Transactional
-//    public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
-//        try {
-//            User user = userRepository.getReferenceById(currentUser.getUserId());
-//            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
-//
-//            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
-//            CompletableFuture<List<Item>> futureItems = createItems(itemLogDTO, user, saveOrigin);
-//            CompletableFuture<List<Party>> futureParties = createParties(itemLogDTO, user);
-//            CompletableFuture.allOf(futureItems, futureParties).join();
-//            List<Item> items = futureItems.join();
-//            List<Party> parties = futureParties.join();
-//            CompletableFuture<List<ItemLog>> futureItemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
-//            List<ItemLog> itemLogs = futureItemLogs.join();
-//
-//            itemRepository.saveAll(items);
-//            partyRepository.saveAll(parties);
-//            // Gọi Stored Procedure để chèn dữ liệu vào item_log
-//            for (ItemLog itemLog : itemLogs) {
-//                itemLogRepository.insertItemLog(
-//                        itemLog.getAddress(),
-//                        itemLog.getDescription(),
-//                        itemLog.getStatus(),
-//                        itemLog.getTimeStamp(),
-//                        itemLog.getAuthorized() != null ? itemLog.getAuthorized().getAuthorizedId() : null,
-//                        itemLog.getEvent_id().getEventId(),
-//                        itemLog.getItem().getItemId(),
-//                        itemLog.getLocation().getLocationId(),
-//                        itemLog.getParty().getPartyId(),
-//                        itemLog.getPoint(),
-//                        itemLog.getIdEdit()
-//                );
-//            }
-//
-//
-//
-//            return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
-//        } catch (Exception ex) {
-//            logService.logError(ex);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
-//        }
-//    }
 
     @Transactional
     public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {

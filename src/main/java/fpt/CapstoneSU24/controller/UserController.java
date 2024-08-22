@@ -54,6 +54,10 @@ public class UserController {
         return userService.lockUser(req);
     }
 
+    @PostMapping("/warningUser")
+    public Boolean warningUser(@RequestBody String req) {
+        return userService.warningUser(req);
+    }
 
 
     //Update Table
