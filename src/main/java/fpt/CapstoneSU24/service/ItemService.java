@@ -162,19 +162,25 @@ public class ItemService {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
+            List<Item> items = itemRepository.findAllByProductId(itemLogDTO.getProductId());
+            boolean hasLockedItems = items.stream().anyMatch(item -> item.getStatus() == 2);
+            if (hasLockedItems) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Sản phẩm này đang bị vô hiệu hóa ");
+            }
+
             Boolean product =  productService.productForManu(currentUser.getUserId(),itemLogDTO.getProductId());
           if(product) {
-              if (currentUser.getRole().getRoleId() == 2) {
+              if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 1) {
                   return handleAddItem(itemLogDTO, currentUser);
               } else {
-                  return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                  return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Không có quyền truy cập");
               }
           }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not exist");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sản phẩm không tồn tại");
 
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + ex.getMessage());
         }
     }
 

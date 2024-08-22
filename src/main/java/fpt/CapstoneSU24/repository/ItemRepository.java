@@ -20,6 +20,9 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query("SELECT o FROM Item o WHERE o.product.productId = :id")
     List<Item> findAllByProductId(@Param("id") int id);
+
+    @Query("SELECT o FROM Item o WHERE o.product.productId = :id AND o.status <> 0")
+    List<Item> findAllByProductIdLock(@Param("id") int id);
 //=====================================================================================
     @Query("SELECT i FROM Item i " +
             "JOIN ItemLog il ON i.itemId = il.item.itemId " +

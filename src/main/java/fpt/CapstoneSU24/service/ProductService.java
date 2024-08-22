@@ -5,10 +5,7 @@ import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.mapper.UserMapper;
-import fpt.CapstoneSU24.model.ImageProduct;
-import fpt.CapstoneSU24.model.Item;
-import fpt.CapstoneSU24.model.Product;
-import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -43,6 +40,10 @@ public class ProductService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final GCSService gcsService;
+    private final LocationRepository locationRepository;
+    private final PartyRepository partyRepository;
+    private final ItemLogRepository itemLogRepository;
+    private final EventTypeRepository eventTypeRepository;
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
 
@@ -50,7 +51,12 @@ public class ProductService {
     public ProductService(GCSService gcsService, ProductRepository productRepository,
                              CategoryRepository categoryRepository,
                              ImageProductRepository imageProductRepository, ItemRepository itemRepository,
-                             CloudinaryService cloudinaryService,ProductMapper productMapper, UserRepository userRepository, UserMapper userMapper) {
+                             CloudinaryService cloudinaryService,ProductMapper productMapper,
+                          UserRepository userRepository, UserMapper userMapper,
+                          LocationRepository locationRepository,
+                          PartyRepository partyRepository,
+                          ItemLogRepository itemLogRepository,
+                          EventTypeRepository eventTypeRepository) {
         this.productRepository = productRepository;
         this.imageProductRepository = imageProductRepository;
         this.itemRepository = itemRepository;
@@ -60,7 +66,10 @@ public class ProductService {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.gcsService = gcsService;
-
+        this.locationRepository = locationRepository;
+        this.partyRepository = partyRepository;
+        this.itemLogRepository = itemLogRepository;
+        this.eventTypeRepository = eventTypeRepository;
 
     }
 
@@ -411,4 +420,39 @@ public class ProductService {
         Product productDetail = productRepository.listProduct(userId,productId);
         return productDetail != null;
     }
+
+    public ResponseEntity<String> disableProductById(IdRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        if (currentUser.getRole().getRoleId() != 1) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: insufficient permissions.");
+        }
+
+        Product product = productRepository.findOneByProductId(req.getId());
+
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with ID=" + req.getId());
+        }
+
+        List<Item> items = itemRepository.findAllByProductIdLock(req.getId());
+
+        if (items.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body("No items found for the product ID=" + req.getId());
+        }
+
+        try {
+            for (Item item : items) {
+                if (item.getStatus() == 2) {
+                    itemRepository.updateItemStatus(item.getProductRecognition(), 1); // Mở khóa
+                }else{
+                    itemRepository.updateItemStatus(item.getProductRecognition(), 2); // Tam khóa
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Product and related items disabled successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error disabling product: " + e.getMessage());
+        }
+    }
+
 }
