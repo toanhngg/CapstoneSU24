@@ -41,7 +41,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                              @Param("dateTo") Long dateTo,
                              Pageable pageable);
 
-
     /*@Query("SELECT u," +
 // "COALESCE(c.certificate_id, 0) AS certificateId" +
             " FROM User u" +

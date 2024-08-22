@@ -20,10 +20,13 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query("SELECT o FROM Item o WHERE o.product.productId = :id")
     List<Item> findAllByProductId(@Param("id") int id);
+
+    @Query("SELECT o FROM Item o WHERE o.product.productId = :id AND o.status <> 0")
+    List<Item> findAllByProductIdLock(@Param("id") int id);
 //=====================================================================================
     @Query("SELECT i FROM Item i " +
             "JOIN ItemLog il ON i.itemId = il.item.itemId " +
-            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId) " +
+            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId AND il2.event_id.eventId <> 6) " +
             "AND i.product.productId = :id " +
             "AND (i.currentOwner LIKE :currentOwner) " +
             "AND il.event_id.eventId = :eventType " +
@@ -48,9 +51,15 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
 
 
-    @Query("SELECT o FROM Item o WHERE o.product.productId = :id " +
-            "AND o.currentOwner LIKE :currentOwner " +
-            "AND (:productRecognition IS NULL OR o.productRecognition LIKE CONCAT(:productRecognition, '%'))")
+//    @Query("SELECT o FROM Item o WHERE o.product.productId = :id " +
+//            "AND o.currentOwner LIKE :currentOwner " +
+//            "AND (:productRecognition IS NULL OR o.productRecognition LIKE CONCAT(:productRecognition, '%'))")
+    @Query("SELECT i FROM Item i " +
+            "JOIN ItemLog il ON i.itemId = il.item.itemId " +
+            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId AND il2.event_id.eventId <> 6) " +
+            "AND (i.product.productId = :id)" +
+            "AND (:productRecognition IS NULL OR i.productRecognition LIKE CONCAT(:productRecognition, '%'))"+
+            "AND i.currentOwner LIKE :currentOwner ")
     Page<Item> findAllItem(
             @Param("id") int id,
             @Param("currentOwner") String currentOwner,
@@ -59,7 +68,7 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 //=====================================================================================
     @Query("SELECT i FROM Item i " +
             "JOIN ItemLog il ON i.itemId = il.item.itemId " +
-            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId) " +
+            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId AND il2.event_id.eventId <> 6) " +
             "AND (i.product.productId = :id)" +
             "AND i.currentOwner LIKE :currentOwner " +
             "AND (il.event_id.eventId = :eventType)" +
@@ -71,10 +80,18 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
             @Param("endDate") long endDate,
             @Param("eventType") Integer eventType, Pageable pageable);
 
+//
+//    @Query("SELECT o FROM Item o WHERE o.product.productId = :id " +
+//            "AND o.currentOwner LIKE :currentOwner " +
+//            "AND o.createdAt <= :endDate AND o.createdAt >= :startDate" +
+//            "AND il2.event_id.eventId <> 6")
 
-    @Query("SELECT o FROM Item o WHERE o.product.productId = :id " +
-            "AND o.currentOwner LIKE :currentOwner " +
-            "AND o.createdAt <= :endDate AND o.createdAt >= :startDate")
+    @Query("SELECT i FROM Item i " +
+            "JOIN ItemLog il ON i.itemId = il.item.itemId " +
+            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId AND il2.event_id.eventId <> 6) " +
+            "AND (i.product.productId = :id)" +
+            "AND i.currentOwner LIKE :currentOwner " +
+            "AND i.createdAt <= :endDate AND i.createdAt >= :startDate")
     Page<Item> findAllItemWithDate(
             @Param("id") int id,
             @Param("currentOwner") String currentOwner,

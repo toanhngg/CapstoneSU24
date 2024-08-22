@@ -96,4 +96,12 @@ public class ProductController {
     public ResponseEntity<?> getInfoByProductId(@RequestParam int productId) {
         return productService.getInfoByProductId(productId);
     }
+    @PostMapping("/disableProductById")
+    public ResponseEntity<?> disableProductById(@Valid @RequestBody IdRequest req) {
+        return productService.disableProductById(req);
+    }
+    @GetMapping("/checkStatus")
+    public ResponseEntity<String> checkItemStatus(@Valid @RequestBody IdRequest req) {
+        return productService.checkStatus(req);
+    }
 }

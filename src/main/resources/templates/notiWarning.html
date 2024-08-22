@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap&subset=vietnamese" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            /*color: #777777;*/
+        }
+        .email-header img {
+            max-width: 150px;
+            height: auto;
+        }
+        .email-body {
+            padding: 20px;
+            /*color: #333333;*/
+            line-height: 1.6;
+        }
+        .email-body p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .email-body p strong {
+            color: #0073e6;
+        }
+        .email-footer {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1723133885/testManh123.png" alt="Logo">
+    </div>
+    <div class="email-body">
+        <p th:text="${'Xin chào, ' + name}"></p>
+        <p>Trace Origin xin gửi đến bạn thông báo từ hệ thống.</p>
+        <p th:text="${'Chúng tôi đã phát hiện bất thường trong tài khoản của bạn. Chúng tôi nhận thấy rằng tài khoản của bạn đang đăng tải những sản phẩm trái phép và không rõ nguồn gốc xuất xứ. Vì lý do này, chúng tôi sẽ phải vô hiệu hóa sản phẩm: ' + productName + '.'}"></p>
+        <p>Tất cả các nhật kí của sản phẩm này sẽ bị chúng tôi vô hiệu hóa cho đến khi sản phẩm này được xác minh lại. Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi để được hỗ trợ.</p>
+        <p>Vui lòng truy cập vào hệ thống để biết thêm thông tin chi tiết. Xin cảm ơn!</p>
+        <p>Đây là email tự động, vui lòng không trả lời.</p>
+    </div>
+    <div class="email-footer">
+        <p>Thông tin liên hệ: <a href="mailto:system.traceorigin@gmail.com">system.traceorigin@gmail.com</a></p>
+        <p>Điện thoại: 0961-835-886</p>
+        <p>Địa chỉ: Đại học FPT</p>
+    </div>
+</div>
+
+</body>
+</html>

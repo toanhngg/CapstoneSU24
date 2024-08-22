@@ -157,68 +157,32 @@ public class ItemService {
             return ResponseEntity.status(500).body("startTime need less than endTime");
         }
     }
+
     public ResponseEntity<?> addItem(ItemLogDTO itemLogDTO) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
+            List<Item> items = itemRepository.findAllByProductId(itemLogDTO.getProductId());
+            boolean hasLockedItems = items.stream().anyMatch(item -> item.getStatus() == 2);
+            if (hasLockedItems) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Sản phẩm này đang bị vô hiệu hóa ");
+            }
+
             Boolean product =  productService.productForManu(currentUser.getUserId(),itemLogDTO.getProductId());
           if(product) {
-              if (currentUser.getRole().getRoleId() == 2) {
+              if (currentUser.getRole().getRoleId() == 2 && currentUser.getStatus() == 1) {
                   return handleAddItem(itemLogDTO, currentUser);
               } else {
-                  return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+                  return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Không có quyền truy cập");
               }
           }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not exist");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sản phẩm không tồn tại");
 
         } catch (Exception ex) {
             logService.logError(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred" + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + ex.getMessage());
         }
     }
-
-//    @Transactional
-//    public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
-//        try {
-//            User user = userRepository.getReferenceById(currentUser.getUserId());
-//            Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(itemLogDTO.getLocation()));
-//
-//            Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
-//            CompletableFuture<List<Item>> futureItems = createItems(itemLogDTO, user, saveOrigin);
-//            CompletableFuture<List<Party>> futureParties = createParties(itemLogDTO, user);
-//            CompletableFuture.allOf(futureItems, futureParties).join();
-//            List<Item> items = futureItems.join();
-//            List<Party> parties = futureParties.join();
-//            CompletableFuture<List<ItemLog>> futureItemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
-//            List<ItemLog> itemLogs = futureItemLogs.join();
-//
-//            itemRepository.saveAll(items);
-//            partyRepository.saveAll(parties);
-//            // Gọi Stored Procedure để chèn dữ liệu vào item_log
-//            for (ItemLog itemLog : itemLogs) {
-//                itemLogRepository.insertItemLog(
-//                        itemLog.getAddress(),
-//                        itemLog.getDescription(),
-//                        itemLog.getStatus(),
-//                        itemLog.getTimeStamp(),
-//                        itemLog.getAuthorized() != null ? itemLog.getAuthorized().getAuthorizedId() : null,
-//                        itemLog.getEvent_id().getEventId(),
-//                        itemLog.getItem().getItemId(),
-//                        itemLog.getLocation().getLocationId(),
-//                        itemLog.getParty().getPartyId(),
-//                        itemLog.getPoint(),
-//                        itemLog.getIdEdit()
-//                );
-//            }
-//
-//
-//
-//            return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
-//        } catch (Exception ex) {
-//            logService.logError(ex);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
-//        }
-//    }
 
     @Transactional
     public ResponseEntity<?> handleAddItem(ItemLogDTO itemLogDTO, User currentUser) {
@@ -228,16 +192,16 @@ public class ItemService {
 
             Origin saveOrigin = createAndSaveOrigin(itemLogDTO, user, savedLocation);
             CompletableFuture<List<Item>> futureItems = createItems(itemLogDTO, user, saveOrigin);
-            CompletableFuture<List<Party>> futureParties = createParties(itemLogDTO, user);
-            CompletableFuture.allOf(futureItems, futureParties).join();
+            Party party = createParties(itemLogDTO, user);
+           /// CompletableFuture.allOf(futureItems, futureParties).join();
             List<Item> items = futureItems.join();
-            List<Party> parties = futureParties.join();
-            CompletableFuture<List<ItemLog>> futureItemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, parties);
+          //  List<Party> parties = futureParties.join();
+            CompletableFuture<List<ItemLog>> futureItemLogs = createItemLogs(itemLogDTO, user, savedLocation, items, party);
             List<ItemLog> itemLogs = futureItemLogs.join();
 
             // Lưu tất cả các thực thể trong một lần
             itemRepository.saveAll(items);
-            partyRepository.saveAll(parties);
+            partyRepository.save(party);
             itemLogRepository.saveAll(itemLogs);
             return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
         } catch (Exception ex) {
@@ -311,29 +275,27 @@ public class ItemService {
                 return item;
             }));
         }
-        // Chờ tất cả các CompletableFuture hoàn thành và thu thập kết quả
         List<Item> items = futureItems.stream().map(CompletableFuture::join).collect(Collectors.toList());
         return CompletableFuture.completedFuture(items);
     }
 
     @Transactional
-    @Async
-    protected CompletableFuture<List<Party>> createParties(ItemLogDTO itemLogDTO, User user) {
-        List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
-        for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
+    protected Party createParties(ItemLogDTO itemLogDTO, User user) {
+//        List<Party> parties = new ArrayList<>(itemLogDTO.getQuantity());
+//        for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
             Party party = new Party();
             party.setDescription(itemLogDTO.getDescriptionOrigin());
             party.setEmail(user.getEmail());
             party.setPartyFullName(user.getFirstName() + " " + user.getLastName());
             party.setPhoneNumber(user.getPhone());
-            parties.add(party);
-        }
-        return CompletableFuture.supplyAsync(() -> parties) ;
+//            parties.add(party);
+//        }
+        return party ;
     }
 
     @Transactional
     @Async
-    protected CompletableFuture<List<ItemLog>> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, List<Party> parties) {
+    protected CompletableFuture<List<ItemLog>> createItemLogs(ItemLogDTO itemLogDTO, User user, Location savedLocation, List<Item> items, Party parties) {
         List<ItemLog> itemLogs = new ArrayList<>(itemLogDTO.getQuantity());
         long scoreTime = System.currentTimeMillis();
         for (int i = 0; i < itemLogDTO.getQuantity(); i++) {
@@ -346,9 +308,8 @@ public class ItemService {
             itemLog.setTimeStamp(scoreTime);
             itemLog.setItem(items.get(i));
             itemLog.setLocation(savedLocation);
-            itemLog.setParty(parties.get(i));
+            itemLog.setParty(parties);
             itemLog.setIdEdit(0);
-
             Point point = pointService.randomPoint(1000, 1000);
             itemLog.setPoint(point.toString());
             itemLogs.add(itemLog);
@@ -503,7 +464,7 @@ public class ItemService {
         try {
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
-            if (item.getStatus() == 0)
+            if (item.getStatus() == 0 || item.getStatus() == 2)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
             if (checkOwner(authorized.getAssignPersonMail(), item.getCurrentOwner())) {
                 int check = clientService.checkOTP(authorized.getAssignPersonMail().trim(), authorized.getOTP().trim(),item.getProductRecognition());
@@ -570,10 +531,10 @@ public class ItemService {
 
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
 
-        // Kiểm tra trạng thái của item bị cấm
-        if (item.getStatus() == 0) {
-            return ResponseEntity.ok(0); // Item status is 0
-        }
+//        // Kiểm tra trạng thái của item bị cấm
+//        if (item.getStatus() == 0) {
+//            return ResponseEntity.ok(0); // Item status is 0
+//        }
 
         try {
             // Kiểm tra xem email có phải là CurrentOwner hay không
@@ -611,7 +572,9 @@ public class ItemService {
 //            }
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
-
+            if(item.getStatus() == 2){
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(8);
+            }
         if (item == null) {
             // Xử lý nếu item không tồn tại
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
@@ -802,7 +765,8 @@ public class ItemService {
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found"); // Nếu item không tồn tại
             }
-            if (item.getStatus() == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Item was aborted");
+            if (item.getStatus() == 0 || item.getStatus() == 2)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Item was aborted");
 
             List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
             ItemLog itemIndex = list.get(0);
@@ -857,6 +821,9 @@ public class ItemService {
             }
             //  ItemLog itemIndex = list.get(0);
             //long timeDifference = timeInsert - itemIndex.getTimeStamp();
+            if(item.getStatus() == 2){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been disable!");
+            }
 
             // long DaysInMillis = TimeUnit.DAYS.toMillis(1);
             // if (timeDifference > DaysInMillis) {
@@ -865,7 +832,7 @@ public class ItemService {
                 if (check == 6)
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
                 if (check == 3 || check == 8) {
-                    if (item.getStatus() == 0)
+                    if (item.getStatus() == 0 || item.getStatus() == 2)
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
 
                     Location savedLocation = locationRepository.save(locationMapper.locationDtoToLocation(abortDTO.getLocation()));

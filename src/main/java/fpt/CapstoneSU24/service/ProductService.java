@@ -5,11 +5,9 @@ import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.payload.*;
 import fpt.CapstoneSU24.mapper.ProductMapper;
 import fpt.CapstoneSU24.mapper.UserMapper;
-import fpt.CapstoneSU24.model.ImageProduct;
-import fpt.CapstoneSU24.model.Item;
-import fpt.CapstoneSU24.model.Product;
-import fpt.CapstoneSU24.model.User;
+import fpt.CapstoneSU24.model.*;
 import fpt.CapstoneSU24.repository.*;
+import fpt.CapstoneSU24.util.Const;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +40,7 @@ public class ProductService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final GCSService gcsService;
+    private final EmailService mailService;
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
 
@@ -50,7 +48,8 @@ public class ProductService {
     public ProductService(GCSService gcsService, ProductRepository productRepository,
                              CategoryRepository categoryRepository,
                              ImageProductRepository imageProductRepository, ItemRepository itemRepository,
-                             CloudinaryService cloudinaryService,ProductMapper productMapper, UserRepository userRepository, UserMapper userMapper) {
+                             CloudinaryService cloudinaryService,ProductMapper productMapper,
+                          UserRepository userRepository, UserMapper userMapper, EmailService mailService) {
         this.productRepository = productRepository;
         this.imageProductRepository = imageProductRepository;
         this.itemRepository = itemRepository;
@@ -60,7 +59,7 @@ public class ProductService {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.gcsService = gcsService;
-
+        this.mailService = mailService;
 
     }
 
@@ -410,5 +409,85 @@ public class ProductService {
     public Boolean productForManu(int userId, int productId) {
         Product productDetail = productRepository.listProduct(userId,productId);
         return productDetail != null;
+    }
+
+    public ResponseEntity<String> disableProductById(IdRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        if (currentUser.getRole().getRoleId() != 1) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: insufficient permissions.");
+        }
+
+        Product product = productRepository.findOneByProductId(req.getId());
+
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with ID=" + req.getId());
+        }
+
+        List<Item> items = itemRepository.findAllByProductIdLock(req.getId());
+
+        if (items.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body("No items found for the product ID=" + req.getId());
+        }
+
+        try {
+            for (Item item : items) {
+                if (item.getStatus() == 2) {
+                    itemRepository.updateItemStatus(item.getProductRecognition(), 1); // Mở khóa
+                    String subject = Const.SEND_MAIL_SUBJECT.SUBJECT_WARNING; // Changed subject
+                    String template = Const.TEMPLATE_FILE_NAME.REPLY_WARNNING_USER; // Changed template
+
+                    DataMailDTO dataMail = new DataMailDTO();
+                    dataMail.setTo(currentUser.getEmail());
+                    dataMail.setSubject(subject);
+
+                    Map<String, Object> props = new HashMap<>();
+                    props.put("name", currentUser.getFirstName() + " " + currentUser.getLastName());
+                    props.put("productName",product.getProductName() );
+                    dataMail.setProps(props);
+                    mailService.sendHtmlMail(dataMail, template);
+                }else{
+                    itemRepository.updateItemStatus(item.getProductRecognition(), 2); // Tam khóa
+                    String subject = Const.SEND_MAIL_SUBJECT.SUBJECT_OPEN_DISABLE; // Changed subject
+                    String template = Const.TEMPLATE_FILE_NAME.REPLY_DISABLE_PRODUCT; // Changed template
+
+                    DataMailDTO dataMail = new DataMailDTO();
+                    dataMail.setTo(currentUser.getEmail());
+                    dataMail.setSubject(subject);
+
+                    Map<String, Object> props = new HashMap<>();
+                    props.put("name", currentUser.getFirstName() + " " + currentUser.getLastName());
+                    props.put("productName",product.getProductName() );
+
+                    dataMail.setProps(props);
+                    mailService.sendHtmlMail(dataMail, template);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Product and related items disabled successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error disabling product: " + e.getMessage());
+        }
+    }
+
+    public ResponseEntity<String> checkStatus(IdRequest req) {
+
+        try {
+            List<Item> items = itemRepository.findAllByProductId(req.getId());
+            if (items.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No items found for the product ID=" + req.getId());
+            }
+            boolean allItemsInStatusTwo = items.stream().allMatch(item -> item.getStatus() == 2);
+
+            if (allItemsInStatusTwo) {
+                return ResponseEntity.status(HttpStatus.OK).body("All items are in status 2.");
+            } else {
+                return ResponseEntity.status(HttpStatus.OK).body("Not all items are in status 2.");
+            }
+
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+        }
     }
 }

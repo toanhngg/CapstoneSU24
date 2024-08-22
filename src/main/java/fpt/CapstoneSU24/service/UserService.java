@@ -315,8 +315,6 @@ public class UserService {
             return ResponseEntity.notFound().build();
         }
     }
-
-
     public Boolean lockUser(String req) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -613,4 +611,6 @@ public class UserService {
                 throw e;
             }
     }
+
+
 }

@@ -174,7 +174,9 @@ public class ItemLogService {
                     .orElseThrow(() -> new RuntimeException("ItemLog not found"));
             Item item = itemRepository.findById(itemLogDetail.getItem().getItemId())
                     .orElseThrow(() -> new RuntimeException("Item not found"));
-
+            if(item.getStatus() == 2){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been disable!");
+            }
             // Kiểm tra quyền sở hữu
             if (itemService.checkOwner(dataEditDTO.getEmail(), item.getCurrentOwner())) {
                 int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
@@ -231,7 +233,9 @@ public class ItemLogService {
                     .orElseThrow(() -> new RuntimeException("ItemLog not found"));
             Item item = itemRepository.findById(itemLogDetail.getItem().getItemId())
                     .orElseThrow(() -> new RuntimeException("Item not found"));
-
+            if(item.getStatus() == 2){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been disable!");
+            }
             // Kiểm tra quyền sở hữu
             int check = clientService.checkOTP(dataEditDTO.getEmail().trim(), dataEditDTO.getOTP().trim(), item.getProductRecognition());
             if (check == 6)
@@ -279,6 +283,9 @@ public class ItemLogService {
 //            Item item = itemRepository.findById(itemLogDetail.getItem().getItemId())
 //                    .orElseThrow(() -> new RuntimeException("Item not found"));
             Item item = itemRepository.findByProductRecognition(dataEditDTO.getProductRecognition());
+            if(item.getStatus() == 2){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been disable!");
+            }
             List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
             ItemLog itemLogDetail = itemLogs.get(0);
             // Kiểm tra quyền sở hữu
@@ -341,6 +348,9 @@ public class ItemLogService {
         try {
             // Retrieve item by product recognition
             Item item = itemRepository.findByProductRecognition(itemLogDTO.getProductRecognition());
+            if(item.getStatus() == 2 || item.getStatus() == 0){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been disable!");
+            }
             if (item == null) {
                 return new ResponseEntity<>("Item not found.", HttpStatus.NOT_FOUND);
             }
@@ -417,7 +427,9 @@ public class ItemLogService {
         ItemLog itemLogDetail = itemLogRepository.findById(dataEditDTO.getItemLogId())
                 .orElseThrow(() -> new RuntimeException("ItemLog not found"));
         Item item = itemRepository.getReferenceById(itemLogDetail.getItem().getItemId());
-
+        if(item.getStatus() == 2){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been disable!");
+        }
         if (itemService.checkOwner(dataEditDTO.getEmailParty(), item.getCurrentOwner())) {
 //            boolean check = clientService.checkOTPinSQL(dataEditDTO.getEmailParty().trim(), dataEditDTO.getOTP().trim());
 //            if (check) {
