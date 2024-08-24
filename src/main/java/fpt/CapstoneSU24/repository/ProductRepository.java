@@ -70,6 +70,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     void deleteOneByProductId(int productId);
 
     List<Product> findAllProductByCreateAtBetween(long startDate, long endDate);
+    List<Product> findAllProductByCreateAtBetweenAndManufacturer(long startDate, long endDate, User manufacturer);
 
     Product findOneByProductName(String productName);
 

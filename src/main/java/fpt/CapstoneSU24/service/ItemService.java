@@ -324,6 +324,7 @@ public class ItemService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
             }
             Item item = itemRepository.findByProductRecognition(productRecognition);
+            log.info("itemviewLineItem" + item.getProduct().getManufacturer().getUserId());
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
@@ -873,6 +874,16 @@ public class ItemService {
         }
     }
     public JSONObject infoItemForMonitor(long startDate, long endDate) {
+        List<Item> monthlyItem = itemRepository.findAllItemByCreatedAtBetween(startDate, endDate);
+        List<Item> items = itemRepository.findAll();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("total", items.size());
+        jsonObject.put("monthly",monthlyItem.size());
+        return jsonObject;
+    }
+    public JSONObject infoItemForMonitorByUser(long startDate, long endDate) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
         List<Item> monthlyItem = itemRepository.findAllItemByCreatedAtBetween(startDate, endDate);
         List<Item> items = itemRepository.findAll();
         JSONObject jsonObject = new JSONObject();

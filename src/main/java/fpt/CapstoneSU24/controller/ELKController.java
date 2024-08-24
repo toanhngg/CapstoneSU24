@@ -20,6 +20,10 @@ public class ELKController {
     public ResponseEntity<?> getNumberVisitsDiagram(@Valid @RequestBody SelectedTimeRequest req) throws IOException {
         return elkService.getNumberVisitsDiagram(req);
     }
+    @PostMapping("/getNumberVisitsDiagramByUser")
+    public ResponseEntity<?> getNumberVisitsDiagramByUser(@Valid @RequestBody SelectedTimeRequest req) throws IOException {
+        return elkService.getNumberVisitsDiagramByUser(req);
+    }
     @GetMapping("/getNumberVisitsAllTime")
     public ResponseEntity<?> getNumberVisitsAllTime() throws IOException {
         return elkService.getNumberVisitsAllTime();

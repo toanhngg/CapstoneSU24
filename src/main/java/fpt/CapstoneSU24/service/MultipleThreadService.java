@@ -78,5 +78,45 @@ public class MultipleThreadService {
         }
         return status;
     }
+    public JSONObject getQueryMultipleThreadForDatabaseByUser() throws IOException {
+        LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDateTime firstDayOfMonthStart = firstDayOfMonth.atStartOfDay();
+        long firstDayOfMonthTimestamp = firstDayOfMonthStart.toInstant(ZoneOffset.UTC).toEpochMilli();
+        JSONObject status = new JSONObject();
+        // Lấy timestamp hiện tại
+        long currentTimestamp = Instant.now().toEpochMilli();
+        int numThreads = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+
+
+        Callable<JSONObject> InfoProductTask = () -> productService.infoProductForMonitorByUser(firstDayOfMonthTimestamp,currentTimestamp);
+        Callable<JSONObject> InfoItemTask = () -> itemService.infoItemForMonitor(firstDayOfMonthTimestamp,currentTimestamp);
+
+
+        Map<String, Callable<JSONObject>> tasks = new HashMap<>();
+        tasks.put("InfoProductTask", InfoProductTask);
+        tasks.put("InfoItemTask", InfoItemTask);
+
+        Map<String, Future<JSONObject>> futures = new HashMap<>();
+
+        try {
+            for (Map.Entry<String, Callable<JSONObject>> entry : tasks.entrySet()) {
+                Future<JSONObject> future = executorService.submit(entry.getValue());
+                futures.put(entry.getKey(), future);
+            }
+
+            for (Map.Entry<String, Future<JSONObject>> entry : futures.entrySet()) {
+                String key = entry.getKey();
+                Future<JSONObject> future = entry.getValue();
+
+                status.put(key, future.get());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } finally {
+            executorService.shutdown();
+        }
+        return status;
+    }
 
 }
