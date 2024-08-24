@@ -3,7 +3,6 @@ package fpt.CapstoneSU24.controller;
 import fpt.CapstoneSU24.dto.*;
 import fpt.CapstoneSU24.dto.payload.FilterByTimeStampRequest;
 import fpt.CapstoneSU24.dto.payload.FilterSearchItemRequest;
-import fpt.CapstoneSU24.repository.ItemRepository;
 import fpt.CapstoneSU24.service.ItemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +22,6 @@ public class ItemController {
 
     //private static final Logger log = LoggerFactory.getLogger(ItemController.class);
     private final ItemService itemService;
-    @Autowired
-    private ItemRepository itemRepository;
     @Autowired
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
@@ -134,11 +131,6 @@ public class ItemController {
     @PostMapping(value = "/listPartyJoin")
     public ResponseEntity<?>  listPartyJoin(@RequestBody CurrentOwnerCheck req){
         return itemService.listPartyJoin(req);
-    }
-
-    @GetMapping(value = "countItem")
-    public Integer  countItem(@RequestParam int userId,@RequestParam Long startDate,@RequestParam Long endDate){
-        return itemRepository.countItemsByUserId(userId,startDate,endDate);
     }
 
 }

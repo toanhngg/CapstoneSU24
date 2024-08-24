@@ -2,6 +2,7 @@ package fpt.CapstoneSU24.service;
 
 import com.tdunning.math.stats.Histogram;
 import fpt.CapstoneSU24.dto.payload.SelectedTimeRequest;
+import fpt.CapstoneSU24.model.User;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Json31;
 import org.apache.http.HttpHost;
@@ -22,6 +23,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -219,4 +222,56 @@ public class ELKService {
             return 0;
         }
     }
+    public ResponseEntity<?> getNumberVisitsDiagramByUser(SelectedTimeRequest req) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                .size(0)
+                .query(QueryBuilders.boolQuery()
+                        .filter(QueryBuilders.rangeQuery("@timestamp")
+                                .gte(req.getType())
+                                .lte("now")
+                                .timeZone("GMT+7"))
+                        .filter(QueryBuilders.matchQuery("message", "itemviewLineItem"+currentUser.getUserId()))
+                )
+                .aggregation(AggregationBuilders.dateHistogram("hourly_counts")
+                        .field("@timestamp")
+                        .fixedInterval(req.getType().equals("now-15m")? new DateHistogramInterval("15m"): req.getType().equals("now/h")?  DateHistogramInterval.MINUTE: req.getType().equals("now/d")? DateHistogramInterval.HOUR : DateHistogramInterval.DAY )
+                        .timeZone(ZoneId.of("GMT+7"))
+                );
+
+        searchRequest.indices("logs-generic-default").source(sourceBuilder);
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        JSONObject jsonObject = new JSONObject(searchResponse.toString());
+
+        JSONObject aggregations = jsonObject.getJSONObject("aggregations");
+        JSONObject dateHistogram = aggregations.getJSONObject("date_histogram#hourly_counts");
+        JSONArray buckets = dateHistogram.getJSONArray("buckets");
+        //convert date
+        JSONArray newJsonArray = new JSONArray();
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
+//        req.getType().equals("15m") ? "now-15m" : req.getType().equals("1h")? "now/h" : "HH:mm"
+        for (int i = 0; i < buckets.length(); i++) {
+            JSONObject j = buckets.getJSONObject(i);
+            String keyAsString = j.getString("key_as_string");
+            try {
+                Date date = inputFormat.parse(keyAsString);
+                String formattedDate = outputFormat.format(date);
+
+                JSONObject newJsonObject = new JSONObject();
+                newJsonObject.put("formatted_date", formattedDate);
+                newJsonObject.put("doc_count", j.getInt("doc_count"));
+                newJsonObject.put("key", j.getLong("key"));
+
+                newJsonArray.put(newJsonObject);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return ResponseEntity.status(200).body(newJsonArray.toString());
+    }
+
 }

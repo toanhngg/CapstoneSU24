@@ -152,13 +152,19 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
             "ORDER BY COUNT(il.itemLogId) DESC")
     List<OrgNameUserDTO> findTop5OrgNames(Pageable pageable);
     List<Item> findAllItemByCreatedAtBetween(long startDate, long endDate);
+//    List<Item> findAllItemByCreatedAtBetweenAnd(long startDate, long endDate);
+@Query("SELECT COUNT(i) FROM Item i " +
+        "LEFT JOIN i.product p " +
+        "LEFT JOIN p.manufacturer u " +
+        "WHERE u.userId = :userId")
+Integer countItemsByUserId(@Param("userId") int userId);
 
     @Query("SELECT COUNT(i) FROM Item i " +
             "LEFT JOIN i.product p " +
             "LEFT JOIN p.manufacturer u " +
             "WHERE u.userId = :userId " +
             "AND i.createdAt <= :endDate AND i.createdAt >= :startDate ")
-    Integer countItemsByUserId(@Param("userId") int userId,Long startDate, Long endDate);
+    Integer countItemsByUserId(Long startDate, Long endDate, @Param("userId") int userId);
 
     public Item findOneByItemId(int id);
 }

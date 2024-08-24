@@ -324,6 +324,8 @@ public class ItemService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please input string has 10 characters");
             }
             Item item = itemRepository.findByProductRecognition(productRecognition);
+
+            log.info("itemviewLineItem" + item.getProduct().getManufacturer().getUserId());
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
@@ -578,7 +580,7 @@ public class ItemService {
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
             if(item.getStatus() == 2){
-                return ResponseEntity.ok(9); // CurrentOwner
+                return ResponseEntity.status(HttpStatus.OK).body(8);
             }
         if (item == null) {
             // Xử lý nếu item không tồn tại
@@ -883,6 +885,12 @@ public class ItemService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("total", items.size());
         jsonObject.put("monthly",monthlyItem.size());
+        return jsonObject;
+    }
+    public JSONObject infoItemForMonitorByUser(long startDate, long endDate, User currentUser) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("total", itemRepository.countItemsByUserId(currentUser.getUserId()));
+        jsonObject.put("monthly",itemRepository.countItemsByUserId(startDate, endDate, currentUser.getUserId()));
         return jsonObject;
     }
     public JSONObject logMetrics() {
