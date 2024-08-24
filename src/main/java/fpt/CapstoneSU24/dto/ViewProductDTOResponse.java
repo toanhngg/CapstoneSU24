@@ -8,6 +8,7 @@ public class ViewProductDTOResponse {
     private String dimensions;
     private String material;
     private float weight;
+    private int checkStatusDisable;
 
     public ViewProductDTOResponse(int productId, String productName, String description, String avatar, String dimensions, String material, float weight) {
         this.productId = productId;
@@ -17,6 +18,14 @@ public class ViewProductDTOResponse {
         this.dimensions = dimensions;
         this.material = material;
         this.weight = weight;
+    }
+
+    public int getCheckStatusDisable() {
+        return checkStatusDisable;
+    }
+
+    public void setCheckStatusDisable(int checkStatusDisable) {
+        this.checkStatusDisable = checkStatusDisable;
     }
 
     public String getDimensions() {

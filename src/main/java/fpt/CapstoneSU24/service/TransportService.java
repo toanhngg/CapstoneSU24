@@ -39,5 +39,4 @@ public class TransportService {
         }
         return new JSONObject().put("transport", jsonArray);
     }
-
 }

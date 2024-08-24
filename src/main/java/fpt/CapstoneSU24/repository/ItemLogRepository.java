@@ -43,8 +43,18 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
     @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId AND il.event_id.eventId <> 6 ORDER BY il.itemLogId desc")
     List<ItemLog> getItemLogsByItemIdIgnoreEdit(@Param("itemId") int itemId);
 
-    Optional<ItemLog> findFirstByItem_ItemIdOrderByItemLogIdDesc(int itemId);
 
+//    @Query("SELECT il FROM Item i JOIN ItemLog il ON i.itemId = il.item.itemId " +
+//            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 WHERE il2.item.itemId = i.itemId AND il2.event_id.eventId <> 6)")
+//    Optional<ItemLog> findFirstByItem_ItemIdOrderByItemLogIdDesc(int itemId);
+
+    @Query("SELECT il FROM ItemLog il " +
+            "JOIN il.item i " +
+            "WHERE il.itemLogId = (SELECT MAX(il2.itemLogId) FROM ItemLog il2 " +
+            "WHERE il2.item.itemId = i.itemId AND il2.event_id.eventId <> 6) " +
+            "AND il.item.itemId = :itemId " +
+            "AND il.event_id.eventId <> 6")
+    Optional<ItemLog> findFirstByItem_ItemIdOrderByItemLogIdDesc(@Param("itemId") int itemId);
 
 //    @Query("SELECT il FROM ItemLog il LEFT JOIN  il.location loc LEFT JOIN il.item i WHERE i.itemId = :itemId ORDER BY il.itemLogId asc")
 //    List<ItemLog> getItemLogsByItemIdAsc(@Param("itemId") int itemId);

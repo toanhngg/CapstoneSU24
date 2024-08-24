@@ -124,7 +124,7 @@ public class SecurityConfiguration {
                                 "api/item/checkPartyFirst",
                                 "api/item/listPartyJoin",
                                 "api/product/getInfoByProductId"
-                        ).permitAll()
+                                ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -377,8 +377,13 @@ public class ItemService {
             OriginDTO originDTO = new OriginDTO();
             originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
             originDTO.setProductName(itemLog.getItem().getProduct().getProductName());
+            originDTO.setDimensions(itemLog.getItem().getProduct().getDimensions());
+            originDTO.setWeight(itemLog.getItem().getProduct().getWeight());
+            originDTO.setMaterial(itemLog.getItem().getProduct().getMaterial());
+            originDTO.setCategoryName(itemLog.getItem().getProduct().getCategory().getName());
             originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
             originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
+            originDTO.setOrgNameId(itemLog.getItem().getProduct().getManufacturer().getUserId());
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());
             originDTO.setLocationDTO(locationMapper.locationToLocationDto(itemLog.getItem().getOrigin().getLocation()));
             originDTO.setFullName(itemLog.getItem().getOrigin().getFullNameManufacturer());
@@ -575,7 +580,7 @@ public class ItemService {
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
             if(item.getStatus() == 2){
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body(8);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(8);
             }
         if (item == null) {
             // Xử lý nếu item không tồn tại
