@@ -1,5 +1,6 @@
 package fpt.CapstoneSU24.service;
 
+import fpt.CapstoneSU24.model.User;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,7 +79,7 @@ public class MultipleThreadService {
         }
         return status;
     }
-    public JSONObject getQueryMultipleThreadForDatabaseByUser() throws IOException {
+    public JSONObject getQueryMultipleThreadForDatabaseByUser(User currentUser) throws IOException {
         LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
         LocalDateTime firstDayOfMonthStart = firstDayOfMonth.atStartOfDay();
         long firstDayOfMonthTimestamp = firstDayOfMonthStart.toInstant(ZoneOffset.UTC).toEpochMilli();
@@ -89,8 +90,8 @@ public class MultipleThreadService {
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
 
-        Callable<JSONObject> InfoProductTask = () -> productService.infoProductForMonitorByUser(firstDayOfMonthTimestamp,currentTimestamp);
-        Callable<JSONObject> InfoItemTask = () -> itemService.infoItemForMonitor(firstDayOfMonthTimestamp,currentTimestamp);
+        Callable<JSONObject> InfoProductTask = () -> productService.infoProductForMonitorByUser(firstDayOfMonthTimestamp,currentTimestamp, currentUser);
+        Callable<JSONObject> InfoItemTask = () -> itemService.infoItemForMonitorByUser(firstDayOfMonthTimestamp,currentTimestamp, currentUser);
 
 
         Map<String, Callable<JSONObject>> tasks = new HashMap<>();

@@ -23,4 +23,8 @@ public class MonitoringController {
     public ResponseEntity<?> getMonitoringByAdmin() throws IOException {
         return monitoringService.getMonitoringByAdmin();
     }
+    @GetMapping("/manufacturer")
+    public ResponseEntity<?> getMonitoringByManufacturer() throws IOException {
+        return monitoringService.getMonitoringByManufacturer();
+    }
 }

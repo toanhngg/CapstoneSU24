@@ -32,4 +32,10 @@ ELKService elkService;
        if (currentUser.getRole().getRoleId() == 1) return ResponseEntity.status(200).body(multipleThreadService.getQueryMultipleThreadForDatabase().toString());
        return ResponseEntity.status(500).body("your account don't have permit for this action");
    }
+    public ResponseEntity<?> getMonitoringByManufacturer() throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (currentUser.getRole().getRoleId() == 2) return ResponseEntity.status(200).body(multipleThreadService.getQueryMultipleThreadForDatabaseByUser(currentUser).toString());
+        return ResponseEntity.status(500).body("your account don't have permit for this action");
+    }
 }

@@ -291,11 +291,9 @@ public class ProductService {
         jsonObject.put("monthly",monthlyProducts.size());
         return jsonObject;
     }
-    public JSONObject infoProductForMonitorByUser(long startDate, long endDate) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
+    public JSONObject infoProductForMonitorByUser(long startDate, long endDate, User currentUser) {
         List<Product> monthlyProducts = productRepository.findAllProductByCreateAtBetweenAndManufacturer(startDate, endDate, currentUser);
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findAllProduct(currentUser.getUserId());
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("total", products.size());
         jsonObject.put("monthly",monthlyProducts.size());
