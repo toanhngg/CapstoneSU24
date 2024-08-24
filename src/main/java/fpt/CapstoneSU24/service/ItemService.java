@@ -578,11 +578,11 @@ public class ItemService {
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
             if(item.getStatus() == 2){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(8);
+                return ResponseEntity.ok(9); // CurrentOwner
             }
         if (item == null) {
             // Xử lý nếu item không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+            return ResponseEntity.status(HttpStatus.OK).body(-1); // Giá trị -1 biểu thị item không tồn tại
         }
 
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());
