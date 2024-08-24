@@ -152,7 +152,7 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
             "ORDER BY COUNT(il.itemLogId) DESC")
     List<OrgNameUserDTO> findTop5OrgNames(Pageable pageable);
     List<Item> findAllItemByCreatedAtBetween(long startDate, long endDate);
-    List<Item> findAllItemByCreatedAtBetweenAnd(long startDate, long endDate);
+//    List<Item> findAllItemByCreatedAtBetweenAnd(long startDate, long endDate);
 
 
     public Item findOneByItemId(int id);
