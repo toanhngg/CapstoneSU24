@@ -416,7 +416,7 @@ public class ItemService {
 
         Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm.");
         }
 
         if (email == null || email.isEmpty()) {
