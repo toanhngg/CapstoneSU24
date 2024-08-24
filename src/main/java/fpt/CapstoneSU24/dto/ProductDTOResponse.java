@@ -6,6 +6,7 @@ public class ProductDTOResponse {
     private String description;
     private String avatar;
     private int status;
+    private int checkStatusDisable;
 
     public ProductDTOResponse(int productId, String productName, String description, String avatar, int status) {
         this.productId = productId;
@@ -15,6 +16,13 @@ public class ProductDTOResponse {
         this.status = status;
     }
 
+    public int getCheckStatusDisable() {
+        return checkStatusDisable;
+    }
+
+    public void setCheckStatusDisable(int checkStatusDisable) {
+        this.checkStatusDisable = checkStatusDisable;
+    }
 
     public int getProductId() {
         return productId;
