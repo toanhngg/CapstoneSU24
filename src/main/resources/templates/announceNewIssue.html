@@ -24,7 +24,6 @@
             background-color: #f4f4f4;
             padding: 20px;
             text-align: center;
-            /*color: #777777;*/
         }
         .email-header img {
             max-width: 150px;
@@ -32,7 +31,6 @@
         }
         .email-body {
             padding: 20px;
-            /*color: #333333;*/
             line-height: 1.6;
         }
         .email-body p {
@@ -49,6 +47,18 @@
             font-size: 12px;
             color: #777777;
         }
+        .image-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .image-container img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -57,8 +67,8 @@
         <img src="http://res.cloudinary.com/ds2d9tipg/image/upload/v1723133885/testManh123.png" alt="Logo">
     </div>
     <h1 class="header">Báo cáo mới từ người dùng</h1>
-    <p>Kính gửi <span th:text="${recipientName}">Quý Nhà Máy</span>,</p>
-    <p>Chúng tôi xin thông báo rằng chúng tôi đã nhận được một báo cáo mới từ <span th:text="${senderName}">người dùng</span>. Dưới đây là chi tiết của báo cáo:</p>
+    <p>Kính gửi <span th:text="${recipientName}">Nhà Máy</span>,</p>
+    <p>Chúng tôi đã nhận được một báo cáo mới từ <span th:text="${senderName}">người dùng</span>. Dưới đây là chi tiết của báo cáo:</p>
     <div class="content">
         <p><strong>Tiêu đề:</strong> <span th:text="${title}"></span></p>
         <p><strong>Loại Vấn Đề:</strong> <span th:text="${component}"></span></p>
@@ -80,7 +90,8 @@
         <p>Thông tin liên hệ: <a href="mailto:system.traceorigin@gmail.com">
             system.traceorigin@gmail.com</a></p>
         <p>Điện thoại: 0961-835-886</p>
-        <p>Địa chỉ: Đại học FPT</p>    </div>    </div>
+        <p>Địa chỉ: Đại học FPT</p>
+    </div>
 </div>
 </body>
 </html>
