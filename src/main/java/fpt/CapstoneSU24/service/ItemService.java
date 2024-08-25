@@ -203,7 +203,7 @@ public class ItemService {
             itemRepository.saveAll(items);
             partyRepository.save(party);
             itemLogRepository.saveAll(itemLogs);
-            return ResponseEntity.status(HttpStatus.OK).body("Add successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body("Thêm thành công !");
         } catch (Exception ex) {
             logService.logError(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
@@ -416,7 +416,7 @@ public class ItemService {
 
         Item item = itemRepository.findByProductRecognition(productRecognition);
         if (item == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm.");
         }
 
         if (email == null || email.isEmpty()) {
@@ -425,27 +425,27 @@ public class ItemService {
 
         int otpCheckResult = clientService.checkOTP(email.trim(), req.getOTP().trim(), productRecognition);
         if (otpCheckResult == 6) {
-            return ResponseEntity.badRequest().body("OTP is not correct.");
+            return ResponseEntity.badRequest().body("OTP không chính xác.");
         } else if (otpCheckResult != 3 && otpCheckResult != 8) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP validation failed.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Không có quyền truy cập.");
         }
-
-        if (!item.getCurrentOwner().equals(email)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
-        }
+//
+//        if (!item.getCurrentOwner().equals(email)) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User is not the current owner.");
+//        }
 
         List<ItemLog> itemLogs = itemLogRepository.getItemLogsByItemIdIgnoreEdit(item.getItemId());
         if (itemLogs.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Insufficient item logs.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Chưa có thông tin nhật kí nào");
         }
 
         List<ItemLog> pointLogs = itemLogRepository.getPointItemIdIgnoreEdit(item.getItemId());
         if (pointLogs.size() != itemLogs.size()) {
-            return ResponseEntity.badRequest().body("Mismatch in item logs and point logs.");
+            return ResponseEntity.badRequest().body("Các thông tin nhật kí không đầy đủ.");
         }
 
         if (!pointService.arePointsOnCurve(pointLogs)) {
-            return ResponseEntity.badRequest().body("Points do not form a valid graph.");
+            return ResponseEntity.badRequest().body("Thông tin nhật kí không hợp lệ");
         }
 
         String pdfData = item.getCertificateLink();
@@ -472,22 +472,22 @@ public class ItemService {
             Item item = findByProductRecognition(authorized.getProductRecognition());
             // kiểm tra người đang ủy quyền có phải current owner không
             if (item.getStatus() == 0 || item.getStatus() == 2)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This product has been cancelled!");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Sản phẩm đã bị vô hiệu hóa!");
             if (checkOwner(authorized.getAssignPersonMail(), item.getCurrentOwner())) {
                 int check = clientService.checkOTP(authorized.getAssignPersonMail().trim(), authorized.getOTP().trim(),item.getProductRecognition());
                 if (check == 6)
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Edit fail! OTP is not correct.");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chỉnh sửa thất bại! OTP không chính xác.");
                 if (check == 3 || check == 8) {
                     if (!authorized.getAuthorizedEmail().equals(authorized.getAssignPersonMail())) {
                         return addEventAuthorized(authorized, item);
                     } else {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mail authorized not same mail assign person");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email được ủy quyền và người chuyển email giống nhau");
                     }
                 } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Fail! Access denied ");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thất bại! Bạn không có quyền truy cập tính năng này!");
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You are not the owner");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bạn không phải chủ sở hữu");
             }
         } catch (Exception ex) {
             logService.logError(ex);
@@ -580,11 +580,11 @@ public class ItemService {
         String productRecognition = req.getProductRecognition();
         Item item = findByProductRecognition(productRecognition);
             if(item.getStatus() == 2){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(8);
+                return ResponseEntity.status(HttpStatus.OK).body(8);
             }
         if (item == null) {
             // Xử lý nếu item không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1); // Giá trị -1 biểu thị item không tồn tại
+            return ResponseEntity.status(HttpStatus.OK).body(-1); // Giá trị -1 biểu thị item không tồn tại
         }
 
         List<ItemLog> list = itemLogRepository.getItemLogsByItemId(item.getItemId());

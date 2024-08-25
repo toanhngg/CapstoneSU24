@@ -483,7 +483,7 @@ public class ProductService {
         try {
             List<Item> items = itemRepository.findAllByProductId(req.getId());
             if (items.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.OK).body(1);
+                return ResponseEntity.status(HttpStatus.OK).body(2);
             }
             boolean allItemsInStatusTwo = items.stream().allMatch(item -> item.getStatus() == 2);
 
