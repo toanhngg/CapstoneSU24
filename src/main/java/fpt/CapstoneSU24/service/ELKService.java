@@ -234,7 +234,7 @@ public class ELKService {
                                 .gte(req.getType())
                                 .lte("now")
                                 .timeZone("GMT+7"))
-                        .filter(QueryBuilders.matchQuery("message", "itemviewLineItem"+currentUser.getUserId()))
+                        .filter(QueryBuilders.matchQuery("message", "*itemviewLineItem"+currentUser.getUserId()+"*"))
                 )
                 .aggregation(AggregationBuilders.dateHistogram("hourly_counts")
                         .field("@timestamp")
@@ -273,5 +273,28 @@ public class ELKService {
         }
         return ResponseEntity.status(200).body(newJsonArray.toString());
     }
+    public JSONObject getTopProductByUser(User currentUser) throws IOException {
 
+
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(QueryBuilders.matchAllQuery());
+        sourceBuilder.aggregation(AggregationBuilders
+                .terms("top_messages")
+                .field("message") // Sử dụng .keyword để phân tích từ khóa
+                .size(5)); // Lấy top 5
+
+
+
+
+        searchRequest.indices("logs-generic-default").source(sourceBuilder);
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        JSONObject jsonObject = new JSONObject(searchResponse.toString());
+
+        JSONObject aggregations = jsonObject.getJSONObject("aggregations");
+//        JSONObject dateHistogram = aggregations.getJSONObject("date_histogram#hourly_counts");
+//        JSONArray buckets = dateHistogram.getJSONArray("buckets");
+
+        return new JSONObject(aggregations.toString());
+    }
 }

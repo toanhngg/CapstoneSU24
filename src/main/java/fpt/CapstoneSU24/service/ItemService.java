@@ -325,7 +325,7 @@ public class ItemService {
             }
             Item item = itemRepository.findByProductRecognition(productRecognition);
 
-            log.info("itemviewLineItem" + item.getProduct().getManufacturer().getUserId());
+            log.info("itemviewLineItem" + item.getProduct().getManufacturer().getUserId()+"productId"+item.getProduct().getProductId());
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
