@@ -708,7 +708,7 @@ public class ItemService {
                     // Send email notification
                     ClientSdi sdi = new ClientSdi();
                     sdi.setProductName(item.getProduct().getProductName() + " với mã sản phẩm là : " + item.getProductRecognition());
-                    sdi.setEmail(authorized.getAuthorizedEmail());
+                    sdi.setEmail(authorized.getAssignPersonMail());
 //                    sdi.setUsername(authorized.getAuthorizedName());
 //                    sdi.setName(authorized.getAuthorizedName());
                     clientService.notification(sdi);
