@@ -546,10 +546,10 @@ public class ItemService {
         try {
             // Kiểm tra xem email có phải là CurrentOwner hay không
             if (list.get(list.size() - 1).getLocation() != null) {
-                if (checkOwner(email, item.getCurrentOwner())) {
+                if (checkOwner(email, item.getCurrentOwner()) && checkOwner(email,  item.getOrigin().getEmail())) {
                     return ResponseEntity.ok(1); // CurrentOwner
                 }
-                if (checkParty(email, item.getItemId())) {
+                if (checkParty(email, item.getItemId()) && checkOwner(email,  item.getOrigin().getEmail())) {
                     return ResponseEntity.ok(2); // CurrentOwner
                 }else{
                     return  ResponseEntity.ok(3); // CurrentOwner
