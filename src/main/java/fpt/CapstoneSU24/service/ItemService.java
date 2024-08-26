@@ -377,6 +377,8 @@ public class ItemService {
             OriginDTO originDTO = new OriginDTO();
             originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
             originDTO.setProductId(itemLog.getItem().getProduct().getProductId());
+            originDTO.setProductName(itemLog.getItem().getProduct().getProductName());
+
             //originDTO.setDimensions(itemLog.getItem().getProduct().getDimensions());
            // originDTO.setWeight(itemLog.getItem().getProduct().getWeight());
            //  originDTO.setMaterial(itemLog.getItem().getProduct().getMaterial());
