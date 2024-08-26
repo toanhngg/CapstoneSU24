@@ -376,12 +376,12 @@ public class ItemService {
 
             OriginDTO originDTO = new OriginDTO();
             originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
-            originDTO.setProductName(itemLog.getItem().getProduct().getProductName());
-            originDTO.setDimensions(itemLog.getItem().getProduct().getDimensions());
-            originDTO.setWeight(itemLog.getItem().getProduct().getWeight());
-            originDTO.setMaterial(itemLog.getItem().getProduct().getMaterial());
-            originDTO.setCategoryName(itemLog.getItem().getProduct().getCategory().getName());
-            originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
+            originDTO.setProductId(itemLog.getItem().getProduct().getProductId());
+            //originDTO.setDimensions(itemLog.getItem().getProduct().getDimensions());
+           // originDTO.setWeight(itemLog.getItem().getProduct().getWeight());
+           //  originDTO.setMaterial(itemLog.getItem().getProduct().getMaterial());
+           // originDTO.setCategoryName(itemLog.getItem().getProduct().getCategory().getName());
+           // originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
             originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
             originDTO.setOrgNameId(itemLog.getItem().getProduct().getManufacturer().getUserId());
             originDTO.setPhone(itemLog.getItem().getOrigin().getPhone());

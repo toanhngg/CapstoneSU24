@@ -10,9 +10,12 @@ import java.util.List;
 public class OriginDTO {
     private String productName;
     private String productRecognition;
-    private String dimensions;
-    private float weight;
-    private String material;
+    private int productId;
+    private int orgNameId;
+
+    //  private String dimensions;
+    //private float weight;
+    //private String material;
     private String orgName;
     private String phone;
     private String fullName;
@@ -23,7 +26,6 @@ public class OriginDTO {
     private String descriptionOrigin;
     private int warranty;
     private Boolean checkPoint;
-    private Integer orgNameId;
 
     // private double CoordinateX;
    // private double CoordinateY;
