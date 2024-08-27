@@ -135,7 +135,7 @@ public class ReportService {
         report.setTitle(request.getTitle());
         report.setType(request.getType());
         report.setComponent(request.getComponent());
-        report.setCauseDetail(request.getCauseDetail());
+        report.setCauseDetail(getComponentLabel(request.getComponent()) + ": \n" +request.getCauseDetail());
         report.setStatus(0);
         report.setPriority(request.getPriority());
 
@@ -181,7 +181,7 @@ public class ReportService {
         props.put("imageReports", imageReports.stream()
                 .map(imageReport -> cloudinaryService.getImageUrl(imageReport.getImagePath()))
                 .collect(Collectors.toList()));
-        props.put("reportLink", Const.ClientServer.LocalServer + "manufacturer/reportManager/" + report.getReportId());
+        props.put("reportLink", Const.ClientServer.DeployServer + "manufacturer/reportManager/" + report.getReportId());
         dataMail.setProps(props);
 
         emailService.sendHtmlMail(dataMail, templateMail);
