@@ -325,7 +325,7 @@ public class ItemService {
             }
             Item item = itemRepository.findByProductRecognition(productRecognition);
 
-            log.info("itemviewLineItem" + item.getProduct().getManufacturer().getUserId());
+            log.info("itemviewLineItem" + item.getProduct().getManufacturer().getUserId()+"productId"+item.getProduct().getProductId());
             if (item == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found");
             }
@@ -376,13 +376,11 @@ public class ItemService {
 
             OriginDTO originDTO = new OriginDTO();
             originDTO.setCreateAt(itemLog.getItem().getCreatedAt());
-            originDTO.setProductId(itemLog.getItem().getProduct().getProductId());
             originDTO.setProductName(itemLog.getItem().getProduct().getProductName());
-
-            //originDTO.setDimensions(itemLog.getItem().getProduct().getDimensions());
-           // originDTO.setWeight(itemLog.getItem().getProduct().getWeight());
-           //  originDTO.setMaterial(itemLog.getItem().getProduct().getMaterial());
-           // originDTO.setCategoryName(itemLog.getItem().getProduct().getCategory().getName());
+            originDTO.setDimensions(itemLog.getItem().getProduct().getDimensions());
+            originDTO.setWeight(itemLog.getItem().getProduct().getWeight());
+            originDTO.setMaterial(itemLog.getItem().getProduct().getMaterial());
+            originDTO.setCategoryName(itemLog.getItem().getProduct().getCategory().getName());
             originDTO.setProductRecognition(itemLog.getItem().getProductRecognition());
             originDTO.setOrgName(itemLog.getItem().getOrigin().getOrg_name());
             originDTO.setOrgNameId(itemLog.getItem().getProduct().getManufacturer().getUserId());
@@ -548,10 +546,10 @@ public class ItemService {
         try {
             // Kiểm tra xem email có phải là CurrentOwner hay không
             if (list.get(list.size() - 1).getLocation() != null) {
-                if (checkOwner(email, item.getCurrentOwner()) && checkOwner(email,  item.getOrigin().getEmail())) {
+                if (checkOwner(email, item.getCurrentOwner())) {
                     return ResponseEntity.ok(1); // CurrentOwner
                 }
-                if (checkParty(email, item.getItemId()) && checkOwner(email,  item.getOrigin().getEmail())) {
+                if (checkParty(email, item.getItemId())) {
                     return ResponseEntity.ok(2); // CurrentOwner
                 }else{
                     return  ResponseEntity.ok(3); // CurrentOwner
@@ -711,7 +709,7 @@ public class ItemService {
                     ClientSdi sdi = new ClientSdi();
                     sdi.setProductName(item.getProduct().getProductName() + " với mã sản phẩm là : " + item.getProductRecognition());
                     sdi.setEmail(authorized.getAssignPersonMail());
-//                    sdi.setUsername(authorized.getAuthorizedName());
+                    sdi.setUsername(authorized.getAuthorizedEmail());
 //                    sdi.setName(authorized.getAuthorizedName());
                     clientService.notification(sdi);
 

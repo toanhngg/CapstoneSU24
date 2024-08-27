@@ -120,13 +120,14 @@ public class ClientService implements ClientRepository {
         try {
             DataMailDTO dataMail = new DataMailDTO();
 
-            dataMail.setTo(sdi.getEmail());
+            dataMail.setTo(sdi.getUsername());
             //đoc ở file const
             dataMail.setSubject(Const.SEND_MAIL_SUBJECT.CLIENT_NOTIFICATION);
 
             Map<String, Object> props = new HashMap<>();
             props.put("productName", sdi.getProductName());
             props.put("email", sdi.getEmail());
+
             dataMail.setProps(props);
             mailService.sendHtmlMail(dataMail, Const.TEMPLATE_FILE_NAME.CLIENT_NOTIFICATION);
             return true;

@@ -68,8 +68,7 @@ public interface  ItemLogRepository extends JpaRepository<ItemLog, Integer> {
             "il.event_id.event_type, " +
             "p.partyFullName, " +
             "a.assignPersonMail, " +
-           // "a.authorizedEmail, " +
-            "a.authorizedName, " +
+            "a.authorizedEmail, " +
             "p.phoneNumber, " +
             "il.address, " +
             "loc.coordinateX, " +

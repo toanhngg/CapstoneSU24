@@ -20,9 +20,11 @@ public class MultipleThreadService {
     private final ItemService itemService;
     private final LocationService locationService;
     private final TransportService transportService;
+    private final ELKService elkService;
 
     @Autowired
-    public MultipleThreadService(TransportService transportService ,UserService userService, ProductService productService, ItemService itemService, LocationService locationService){
+    public MultipleThreadService(ELKService elkService, TransportService transportService ,UserService userService, ProductService productService, ItemService itemService, LocationService locationService){
+        this.elkService = elkService;
         this.userService = userService;
         this.productService = productService;
         this.itemService = itemService;
@@ -92,11 +94,13 @@ public class MultipleThreadService {
 
         Callable<JSONObject> InfoProductTask = () -> productService.infoProductForMonitorByUser(firstDayOfMonthTimestamp,currentTimestamp, currentUser);
         Callable<JSONObject> InfoItemTask = () -> itemService.infoItemForMonitorByUser(firstDayOfMonthTimestamp,currentTimestamp, currentUser);
+//        Callable<JSONObject> TopProductTask = () -> elkService.getTopProductByUser(currentUser);
 
 
         Map<String, Callable<JSONObject>> tasks = new HashMap<>();
         tasks.put("InfoProductTask", InfoProductTask);
         tasks.put("InfoItemTask", InfoItemTask);
+//        tasks.put("TopProductTask", TopProductTask);
 
         Map<String, Future<JSONObject>> futures = new HashMap<>();
 
